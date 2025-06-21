@@ -66,7 +66,7 @@ const translations = {
     moistureMonitor: 'තෙතමනය මුරකරු',
     moistureSubtitle: 'පහසුකම් ක්ෂේත්‍ර පරීක්ෂණය',
     moistureDesc: 'තත්‍ය කාලීන තෙතමනය මැනීම',
-    soilPHTesting: 'පස් pH පරීක්�ෂණය',
+    soilPHTesting: 'පස් pH පරීක්ෂණය',
     soilPHSubtitle: 'ස්මාර්ට් පස් විශ්ලේෂණය',
     soilPHDesc: 'ක්ෂණික pH පරීක්ෂණ සහ නිර්දේශ',
     pestDiseaseDetection: 'පළිබෝධ සහ රෝග හඳුනාගැනීම',
