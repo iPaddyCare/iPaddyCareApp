@@ -119,12 +119,126 @@ const translations = {
   }
 };
 
+// FeatureCard component moved outside HomeScreen
+const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation }) => {
+  const [cardScale] = useState(new Animated.Value(1));
+
+  const handlePressIn = () => {
+    Animated.spring(cardScale, {
+      toValue: 0.95,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(cardScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <Animated.View style={[
+      styles.featureCardContainer,
+      {
+        opacity: fadeAnim,
+        transform: [
+          { translateY: slideAnim },
+          { scale: cardScale }
+        ]
+      }
+    ]}>
+      <TouchableOpacity
+        style={styles.featureCard}
+        onPress={() => navigation?.navigate(feature.route)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        {/* Background Pattern */}
+        <View style={[styles.cardPattern, { backgroundColor: feature.accentColor }]} />
+
+        {/* Main Content */}
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
+            <View style={[styles.iconContainer, { backgroundColor: feature.primaryColor }]}>
+              <Text style={styles.iconText}>{feature.icon}</Text>
+              <View style={[styles.iconGlow, { backgroundColor: feature.primaryColor }]} />
+            </View>
+            <View style={styles.cardTextContent}>
+              <Text style={styles.cardTitle}>{feature.title}</Text>
+              <Text style={[styles.cardSubtitle, { color: feature.secondaryColor }]}>{feature.subtitle}</Text>
+            </View>
+          </View>
+          <Text style={styles.cardDescription}>{feature.description}</Text>
+
+          {/* Action Indicator */}
+          <View style={styles.cardFooter}>
+            <View style={[styles.actionIndicator, { backgroundColor: feature.primaryColor }]}>
+              <Text style={styles.actionText}>→</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
+// QuickActionButton component moved outside HomeScreen
+const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation }) => {
+  const [buttonScale] = useState(new Animated.Value(1));
+
+  const handlePressIn = () => {
+    Animated.spring(buttonScale, {
+      toValue: 0.9,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(buttonScale, {
+      toValue: 1,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  return (
+    <Animated.View style={[
+      styles.quickActionContainer,
+      {
+        opacity: fadeAnim,
+        transform: [
+          { scale: buttonScale },
+          { translateY: slideAnim }
+        ]
+      }
+    ]}>
+      <TouchableOpacity
+        style={[styles.quickActionButton, { backgroundColor: action.lightColor }]}
+        onPress={() => navigation?.navigate(action.route)}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={1}
+      >
+        <View style={[styles.quickActionIconContainer, { backgroundColor: action.color }]}>
+          <Text style={styles.quickActionIcon}>{action.icon}</Text>
+          <View style={[styles.quickActionGlow, { backgroundColor: action.color }]} />
+        </View>
+        <Text style={styles.quickActionText}>{action.title}</Text>
+
+        {/* Subtle pattern */}
+        <View style={[styles.quickActionPattern, { borderColor: action.color }]} />
+      </TouchableOpacity>
+    </Animated.View>
+  );
+};
+
 export default function HomeScreen({ navigation }) {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
-  
+
   const languages = ['English', 'සිංහල', 'தமிழ்'];
   const t = translations[selectedLanguage];
 
@@ -208,129 +322,16 @@ export default function HomeScreen({ navigation }) {
     setSelectedLanguage(languages[nextIndex]);
   };
 
-  const FeatureCard = ({ feature, index }) => {
-    const [cardScale] = useState(new Animated.Value(1));
-    
-    const handlePressIn = () => {
-      Animated.spring(cardScale, {
-        toValue: 0.95,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    const handlePressOut = () => {
-      Animated.spring(cardScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    return (
-      <Animated.View style={[
-        styles.featureCardContainer,
-        { 
-          opacity: fadeAnim,
-          transform: [
-            { translateY: slideAnim },
-            { scale: cardScale }
-          ]
-        }
-      ]}>
-        <TouchableOpacity 
-          style={styles.featureCard}
-          onPress={() => navigation?.navigate(feature.route)}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
-        >
-          {/* Background Pattern */}
-          <View style={[styles.cardPattern, { backgroundColor: feature.accentColor }]} />
-          
-          
-          {/* Main Content */}
-          <View style={styles.cardContent}>
-            <View style={styles.cardHeader}>
-              <View style={[styles.iconContainer, { backgroundColor: feature.primaryColor }]}>
-                <Text style={styles.iconText}>{feature.icon}</Text>
-                <View style={[styles.iconGlow, { backgroundColor: feature.primaryColor }]} />
-              </View>
-              <View style={styles.cardTextContent}>
-                <Text style={styles.cardTitle}>{feature.title}</Text>
-                <Text style={[styles.cardSubtitle, { color: feature.secondaryColor }]}>{feature.subtitle}</Text>
-              </View>
-            </View>
-            <Text style={styles.cardDescription}>{feature.description}</Text>
-            
-            {/* Action Indicator */}
-            <View style={styles.cardFooter}>
-              <View style={[styles.actionIndicator, { backgroundColor: feature.primaryColor }]}>
-                <Text style={styles.actionText}>→</Text>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
-  const QuickActionButton = ({ action, index }) => {
-    const [buttonScale] = useState(new Animated.Value(1));
-    
-    const handlePressIn = () => {
-      Animated.spring(buttonScale, {
-        toValue: 0.9,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    const handlePressOut = () => {
-      Animated.spring(buttonScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }).start();
-    };
-
-    return (
-      <Animated.View style={[
-        styles.quickActionContainer,
-        {
-          opacity: fadeAnim,
-          transform: [
-            { scale: buttonScale },
-            { translateY: slideAnim }
-          ]
-        }
-      ]}>
-        <TouchableOpacity 
-          style={[styles.quickActionButton, { backgroundColor: action.lightColor }]}
-          onPress={() => navigation?.navigate(action.route)}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
-        >
-          <View style={[styles.quickActionIconContainer, { backgroundColor: action.color }]}>
-            <Text style={styles.quickActionIcon}>{action.icon}</Text>
-            <View style={[styles.quickActionGlow, { backgroundColor: action.color }]} />
-          </View>
-          <Text style={styles.quickActionText}>{action.title}</Text>
-          
-          {/* Subtle pattern */}
-          <View style={[styles.quickActionPattern, { borderColor: action.color }]} />
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0D4F3C" />
-      
+
       {/* Hero Header */}
       <View style={styles.heroHeader}>
         {/* Background Pattern */}
         <View style={styles.headerPattern} />
         <View style={styles.headerPattern2} />
-        
+
         {/* Content */}
         <Animated.View style={[
           styles.headerContent,
@@ -344,7 +345,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={styles.appName}>{t.appName}</Text>
             <Text style={styles.tagline}>{t.tagline}</Text>
           </View>
-          
+
           {/* Language Selector */}
           <TouchableOpacity style={styles.languageSelector} onPress={handleLanguageChange}>
             <Text style={styles.languageText}>{selectedLanguage}</Text>
@@ -354,7 +355,7 @@ export default function HomeScreen({ navigation }) {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        
+
         {/* Dashboard Stats */}
         <Animated.View style={[
           styles.dashboardCard,
@@ -404,7 +405,14 @@ export default function HomeScreen({ navigation }) {
             {t.coreFeatures}
           </Animated.Text>
           {mainFeatures.map((feature, index) => (
-            <FeatureCard key={feature.id} feature={feature} index={index} />
+            <FeatureCard
+              key={feature.id}
+              feature={feature}
+              index={index}
+              fadeAnim={fadeAnim}
+              slideAnim={slideAnim}
+              navigation={navigation}
+            />
           ))}
         </View>
 
@@ -421,7 +429,14 @@ export default function HomeScreen({ navigation }) {
           </Animated.Text>
           <View style={styles.quickActionsGrid}>
             {quickActions.map((action, index) => (
-              <QuickActionButton key={index} action={action} index={index} />
+              <QuickActionButton
+                key={index}
+                action={action}
+                index={index}
+                fadeAnim={fadeAnim}
+                slideAnim={slideAnim}
+                navigation={navigation}
+              />
             ))}
           </View>
         </View>
@@ -437,7 +452,7 @@ export default function HomeScreen({ navigation }) {
           ]}>
             {t.recentActivity}
           </Animated.Text>
-          
+
           <Animated.View style={[
             styles.activityCard,
             {
@@ -560,16 +575,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  languageIndicator: {
-    position: 'absolute',
-    bottom: -8,
-    left: '50%',
-    marginLeft: -3,
-    width: 6,
-    height: 6,
-    backgroundColor: '#00C851',
-    borderRadius: 3,
-  },
   languageBorder: {
     position: 'absolute',
     top: -2,
@@ -642,6 +647,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     maxWidth: 80,
   },
+  statIndicator: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   section: {
     marginTop: 40,
   },
@@ -688,7 +703,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 20,
-    backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -697,6 +711,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  iconGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+    borderRadius: 20,
   },
   iconText: {
     fontSize: 32,
@@ -712,7 +737,6 @@ const styles = StyleSheet.create({
   },
   cardSubtitle: {
     fontSize: 14,
-    color: '#666',
     fontWeight: '500',
   },
   cardDescription: {
@@ -722,33 +746,42 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   cardFooter: {
-    height: 4,
-    borderRadius: 2,
-    overflow: 'hidden',
+    alignItems: 'flex-end',
   },
-  gradientLine: {
-    flex: 1,
-    height: '100%',
+  actionIndicator: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionText: {
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   quickActionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  quickActionButton: {
+  quickActionContainer: {
     width: (width - 60) / 2,
-    backgroundColor: 'white',
+    marginBottom: 16,
+  },
+  quickActionButton: {
     padding: 20,
     borderRadius: 18,
     alignItems: 'center',
-    marginBottom: 16,
     elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  quickActionGradient: {
+  quickActionIconContainer: {
     width: 56,
     height: 56,
     borderRadius: 18,
@@ -760,6 +793,17 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  quickActionGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+    borderRadius: 18,
   },
   quickActionIcon: {
     fontSize: 24,
@@ -770,6 +814,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1a1a1a',
     textAlign: 'center',
+  },
+  quickActionPattern: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderWidth: 1,
+    borderRadius: 18,
+    opacity: 0.1,
   },
   activityCard: {
     backgroundColor: 'white',
@@ -790,8 +844,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   activityIcon: {
-    fontSize: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
+  },
+  activityEmoji: {
+    fontSize: 20,
   },
   activityContent: {
     flex: 1,
@@ -807,11 +868,17 @@ const styles = StyleSheet.create({
     color: '#999',
     fontWeight: '500',
   },
+  activityStatus: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   activityDescription: {
     fontSize: 14,
     color: '#666',
     lineHeight: 20,
-    paddingLeft: 36,
   },
   bottomSpacing: {
     height: 40,
