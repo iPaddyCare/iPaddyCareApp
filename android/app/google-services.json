@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1005945714864",
+    "project_id": "ipaddycareapp",
+    "storage_bucket": "ipaddycareapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1005945714864:android:045939a319de70a49de375",
+        "android_client_info": {
+          "package_name": "com.ipaddycare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBw2ZdlSU36naqF9baLTAqGHbvVoVc9i40"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

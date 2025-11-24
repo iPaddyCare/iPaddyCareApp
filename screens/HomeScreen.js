@@ -9,7 +9,10 @@ import {
   SafeAreaView,
   Dimensions,
   Animated,
+  Alert,
 } from 'react-native';
+import { useAuth } from '../src/context/AuthContext';
+import { useLanguage } from '../src/context/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -120,7 +123,7 @@ const translations = {
 };
 
 // FeatureCard component moved outside HomeScreen
-const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation }) => {
+const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const [cardScale] = useState(new Animated.Value(1));
 
   const handlePressIn = () => {
@@ -137,6 +140,27 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation }) => {
     }).start();
   };
 
+  const handlePress = () => {
+    if (requireAuth && !isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please login to access this feature.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Login', 
+            onPress: () => {
+              // Navigate to root stack and then to Login
+              navigation.getParent()?.getParent()?.getParent()?.navigate('Login');
+            }
+          }
+        ]
+      );
+    } else {
+      navigation?.navigate(feature.route);
+    }
+  };
+
   return (
     <Animated.View style={[
       styles.featureCardContainer,
@@ -150,7 +174,7 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation }) => {
     ]}>
       <TouchableOpacity
         style={styles.featureCard}
-        onPress={() => navigation?.navigate(feature.route)}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
@@ -185,7 +209,7 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation }) => {
 };
 
 // QuickActionButton component moved outside HomeScreen
-const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation }) => {
+const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const [buttonScale] = useState(new Animated.Value(1));
 
   const handlePressIn = () => {
@@ -202,6 +226,27 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation }) =
     }).start();
   };
 
+  const handlePress = () => {
+    if (requireAuth && !isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please login to access this feature.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: 'Login', 
+            onPress: () => {
+              // Navigate to root stack and then to Login
+              navigation.getParent()?.getParent()?.getParent()?.navigate('Login');
+            }
+          }
+        ]
+      );
+    } else {
+      navigation?.navigate(action.route);
+    }
+  };
+
   return (
     <Animated.View style={[
       styles.quickActionContainer,
@@ -215,7 +260,7 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation }) =
     ]}>
       <TouchableOpacity
         style={[styles.quickActionButton, { backgroundColor: action.lightColor }]}
-        onPress={() => navigation?.navigate(action.route)}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         activeOpacity={1}
@@ -234,10 +279,11 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation }) =
 };
 
 export default function HomeScreen({ navigation }) {
-  const [selectedLanguage, setSelectedLanguage] = useState('English');
+  const { selectedLanguage, changeLanguage } = useLanguage();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
+  const { isAuthenticated } = useAuth();
 
   const languages = ['English', 'සිංහල', 'தமிழ்'];
   const t = translations[selectedLanguage];
@@ -319,7 +365,7 @@ export default function HomeScreen({ navigation }) {
   const handleLanguageChange = () => {
     const currentIndex = languages.indexOf(selectedLanguage);
     const nextIndex = (currentIndex + 1) % languages.length;
-    setSelectedLanguage(languages[nextIndex]);
+    changeLanguage(languages[nextIndex]);
   };
 
   return (
@@ -340,6 +386,14 @@ export default function HomeScreen({ navigation }) {
             transform: [{ translateY: slideAnim }]
           }
         ]}>
+          {/* Menu Button */}
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => navigation.openDrawer()}
+          >
+            <Text style={styles.menuIcon}>☰</Text>
+          </TouchableOpacity>
+
           <View style={styles.headerText}>
             <Text style={styles.welcomeText}>{t.welcomeTo}</Text>
             <Text style={styles.appName}>{t.appName}</Text>
@@ -348,7 +402,10 @@ export default function HomeScreen({ navigation }) {
 
           {/* Language Selector */}
           <TouchableOpacity style={styles.languageSelector} onPress={handleLanguageChange}>
-            <Text style={styles.languageText}>{selectedLanguage}</Text>
+            <Text style={[
+              styles.languageText,
+              (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.languageTextNonLatin
+            ]}>{selectedLanguage}</Text>
             <View style={styles.languageBorder} />
           </TouchableOpacity>
         </Animated.View>
@@ -412,6 +469,8 @@ export default function HomeScreen({ navigation }) {
               fadeAnim={fadeAnim}
               slideAnim={slideAnim}
               navigation={navigation}
+              isAuthenticated={isAuthenticated}
+              requireAuth={true}
             />
           ))}
         </View>
@@ -436,6 +495,8 @@ export default function HomeScreen({ navigation }) {
                 fadeAnim={fadeAnim}
                 slideAnim={slideAnim}
                 navigation={navigation}
+                isAuthenticated={isAuthenticated}
+                requireAuth={true}
               />
             ))}
           </View>
@@ -539,8 +600,24 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     zIndex: 1,
   },
+  menuButton: {
+    position: 'absolute',
+    top: 20,
+    left: 11,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuIcon: {
+    fontSize: 24,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   headerText: {
     flex: 1,
+    marginLeft: 50,
   },
   welcomeText: {
     color: 'rgba(255,255,255,0.8)',
@@ -574,6 +651,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  languageTextNonLatin: {
+    fontSize: 12,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   languageBorder: {
     position: 'absolute',
