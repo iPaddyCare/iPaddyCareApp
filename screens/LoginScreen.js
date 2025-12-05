@@ -28,6 +28,7 @@ const translations = {
     forgotPassword: 'Forgot Password?',
     skip: 'Skip for Now',
     orContinueWith: 'or continue with',
+    continueWithGoogle: 'Continue with Google',
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     name: 'Full Name',
@@ -48,6 +49,7 @@ const translations = {
     forgotPassword: 'මුරපදය අමතකද?',
     skip: 'දැනට මඟ හරින්න',
     orContinueWith: 'නැතහොත් ඉදිරියට යන්න',
+    continueWithGoogle: 'Google සමඟ ඉදිරියට',
     dontHaveAccount: 'ගිණුමක් නැතද?',
     alreadyHaveAccount: 'දැනටමත් ගිණුමක් ඇතද?',
     name: 'සම්පූර්ණ නම',
@@ -68,6 +70,7 @@ const translations = {
     forgotPassword: 'கடவுச்சொல் மறந்துவிட்டதா?',
     skip: 'இப்போது தவிர்',
     orContinueWith: 'அல்லது தொடரவும்',
+    continueWithGoogle: 'Google உடன் தொடரவும்',
     dontHaveAccount: 'கணக்கு இல்லையா?',
     alreadyHaveAccount: 'ஏற்கனவே கணக்கு உள்ளதா?',
     name: 'முழுப் பெயர்',
@@ -80,10 +83,12 @@ const translations = {
   },
 };
 
+const languageOptions = Object.keys(translations);
+
 export default function LoginScreen({ navigation, onSkip }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
-  const { selectedLanguage } = useLanguage();
+  const { selectedLanguage, changeLanguage } = useLanguage();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(30));
 
@@ -95,7 +100,7 @@ export default function LoginScreen({ navigation, onSkip }) {
   });
 
   const [errors, setErrors] = useState({});
-  const { signIn, signUp, resetPassword, loading } = useAuth();
+  const { signIn, signUp, resetPassword, signInWithGoogle, loading } = useAuth();
 
   const t = translations[selectedLanguage];
 
@@ -217,6 +222,32 @@ export default function LoginScreen({ navigation, onSkip }) {
             <Text style={styles.appName}>iPaddyCare</Text>
             <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
             <Text style={styles.subtitle}>{t.subtitle}</Text>
+            <View style={styles.languageSelector}>
+              {languageOptions.map((language) => {
+                const isActive = selectedLanguage === language;
+                return (
+                  <TouchableOpacity
+                    key={language}
+                    onPress={() => changeLanguage(language)}
+                    style={[
+                      styles.languageChip,
+                      isActive && styles.languageChipActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.languageChipText,
+                        isActive && styles.languageChipTextActive,
+                        // Reduce font size for Sinhala and Tamil on Android
+                        (Platform.OS === 'android' && (language === 'සිංහල' || language === 'தமிழ்')) && styles.languageChipTextNonLatin,
+                      ]}
+                    >
+                      {language}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           </Animated.View>
 
           {/* Form */}
@@ -407,6 +438,28 @@ export default function LoginScreen({ navigation, onSkip }) {
                     </Text>
                   </TouchableOpacity>
                 </View>
+
+                {/* OAuth Buttons */}
+                <View style={styles.oauthContainer}>
+                  <View style={styles.divider}>
+                    <View style={styles.dividerLine} />
+                    <Text style={styles.dividerText}>{t.orContinueWith}</Text>
+                    <View style={styles.dividerLine} />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.oauthButton, styles.googleButton]}
+                    onPress={async () => {
+                      const result = await signInWithGoogle();
+                      if (!result.success && !result.cancelled) {
+                        Alert.alert('Error', result.error);
+                      }
+                    }}
+                    disabled={loading}
+                  >
+                    <Text style={styles.oauthButtonText}>{t.continueWithGoogle}</Text>
+                  </TouchableOpacity>
+                </View>
               </>
             )}
           </Animated.View>
@@ -497,6 +550,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255,255,255,0.8)',
     textAlign: 'center',
+  },
+  languageSelector: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+    flexWrap: 'wrap',
+  },
+  languageChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginHorizontal: 4,
+  },
+  languageChipActive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#FFFFFF',
+  },
+  languageChipText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  languageChipTextActive: {
+    color: '#0F5132',
+  },
+  languageChipTextNonLatin: {
+    fontSize: 11,
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   formContainer: {
     paddingHorizontal: 24,
@@ -607,6 +692,47 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 16,
     fontWeight: '600',
+  },
+  oauthContainer: {
+    marginTop: 24,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E0E0E0',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14,
+    color: '#666',
+  },
+  oauthButton: {
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  googleButton: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E0E0E0',
+  },
+  oauthButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
   },
 });
 

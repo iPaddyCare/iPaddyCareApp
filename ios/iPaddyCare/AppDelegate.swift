@@ -35,6 +35,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     return true
   }
+  
+  // Handle URL callbacks for Google Sign-In
+  func application(
+    _ app: UIApplication,
+    open url: URL,
+    options: [UIApplication.OpenURLOptionsKey: Any] = [:]
+  ) -> Bool {
+    // Handle Google Sign-In URL callback
+    // The Google Sign-In SDK will handle the URL automatically
+    return true
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
