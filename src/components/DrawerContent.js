@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { useNavigation } from '@react-navigation/native';
 
 const translations = {
   English: {
@@ -59,10 +58,20 @@ const translations = {
   },
 };
 
-export default function DrawerContent({ selectedLanguage = 'English' }) {
+export default function DrawerContent({
+  navigation: drawerNavigation,
+  selectedLanguage = 'English',
+}) {
   const { user, isAuthenticated, signOut } = useAuth();
-  const navigation = useNavigation();
   const t = translations[selectedLanguage];
+
+  const getRootNavigation = () => {
+    let parentNav = drawerNavigation;
+    while (parentNav && parentNav.getParent()) {
+      parentNav = parentNav.getParent();
+    }
+    return parentNav;
+  };
 
   const handleLogout = () => {
     Alert.alert(t.logout, t.logoutConfirm, [
@@ -75,16 +84,23 @@ export default function DrawerContent({ selectedLanguage = 'English' }) {
         style: 'destructive',
         onPress: async () => {
           await signOut();
-          navigation.closeDrawer();
+          drawerNavigation.closeDrawer?.();
         },
       },
     ]);
   };
 
   const handleLogin = () => {
-    navigation.closeDrawer();
-    // Navigate to root stack Login screen
-    navigation.getParent()?.getParent()?.navigate('Login');
+    drawerNavigation.closeDrawer?.();
+    const rootNavigation = getRootNavigation();
+    rootNavigation?.navigate('Login');
+  };
+
+  const handleNavigateToStack = (route) => {
+    if (!route) return;
+    drawerNavigation.navigate('Main', {
+      screen: route,
+    });
   };
 
   const menuItems = [
@@ -159,9 +175,9 @@ export default function DrawerContent({ selectedLanguage = 'English' }) {
               key={item.id}
               style={styles.menuItem}
               onPress={() => {
-                navigation.closeDrawer();
-                if (item.route) {
-                  navigation.navigate(item.route);
+                drawerNavigation.closeDrawer?.();
+                if (item.route === 'Home') {
+                  handleNavigateToStack('Home');
                 }
               }}
             >

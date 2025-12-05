@@ -10,6 +10,7 @@ import {
   Dimensions,
   Animated,
   Alert,
+  Platform,
 } from 'react-native';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -122,6 +123,15 @@ const translations = {
   }
 };
 
+// Utility to bubble up to root navigator for cross-stack navigation
+const navigateToRootRoute = (navigation, routeName) => {
+  let parentNav = navigation;
+  while (parentNav && parentNav.getParent()) {
+    parentNav = parentNav.getParent();
+  }
+  parentNav?.navigate(routeName);
+};
+
 // FeatureCard component moved outside HomeScreen
 const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const [cardScale] = useState(new Animated.Value(1));
@@ -147,13 +157,10 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
         'Please login to access this feature.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Login', 
-            onPress: () => {
-              // Navigate to root stack and then to Login
-              navigation.getParent()?.getParent()?.getParent()?.navigate('Login');
-            }
-          }
+          {
+            text: 'Login',
+            onPress: () => navigateToRootRoute(navigation, 'Login'),
+          },
         ]
       );
     } else {
@@ -233,13 +240,10 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
         'Please login to access this feature.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Login', 
-            onPress: () => {
-              // Navigate to root stack and then to Login
-              navigation.getParent()?.getParent()?.getParent()?.navigate('Login');
-            }
-          }
+          {
+            text: 'Login',
+            onPress: () => navigateToRootRoute(navigation, 'Login'),
+          },
         ]
       );
     } else {
@@ -372,125 +376,107 @@ export default function HomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0D4F3C" />
 
-      {/* Hero Header */}
-      <View style={styles.heroHeader}>
-        {/* Background Pattern */}
-        <View style={styles.headerPattern} />
-        <View style={styles.headerPattern2} />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Header */}
+        <View style={styles.heroHeader}>
+          {/* Background Pattern */}
+          <View style={styles.headerPattern} />
+          <View style={styles.headerPattern2} />
 
-        {/* Content */}
-        <Animated.View style={[
-          styles.headerContent,
-          {
-            opacity: fadeAnim,
-            transform: [{ translateY: slideAnim }]
-          }
-        ]}>
-          {/* Menu Button */}
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() => navigation.openDrawer()}
-          >
-            <Text style={styles.menuIcon}>☰</Text>
-          </TouchableOpacity>
-
-          <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>{t.welcomeTo}</Text>
-            <Text style={styles.appName}>{t.appName}</Text>
-            <Text style={styles.tagline}>{t.tagline}</Text>
-          </View>
-
-          {/* Language Selector */}
-          <TouchableOpacity style={styles.languageSelector} onPress={handleLanguageChange}>
-            <Text style={[
-              styles.languageText,
-              (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.languageTextNonLatin
-            ]}>{selectedLanguage}</Text>
-            <View style={styles.languageBorder} />
-          </TouchableOpacity>
-        </Animated.View>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
-        {/* Dashboard Stats */}
-        <Animated.View style={[
-          styles.dashboardCard,
-          {
-            opacity: fadeAnim,
-            transform: [{ scale: scaleAnim }]
-          }
-        ]}>
-          <Text style={styles.dashboardTitle}>{t.todaysOverview}</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
-                <Text style={styles.statEmoji}>🧪</Text>
-              </View>
-              <Text style={styles.statValue}>3</Text>
-              <Text style={styles.statLabel}>{t.activeTests}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
-                <Text style={styles.statEmoji}>💡</Text>
-              </View>
-              <Text style={styles.statValue}>2</Text>
-              <Text style={styles.statLabel}>{t.recommendations}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
-                <Text style={styles.statEmoji}>👥</Text>
-              </View>
-              <Text style={styles.statValue}>12</Text>
-              <Text style={styles.statLabel}>{t.officersOnline}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
-            </View>
-          </View>
-        </Animated.View>
-
-        {/* Main Features */}
-        <View style={styles.section}>
-          <Animated.Text style={[
-            styles.sectionTitle,
+          {/* Content */}
+          <Animated.View style={[
+            styles.headerContent,
             {
               opacity: fadeAnim,
-              transform: [{ translateX: slideAnim }]
+              transform: [{ translateY: slideAnim }]
             }
           ]}>
-            {t.coreFeatures}
-          </Animated.Text>
-          {mainFeatures.map((feature, index) => (
-            <FeatureCard
-              key={feature.id}
-              feature={feature}
-              index={index}
-              fadeAnim={fadeAnim}
-              slideAnim={slideAnim}
-              navigation={navigation}
-              isAuthenticated={isAuthenticated}
-              requireAuth={true}
-            />
-          ))}
+            {/* Menu Button */}
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.openDrawer()}
+            >
+              <Text style={styles.menuIcon}>☰</Text>
+            </TouchableOpacity>
+
+            <View style={styles.headerText}>
+              <Text style={styles.welcomeText}>{t.welcomeTo}</Text>
+              <Text style={[
+                styles.appName,
+                // Reduce font size for Sinhala and Tamil appName on Android
+                (Platform.OS === 'android' && (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்')) && styles.appNameNonLatin,
+              ]}>{t.appName}</Text>
+              <Text style={styles.tagline}>{t.tagline}</Text>
+            </View>
+
+            {/* Language Selector */}
+            <TouchableOpacity style={styles.languageSelector} onPress={handleLanguageChange}>
+              <Text style={[
+                styles.languageText,
+                (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.languageTextNonLatin
+              ]}>{selectedLanguage}</Text>
+              <View style={styles.languageBorder} />
+            </TouchableOpacity>
+          </Animated.View>
         </View>
 
-        {/* Quick Actions */}
-        <View style={styles.section}>
-          <Animated.Text style={[
-            styles.sectionTitle,
+        <View style={styles.innerContent}>
+          {/* Dashboard Stats */}
+          <Animated.View style={[
+            styles.dashboardCard,
             {
               opacity: fadeAnim,
-              transform: [{ translateX: slideAnim }]
+              transform: [{ scale: scaleAnim }]
             }
           ]}>
-            {t.quickActions}
-          </Animated.Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((action, index) => (
-              <QuickActionButton
-                key={index}
-                action={action}
+            <Text style={styles.dashboardTitle}>{t.todaysOverview}</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
+                  <Text style={styles.statEmoji}>🧪</Text>
+                </View>
+                <Text style={styles.statValue}>3</Text>
+                <Text style={styles.statLabel}>{t.activeTests}</Text>
+                <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
+              </View>
+              <View style={styles.statItem}>
+                <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
+                  <Text style={styles.statEmoji}>💡</Text>
+                </View>
+                <Text style={styles.statValue}>2</Text>
+                <Text style={styles.statLabel}>{t.recommendations}</Text>
+                <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
+              </View>
+              <View style={styles.statItem}>
+                <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
+                  <Text style={styles.statEmoji}>👥</Text>
+                </View>
+                <Text style={styles.statValue}>12</Text>
+                <Text style={styles.statLabel}>{t.officersOnline}</Text>
+                <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
+              </View>
+            </View>
+          </Animated.View>
+
+          {/* Main Features */}
+          <View style={styles.section}>
+            <Animated.Text style={[
+              styles.sectionTitle,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateX: slideAnim }]
+              }
+            ]}>
+              {t.coreFeatures}
+            </Animated.Text>
+            {mainFeatures.map((feature, index) => (
+              <FeatureCard
+                key={feature.id}
+                feature={feature}
                 index={index}
                 fadeAnim={fadeAnim}
                 slideAnim={slideAnim}
@@ -500,62 +486,89 @@ export default function HomeScreen({ navigation }) {
               />
             ))}
           </View>
-        </View>
 
-        {/* Recent Activity */}
-        <View style={styles.section}>
-          <Animated.Text style={[
-            styles.sectionTitle,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateX: slideAnim }]
-            }
-          ]}>
-            {t.recentActivity}
-          </Animated.Text>
-
-          <Animated.View style={[
-            styles.activityCard,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
-          ]}>
-            <View style={styles.activityHeader}>
-              <View style={[styles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
-                <Text style={styles.activityEmoji}>🧪</Text>
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>{t.soilPHCompleted}</Text>
-                <Text style={styles.activityTime}>2 {t.hoursAgo}</Text>
-              </View>
-              <View style={[styles.activityStatus, { backgroundColor: '#00C851' }]} />
+          {/* Quick Actions */}
+          <View style={styles.section}>
+            <Animated.Text style={[
+              styles.sectionTitle,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateX: slideAnim }]
+              }
+            ]}>
+              {t.quickActions}
+            </Animated.Text>
+            <View style={styles.quickActionsGrid}>
+              {quickActions.map((action, index) => (
+                <QuickActionButton
+                  key={index}
+                  action={action}
+                  index={index}
+                  fadeAnim={fadeAnim}
+                  slideAnim={slideAnim}
+                  navigation={navigation}
+                  isAuthenticated={isAuthenticated}
+                  requireAuth={true}
+                />
+              ))}
             </View>
-            <Text style={styles.activityDescription}>{t.phLevelDesc}</Text>
-          </Animated.View>
+          </View>
 
-          <Animated.View style={[
-            styles.activityCard,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
-          ]}>
-            <View style={styles.activityHeader}>
-              <View style={[styles.activityIcon, { backgroundColor: '#E8F5E8' }]}>
-                <Text style={styles.activityEmoji}>🌾</Text>
+          {/* Recent Activity */}
+          <View style={styles.section}>
+            <Animated.Text style={[
+              styles.sectionTitle,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateX: slideAnim }]
+              }
+            ]}>
+              {t.recentActivity}
+            </Animated.Text>
+
+            <Animated.View style={[
+              styles.activityCard,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }]
+              }
+            ]}>
+              <View style={styles.activityHeader}>
+                <View style={[styles.activityIcon, { backgroundColor: '#FFF3E0' }]}>
+                  <Text style={styles.activityEmoji}>🧪</Text>
+                </View>
+                <View style={styles.activityContent}>
+                  <Text style={styles.activityTitle}>{t.soilPHCompleted}</Text>
+                  <Text style={styles.activityTime}>2 {t.hoursAgo}</Text>
+                </View>
+                <View style={[styles.activityStatus, { backgroundColor: '#00C851' }]} />
               </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>{t.seedQualityAnalysis}</Text>
-                <Text style={styles.activityTime}>1 {t.dayAgo}</Text>
+              <Text style={styles.activityDescription}>{t.phLevelDesc}</Text>
+            </Animated.View>
+
+            <Animated.View style={[
+              styles.activityCard,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }]
+              }
+            ]}>
+              <View style={styles.activityHeader}>
+                <View style={[styles.activityIcon, { backgroundColor: '#E8F5E8' }]}>
+                  <Text style={styles.activityEmoji}>🌾</Text>
+                </View>
+                <View style={styles.activityContent}>
+                  <Text style={styles.activityTitle}>{t.seedQualityAnalysis}</Text>
+                  <Text style={styles.activityTime}>1 {t.dayAgo}</Text>
+                </View>
+                <View style={[styles.activityStatus, { backgroundColor: '#2196F3' }]} />
               </View>
-              <View style={[styles.activityStatus, { backgroundColor: '#2196F3' }]} />
-            </View>
-            <Text style={styles.activityDescription}>{t.purityDesc}</Text>
-          </Animated.View>
+              <Text style={styles.activityDescription}>{t.purityDesc}</Text>
+            </Animated.View>
+          </View>
+
+          <View style={styles.bottomSpacing} />
         </View>
-
-        <View style={styles.bottomSpacing} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -571,6 +584,7 @@ const styles = StyleSheet.create({
     height: height * 0.25,
     position: 'relative',
     overflow: 'hidden',
+    marginBottom: 24,
   },
   headerPattern: {
     position: 'absolute',
@@ -632,6 +646,14 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     letterSpacing: -0.5,
   },
+  appNameNonLatin: {
+    fontSize: 28,
+    includeFontPadding: false,
+    paddingBottom: Platform.OS === 'android' ? 6 : 0,
+    paddingTop: Platform.OS === 'android' ? 2 : 0,
+    lineHeight: Platform.OS === 'android' ? 38 : undefined,
+    textAlignVertical: 'center',
+  },
   tagline: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 14,
@@ -653,7 +675,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   languageTextNonLatin: {
-    fontSize: 12,
+    fontSize: Platform.OS === 'android' ? 11 : 12,
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
@@ -667,9 +689,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  innerContent: {
     paddingHorizontal: 20,
+    paddingTop: 4,
   },
   dashboardCard: {
     backgroundColor: '#FFFFFF',
