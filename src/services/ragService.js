@@ -6,7 +6,8 @@
  * solutions based on the detected disease name.
  */
 
-import diseaseData from '../../data/pest-disease-solutions.json';
+// Load disease data - using require for React Native compatibility
+const diseaseData = require('../../data/pest-disease-solutions.json');
 
 class RAGService {
   constructor() {

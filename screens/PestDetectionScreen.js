@@ -9,17 +9,26 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from 'react-native';
-import { Camera, Upload, CheckCircle, AlertCircle, X } from 'lucide-react-native';
+import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send } from 'lucide-react-native';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import { TextInput } from 'react-native';
 import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
+import llmService from '../src/services/LLMService';
 
 export default function PestDetectionScreen() {
   const [imageUri, setImageUri] = useState(null);
   const [detecting, setDetecting] = useState(false);
   const [result, setResult] = useState(null);
   const [servicesReady, setServicesReady] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
 
   // Initialize services on mount
   useEffect(() => {
@@ -33,6 +42,9 @@ export default function PestDetectionScreen() {
       
       // Initialize Pest Detection model
       await pestDetectionService.initializeModel();
+      
+      // Try to load LLM API key from storage
+      await llmService.loadFromStorage();
       
       setServicesReady(true);
     } catch (error) {
@@ -123,6 +135,44 @@ export default function PestDetectionScreen() {
   const clearImage = () => {
     setImageUri(null);
     setResult(null);
+    setShowChat(false);
+    setChatMessages([]);
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || !result || !result.solution.found) {
+      return;
+    }
+
+    if (!llmService.isInitialized()) {
+      setShowApiKeyModal(true);
+      return;
+    }
+
+    const userMessage = chatInput.trim();
+    setChatInput('');
+    setSendingMessage(true);
+
+    // Add user message to chat
+    const newMessages = [...chatMessages, { role: 'user', content: userMessage }];
+    setChatMessages(newMessages);
+
+    try {
+      // Get RAG context from current result
+      const ragContext = result.solution;
+      
+      // Generate response using LLM with RAG context
+      const response = await llmService.generateResponse(userMessage, ragContext);
+      
+      // Add AI response to chat
+      setChatMessages([...newMessages, { role: 'assistant', content: response }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      Alert.alert('Error', 'Failed to get response. Please check your internet connection and API key.');
+      setChatMessages(newMessages.slice(0, -1)); // Remove user message on error
+    } finally {
+      setSendingMessage(false);
+    }
   };
 
   return (
@@ -263,6 +313,140 @@ export default function PestDetectionScreen() {
             )}
           </View>
         )}
+
+        {/* Chat Section */}
+        {result && result.solution.found && (
+          <View style={styles.chatSection}>
+            <TouchableOpacity
+              style={styles.chatToggle}
+              onPress={() => setShowChat(!showChat)}
+            >
+              <MessageCircle size={20} color="#0F5132" />
+              <Text style={styles.chatToggleText}>
+                {showChat ? 'Hide Chat' : 'Ask Questions About This Disease'}
+              </Text>
+            </TouchableOpacity>
+
+            {showChat && (
+              <View style={styles.chatContainer}>
+                <View style={styles.chatMessages}>
+                  {chatMessages.length === 0 && (
+                    <View style={styles.chatWelcome}>
+                      <Text style={styles.chatWelcomeText}>
+                        Ask me anything about {result.solution.diseaseName}!
+                      </Text>
+                      <Text style={styles.chatWelcomeSubtext}>
+                        Example: "How do I prevent this disease?" or "What are the best treatment methods?"
+                      </Text>
+                    </View>
+                  )}
+                  {chatMessages.map((msg, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.chatMessage,
+                        msg.role === 'user' ? styles.userMessage : styles.assistantMessage,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.chatMessageText,
+                          msg.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
+                        ]}
+                      >
+                        {msg.content}
+                      </Text>
+                    </View>
+                  ))}
+                  {sendingMessage && (
+                    <View style={[styles.chatMessage, styles.assistantMessage]}>
+                      <ActivityIndicator size="small" color="#0F5132" />
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.chatInputContainer}>
+                  <TextInput
+                    style={styles.chatInput}
+                    placeholder="Ask a question..."
+                    value={chatInput}
+                    onChangeText={setChatInput}
+                    multiline
+                    editable={!sendingMessage}
+                    onSubmitEditing={sendChatMessage}
+                  />
+                  <TouchableOpacity
+                    style={[styles.sendButton, sendingMessage && styles.sendButtonDisabled]}
+                    onPress={sendChatMessage}
+                    disabled={sendingMessage || !chatInput.trim()}
+                  >
+                    <Send size={20} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* API Key Modal */}
+        <Modal
+          visible={showApiKeyModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowApiKeyModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>API Key Required</Text>
+              <Text style={styles.modalText}>
+                To use the chat feature, you need an API key. Get one from:
+              </Text>
+              <Text style={styles.modalLink}>• OpenAI: platform.openai.com</Text>
+              <Text style={styles.modalLink}>• Google Gemini: makersuite.google.com</Text>
+              
+              <TextInput
+                style={styles.apiKeyInput}
+                placeholder="Enter your API key"
+                value={apiKeyInput}
+                onChangeText={setApiKeyInput}
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonCancel]}
+                  onPress={() => {
+                    setShowApiKeyModal(false);
+                    setApiKeyInput('');
+                  }}
+                >
+                  <Text style={styles.modalButtonCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.modalButtonSave]}
+                  onPress={async () => {
+                    if (apiKeyInput.trim()) {
+                      try {
+                        await llmService.initialize(apiKeyInput.trim(), 'openai');
+                        setShowApiKeyModal(false);
+                        setApiKeyInput('');
+                        Alert.alert('Success', 'API key saved! You can now use the chat.');
+                      } catch (error) {
+                        Alert.alert('Error', 'Failed to save API key');
+                      }
+                    } else {
+                      Alert.alert('Error', 'Please enter a valid API key');
+                    }
+                  }}
+                >
+                  <Text style={styles.modalButtonSaveText}>Save</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -579,5 +763,174 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#E65100',
     lineHeight: 20,
+  },
+  chatSection: {
+    marginTop: 24,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  chatToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  chatToggleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F5132',
+  },
+  chatContainer: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingTop: 12,
+  },
+  chatMessages: {
+    maxHeight: 300,
+    marginBottom: 12,
+  },
+  chatWelcome: {
+    padding: 16,
+    backgroundColor: '#F0F9F4',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  chatWelcomeText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F5132',
+    marginBottom: 4,
+  },
+  chatWelcomeSubtext: {
+    fontSize: 14,
+    color: '#6B6B6B',
+    lineHeight: 20,
+  },
+  chatMessage: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    maxWidth: '85%',
+  },
+  userMessage: {
+    backgroundColor: '#0F5132',
+    alignSelf: 'flex-end',
+  },
+  assistantMessage: {
+    backgroundColor: '#F5F5F5',
+    alignSelf: 'flex-start',
+  },
+  chatMessageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  userMessageText: {
+    color: '#fff',
+  },
+  assistantMessageText: {
+    color: '#333',
+  },
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    paddingTop: 12,
+  },
+  chatInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    maxHeight: 100,
+    backgroundColor: '#FAFBFC',
+  },
+  sendButton: {
+    backgroundColor: '#0F5132',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    opacity: 0.5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 24,
+    width: '85%',
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0F5132',
+    marginBottom: 12,
+  },
+  modalText: {
+    fontSize: 14,
+    color: '#6B6B6B',
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  modalLink: {
+    fontSize: 14,
+    color: '#2196F3',
+    marginBottom: 4,
+  },
+  apiKeyInput: {
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    borderRadius: 8,
+    padding: 12,
+    marginTop: 16,
+    marginBottom: 20,
+    fontSize: 14,
+    backgroundColor: '#FAFBFC',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: '#F5F5F5',
+  },
+  modalButtonSave: {
+    backgroundColor: '#0F5132',
+  },
+  modalButtonCancelText: {
+    color: '#6B6B6B',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  modalButtonSaveText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
