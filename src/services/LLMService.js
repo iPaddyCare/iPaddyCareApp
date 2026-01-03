@@ -5,6 +5,9 @@
  * based on RAG context from disease detection
  */
 
+// Load environment variables from .env file
+import { GEMINI_API_KEY, OPENAI_API_KEY } from '@env';
+
 // Note: Install @react-native-async-storage/async-storage first
 // npm install @react-native-async-storage/async-storage
 let AsyncStorage;
@@ -31,10 +34,31 @@ class LLMService {
   }
 
   /**
-   * Load API key from storage
+   * Load API key from .env file or storage
    */
   async loadFromStorage() {
     try {
+      // First, try to load from .env file (Gemini API key)
+      if (GEMINI_API_KEY && GEMINI_API_KEY.trim()) {
+        this.apiKey = GEMINI_API_KEY.trim();
+        this.apiProvider = 'gemini';
+        this.updateBaseURL();
+        this.initialized = true;
+        console.log('✅ LLM Service loaded from .env (Gemini)');
+        return true;
+      }
+      
+      // Try OpenAI from .env
+      if (OPENAI_API_KEY && OPENAI_API_KEY.trim()) {
+        this.apiKey = OPENAI_API_KEY.trim();
+        this.apiProvider = 'openai';
+        this.updateBaseURL();
+        this.initialized = true;
+        console.log('✅ LLM Service loaded from .env (OpenAI)');
+        return true;
+      }
+      
+      // Then try AsyncStorage (user-entered key)
       const storedKey = await AsyncStorage.getItem(API_KEY_STORAGE_KEY);
       const storedProvider = await AsyncStorage.getItem(API_PROVIDER_STORAGE_KEY);
       
@@ -48,7 +72,7 @@ class LLMService {
       }
       return false;
     } catch (error) {
-      console.error('Failed to load API key from storage:', error);
+      console.error('Failed to load API key:', error);
       return false;
     }
   }
