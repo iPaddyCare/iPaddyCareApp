@@ -11,6 +11,7 @@ import SeedDetectionScreen from './screens/SeedDetectionScreen';
 import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
+import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -45,6 +46,11 @@ function MainStack() {
         name="PestDetection" 
         component={PestDetectionScreen} 
         options={{ title: 'Pest & Disease Detection' }}
+      />
+      <Stack.Screen 
+        name="DeviceConnection" 
+        component={DeviceConnectionScreen} 
+        options={{ title: 'Connect Device' }}
       />
     </Stack.Navigator>
   );
