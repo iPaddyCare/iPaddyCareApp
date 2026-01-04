@@ -50,10 +50,10 @@ target 'iPaddyCare' do
         end
         
         # Enable modular headers for Firebase and related pods
-        if target.name.include?('Firebase') || 
-           target.name.include?('GoogleUtilities') || 
-           target.name.include?('RecaptchaInterop') ||
-           target.name.include?('GTMSessionFetcher')
+      if target.name.include?('Firebase') || 
+         target.name.include?('GoogleUtilities') || 
+         target.name.include?('RecaptchaInterop') ||
+         target.name.include?('GTMSessionFetcher')
           config.build_settings['DEFINES_MODULE'] = 'YES'
           config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
         end

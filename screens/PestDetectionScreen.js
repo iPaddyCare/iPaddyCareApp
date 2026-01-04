@@ -1,5 +1,6 @@
 import React from 'react';
 import { SafeAreaView, View, Text, StyleSheet } from 'react-native';
+import BottomNavigation from '../src/components/BottomNavigation';
 
 export default function PestDetectionScreen() {
   return (
@@ -12,6 +13,7 @@ export default function PestDetectionScreen() {
           steps here in upcoming releases.
         </Text>
       </View>
+      <BottomNavigation />
     </SafeAreaView>
   );
 }

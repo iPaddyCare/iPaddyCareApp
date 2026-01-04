@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -12,6 +11,7 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -104,6 +104,7 @@ const detectSeeds = (frame) => {
 
 export default function SeedCameraScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
+  const insets = useSafeAreaInsets();
   const [detections, setDetections] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const camera = useRef(null);
@@ -151,7 +152,7 @@ export default function SeedCameraScreen({ navigation }) {
 
   if (!hasPermission) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#000000" />
         <View style={styles.permissionContainer}>
           <Icon name="camera-off" size={64} color="#666" />
@@ -170,13 +171,13 @@ export default function SeedCameraScreen({ navigation }) {
             <Text style={styles.backButtonText}>{t.back}</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!device) {
     return (
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#000000" />
         <View style={styles.permissionContainer}>
           <Icon name="camera-off" size={64} color="#666" />
@@ -188,16 +189,19 @@ export default function SeedCameraScreen({ navigation }) {
             <Text style={styles.backButtonText}>{t.back}</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.statusBarContainer} />
+      </SafeAreaView>
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'android' ? 24 : 16 }]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -305,7 +309,7 @@ export default function SeedCameraScreen({ navigation }) {
           </ScrollView>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -314,12 +318,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000000',
   },
+  safeAreaTop: {
+    backgroundColor: '#000000',
+  },
+  statusBarContainer: {
+    height: 0,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    paddingTop: Platform.OS === 'android' ? 8 : 16,
   },
   backButton: {
     width: 40,
