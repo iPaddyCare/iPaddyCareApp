@@ -35,7 +35,7 @@ function MainStack() {
       <Stack.Screen 
         name="MoistureDetector" 
         component={MoistureDetectorScreen} 
-        options={{ title: 'Moisture Monitor' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="SoilPH" 
@@ -50,7 +50,7 @@ function MainStack() {
       <Stack.Screen 
         name="DeviceConnection" 
         component={DeviceConnectionScreen} 
-        options={{ title: 'Connect Device' }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
