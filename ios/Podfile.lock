@@ -1749,6 +1749,35 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-image-picker (7.2.3):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-safe-area-context (5.4.1):
     - boost
     - DoubleConversion
@@ -2652,6 +2681,12 @@ PODS:
     - SocketRocket
     - Yoga
   - SocketRocket (0.7.1)
+  - VisionCamera (4.7.3):
+    - VisionCamera/Core (= 4.7.3)
+    - VisionCamera/React (= 4.7.3)
+  - VisionCamera/Core (4.7.3)
+  - VisionCamera/React (4.7.3):
+    - React-Core
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2698,6 +2733,7 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-ble-plx (from `../node_modules/react-native-ble-plx`)
+  - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2740,6 +2776,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - SocketRocket (~> 0.7.1)
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2848,6 +2885,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-ble-plx:
     :path: "../node_modules/react-native-ble-plx"
+  react-native-image-picker:
+    :path: "../node_modules/react-native-image-picker"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   React-NativeModulesApple:
@@ -2930,6 +2969,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNVectorIcons:
     :path: "../node_modules/react-native-vector-icons"
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2991,6 +3032,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 76072e5b6c9a87feb966d10541ea93128a687426
   React-microtasksnativemodule: 5a5ade18671840f21b9f129d3d58d3dd374a4077
   react-native-ble-plx: d6972fd4f0375183156cdbd062cb4550faaeaf77
+  react-native-image-picker: bf90d78234b2bdffd8ce3e037b097c84a2778a28
   react-native-safe-area-context: 32293dc61d1b92ccf892499ab6f8acfd609f9aef
   React-NativeModulesApple: 7fda5d50e7aacd04eee21799be16913360562eb5
   React-oscompat: 7c0a341cc31e350da71ddf2e46de0a845d1d1626
@@ -3034,8 +3076,9 @@ SPEC CHECKSUMS:
   RNScreens: 6a2d1ff4d263d29d3d3db9f3c19aad2f99fdd162
   RNVectorIcons: 0567525e0a344458329daa09068cf9e8090ec791
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: c6dc84349a2b99e1900fe5729f5c34df75c009f2
 
-PODFILE CHECKSUM: 62245891f71e4fc95dfebe1012cd67a5e1479c2b
+PODFILE CHECKSUM: f7caa4ac6a2eb5d478334a07fbebc3b0f6b7c3dd
 
 COCOAPODS: 1.16.2

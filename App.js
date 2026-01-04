@@ -8,6 +8,7 @@ import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SeedDetectionScreen from './screens/SeedDetectionScreen';
+import SeedCameraScreen from './screens/SeedCameraScreen';
 import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
@@ -30,7 +31,12 @@ function MainStack() {
       <Stack.Screen 
         name="SeedDetection" 
         component={SeedDetectionScreen} 
-        options={{ title: 'Seed Quality Detection' }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="SeedCamera" 
+        component={SeedCameraScreen} 
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="MoistureDetector" 
