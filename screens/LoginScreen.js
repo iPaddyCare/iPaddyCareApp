@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   StatusBar,
   KeyboardAvoidingView,
   Platform,
@@ -13,7 +12,9 @@ import {
   Animated,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
 
@@ -194,8 +195,12 @@ export default function LoginScreen({ navigation, onSkip }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#0F5132" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F5132" translucent={false} />
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.statusBarContainer} />
+      </SafeAreaView>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
@@ -457,6 +462,11 @@ export default function LoginScreen({ navigation, onSkip }) {
                     }}
                     disabled={loading}
                   >
+                    <Image 
+                      source={require('../assets/images/google.png')} 
+                      style={styles.googleIcon}
+                      resizeMode="contain"
+                    />
                     <Text style={styles.oauthButtonText}>{t.continueWithGoogle}</Text>
                   </TouchableOpacity>
                 </View>
@@ -479,12 +489,23 @@ export default function LoginScreen({ navigation, onSkip }) {
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: '#FAFBFC',
+  },
+  safeAreaTop: {
+    backgroundColor: '#0F5132',
+  },
+  statusBarContainer: {
+    height: 0,
+  },
+  safeAreaContent: {
     flex: 1,
     backgroundColor: '#FAFBFC',
   },
@@ -715,6 +736,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 14,
     paddingHorizontal: 16,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
@@ -728,6 +750,11 @@ const styles = StyleSheet.create({
   googleButton: {
     backgroundColor: '#FFFFFF',
     borderColor: '#E0E0E0',
+  },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
   },
   oauthButtonText: {
     fontSize: 16,
