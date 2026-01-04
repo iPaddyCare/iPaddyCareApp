@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  SafeAreaView, 
   View, 
   Text, 
   StyleSheet, 
@@ -10,12 +9,15 @@ import {
   Alert,
   RefreshControl,
   Animated,
-  Dimensions
+  Dimensions,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
 import BLEService from '../src/utils/bleService';
 import { useLanguage } from '../src/context/LanguageContext';
+import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width } = Dimensions.get('window');
 
@@ -106,6 +108,7 @@ const translations = {
 
 export default function MoistureDetectorScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
+  const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [moistureData, setMoistureData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -303,12 +306,14 @@ export default function MoistureDetectorScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.safeAreaTop} />
-      <View style={styles.safeAreaContent}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.statusBarContainer} />
+      </SafeAreaView>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
@@ -527,8 +532,9 @@ export default function MoistureDetectorScreen({ navigation }) {
         )}
           </View>
         </ScrollView>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+      <BottomNavigation />
+    </View>
   );
 }
 
@@ -539,6 +545,9 @@ const styles = StyleSheet.create({
   },
   safeAreaTop: {
     backgroundColor: '#0F5132',
+  },
+  statusBarContainer: {
+    height: 0,
   },
   safeAreaContent: {
     flex: 1,

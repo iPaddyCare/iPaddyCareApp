@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -14,9 +13,11 @@ import {
   Animated,
   StatusBar,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -95,6 +96,7 @@ const translations = {
 
 export default function SeedDetectionScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
+  const insets = useSafeAreaInsets();
   const [selectedImage, setSelectedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
   const [detectionResult, setDetectionResult] = useState(null);
@@ -175,13 +177,15 @@ export default function SeedDetectionScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0F5132" translucent={false} />
-      <View style={styles.safeAreaTop} />
-      <View style={styles.safeAreaContent}>
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.statusBarContainer} />
+      </SafeAreaView>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
         <ScrollView
           style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
         >
           {/* Hero Header */}
@@ -319,7 +323,7 @@ export default function SeedDetectionScreen({ navigation }) {
                     </View>
                     <Text style={[styles.resultValue, detectionResult.wildSeeds && styles.wildSeedsTrue]}>
                       {detectionResult.wildSeeds ? 'Yes' : 'No'}
-                    </Text>
+        </Text>
                   </View>
                   <View style={styles.resultDivider} />
                   <View style={styles.resultRow}>
@@ -358,8 +362,9 @@ export default function SeedDetectionScreen({ navigation }) {
             )}
           </View>
         </ScrollView>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+      <BottomNavigation />
+    </View>
   );
 }
 
@@ -370,6 +375,9 @@ const styles = StyleSheet.create({
   },
   safeAreaTop: {
     backgroundColor: '#0F5132',
+  },
+  statusBarContainer: {
+    height: 0,
   },
   safeAreaContent: {
     flex: 1,

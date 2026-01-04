@@ -11,9 +11,10 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -284,6 +285,7 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
 
 export default function HomeScreen({ navigation }) {
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const insets = useSafeAreaInsets();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
@@ -378,10 +380,10 @@ export default function HomeScreen({ navigation }) {
       <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
         <View style={styles.statusBarContainer} />
       </SafeAreaView>
-      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
         showsVerticalScrollIndicator={false}
       >
       {/* Hero Header */}
@@ -570,10 +572,10 @@ export default function HomeScreen({ navigation }) {
           </Animated.View>
         </View>
 
-        <View style={styles.bottomSpacing} />
         </View>
       </ScrollView>
       </SafeAreaView>
+      <BottomNavigation />
     </View>
   );
 }
