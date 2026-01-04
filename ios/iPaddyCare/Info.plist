@@ -32,7 +32,17 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Location permission is required for Bluetooth device scanning</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bluetooth permission is required to connect to ESP32 devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth permission is required to connect to ESP32 devices</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera permission is required to detect seed quality using live camera</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library permission is required to select images for seed quality detection</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Photo library permission is required to save seed detection images</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
