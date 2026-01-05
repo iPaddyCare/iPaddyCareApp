@@ -176,9 +176,7 @@ export default function DrawerContent({
               style={styles.menuItem}
               onPress={() => {
                 drawerNavigation.closeDrawer?.();
-                if (item.route === 'Home') {
-                  handleNavigateToStack('Home');
-                }
+                handleNavigateToStack(item.route);
               }}
             >
               <Text style={styles.menuIcon}>{item.icon}</Text>

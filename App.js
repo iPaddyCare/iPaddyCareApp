@@ -13,6 +13,7 @@ import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
+import SettingsScreen from './screens/SettingsScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -56,6 +57,11 @@ function MainStack() {
       <Stack.Screen 
         name="DeviceConnection" 
         component={DeviceConnectionScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Settings" 
+        component={SettingsScreen} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
