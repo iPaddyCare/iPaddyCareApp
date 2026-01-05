@@ -10,6 +10,7 @@ import LoginScreen from './screens/LoginScreen';
 import SeedDetectionScreen from './screens/SeedDetectionScreen';
 import SeedCameraScreen from './screens/SeedCameraScreen';
 import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
+import ReadingResultsScreen from './screens/ReadingResultsScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
@@ -42,6 +43,11 @@ function MainStack() {
       <Stack.Screen 
         name="MoistureDetector" 
         component={MoistureDetectorScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ReadingResults" 
+        component={ReadingResultsScreen} 
         options={{ headerShown: false }}
       />
       <Stack.Screen 

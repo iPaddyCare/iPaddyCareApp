@@ -384,9 +384,19 @@ class BLEService {
       return {
         success: true,
         data: {
-          moisture: decodedData.moisture || decodedData.moistureLevel || decodedData.value || 0,
-          temperature: decodedData.temperature || decodedData.temp || null,
-          humidity: decodedData.humidity || decodedData.hum || null,
+          // Main moisture value (capacitive sensor)
+          moisture: decodedData.cap_sensor_value || decodedData.moisture || decodedData.moistureLevel || decodedData.value || 0,
+          // Sample temperature (DS18B20)
+          sampleTemperature: decodedData.sample_temperature || decodedData.sampleTemperature || null,
+          // Ambient temperature (DHT22)
+          ambientTemperature: decodedData.ambient_temperature || decodedData.ambientTemperature || decodedData.temperature || decodedData.temp || null,
+          // Ambient humidity (DHT22)
+          ambientHumidity: decodedData.ambient_humidity || decodedData.ambientHumidity || decodedData.humidity || decodedData.hum || null,
+          // Sample weight (Load cell + HX711)
+          sampleWeight: decodedData.sample_weight || decodedData.sampleWeight || null,
+          // Legacy fields for backward compatibility
+          temperature: decodedData.ambient_temperature || decodedData.ambientTemperature || decodedData.temperature || decodedData.temp || null,
+          humidity: decodedData.ambient_humidity || decodedData.ambientHumidity || decodedData.humidity || decodedData.hum || null,
           timestamp: decodedData.timestamp || new Date().toISOString(),
           raw: decodedData,
         },
