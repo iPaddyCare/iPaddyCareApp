@@ -15,6 +15,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
 import BottomNavigation from '../src/components/BottomNavigation';
+import WeatherService from '../src/utils/weatherService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +34,7 @@ const translations = {
     recentActivity: 'Recent Activity',
     seedQualityDetection: 'Seed Quality Detection',
     seedQualitySubtitle: 'AI-powered seed sorting',
-    seedQualityDesc: 'Detect and remove wild paddy seeds',
+    seedQualityDesc: 'Detect seed varieties and wild seeds',
     moistureMonitor: 'Seed Moisture Monitor',
     moistureSubtitle: 'Portable field testing',
     moistureDesc: 'Real-time moisture measurement',
@@ -67,7 +68,7 @@ const translations = {
     recentActivity: 'මෑත ක්‍රියාකලාපය',
     seedQualityDetection: 'බීජ ගුණත්ව හඳුනාගැනීම',
     seedQualitySubtitle: 'AI බලයෙන් බීජ වර්ගීකරණය',
-    seedQualityDesc: 'වල් වී බීජ හඳුනාගෙන ඉවත් කරන්න',
+    seedQualityDesc: 'බීජ වර්ග හඳුනාගෙන වල් බීජ හඳුනාගන්න',
     moistureMonitor: 'බීජ තෙතමනය මුරකරු',
     moistureSubtitle: 'පහසුකම් ක්ෂේත්‍ර පරීක්ෂණය',
     moistureDesc: 'තත්‍ය කාලීන තෙතමනය මැනීම',
@@ -101,7 +102,7 @@ const translations = {
     recentActivity: 'சமீபத்திய செயல்பாடு',
     seedQualityDetection: 'விதை தர கண்டறிதல்',
     seedQualitySubtitle: 'AI சக்தியால் விதை வகைப்படுத்தல்',
-    seedQualityDesc: 'காட்டு நெல் விதைகளை கண்டறிந்து அகற்றவும்',
+    seedQualityDesc: 'விதை வகைகள் மற்றும் காட்டு விதைகளை கண்டறியவும்',
     moistureMonitor: 'விதை ஈரப்பத கண்காணிப்பு',
     moistureSubtitle: 'கையடக்க வயல் சோதனை',
     moistureDesc: 'நிகழ்நேர ஈரப்பத அளவீடு',
@@ -136,19 +137,34 @@ const navigateToRootRoute = (navigation, routeName) => {
 // FeatureCard component moved outside HomeScreen
 const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const [cardScale] = useState(new Animated.Value(1));
+  const [shadowOpacity] = useState(new Animated.Value(0.1));
 
   const handlePressIn = () => {
-    Animated.spring(cardScale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(cardScale, {
+        toValue: 0.97,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.18,
+        duration: 150,
+        useNativeDriver: false,
+      })
+    ]).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(cardScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(cardScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.1,
+        duration: 150,
+        useNativeDriver: false,
+      })
+    ]).start();
   };
 
   const handlePress = () => {
@@ -177,41 +193,67 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
         transform: [
           { translateY: slideAnim },
           { scale: cardScale }
-        ]
+        ],
       }
     ]}>
-      <TouchableOpacity
-        style={styles.featureCard}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
+      <Animated.View
+        style={[
+          styles.featureCard,
+          {
+            shadowOpacity: shadowOpacity,
+          }
+        ]}
       >
-        {/* Background Pattern */}
-        <View style={[styles.cardPattern, { backgroundColor: feature.accentColor }]} />
+        <TouchableOpacity
+          onPress={handlePress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={1}
+          style={styles.cardTouchable}
+        >
+          {/* Gradient Background Overlay */}
+          <View style={[styles.cardGradientOverlay, { 
+            backgroundColor: feature.accentColor,
+            opacity: 0.4 
+          }]} />
+          
+          {/* Decorative Pattern */}
+          <View style={[styles.cardPatternCircle, { 
+            backgroundColor: feature.primaryColor,
+            opacity: 0.08 
+          }]} />
 
-        {/* Main Content */}
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: feature.primaryColor }]}>
-              <Text style={styles.iconText}>{feature.icon}</Text>
-              <View style={[styles.iconGlow, { backgroundColor: feature.primaryColor }]} />
+          <View style={styles.cardContent}>
+            <View style={styles.cardHeader}>
+              <View style={[styles.iconContainer, { 
+                backgroundColor: feature.primaryColor 
+              }]}>
+                <View style={[styles.iconBackground, { 
+                  backgroundColor: feature.accentColor 
+                }]} />
+                <Text style={styles.iconText}>{feature.icon}</Text>
+              </View>
+              <View style={styles.cardTextContent}>
+                <Text style={styles.cardTitle}>{feature.title}</Text>
+                <Text style={[styles.cardSubtitle, { 
+                  color: feature.secondaryColor 
+                }]}>{feature.subtitle}</Text>
+              </View>
             </View>
-            <View style={styles.cardTextContent}>
-              <Text style={styles.cardTitle}>{feature.title}</Text>
-              <Text style={[styles.cardSubtitle, { color: feature.secondaryColor }]}>{feature.subtitle}</Text>
+            
+            <Text style={styles.cardDescription}>{feature.description}</Text>
+
+            {/* Premium Action Indicator */}
+            <View style={styles.cardFooter}>
+              <View style={[styles.actionBadge, { 
+                backgroundColor: feature.primaryColor 
+              }]}>
+                <Text style={styles.actionArrow}>→</Text>
+              </View>
             </View>
           </View>
-          <Text style={styles.cardDescription}>{feature.description}</Text>
-
-          {/* Action Indicator */}
-          <View style={styles.cardFooter}>
-            <View style={[styles.actionIndicator, { backgroundColor: feature.primaryColor }]}>
-              <Text style={styles.actionText}>→</Text>
-            </View>
-          </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -219,19 +261,34 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
 // QuickActionButton component moved outside HomeScreen
 const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const [buttonScale] = useState(new Animated.Value(1));
+  const [shadowOpacity] = useState(new Animated.Value(0.08));
 
   const handlePressIn = () => {
-    Animated.spring(buttonScale, {
-      toValue: 0.9,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(buttonScale, {
+        toValue: 0.95,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.15,
+        duration: 150,
+        useNativeDriver: false,
+      })
+    ]).start();
   };
 
   const handlePressOut = () => {
-    Animated.spring(buttonScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.spring(buttonScale, {
+        toValue: 1,
+        useNativeDriver: true,
+      }),
+      Animated.timing(shadowOpacity, {
+        toValue: 0.08,
+        duration: 150,
+        useNativeDriver: false,
+      })
+    ]).start();
   };
 
   const handlePress = () => {
@@ -260,25 +317,48 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
         transform: [
           { scale: buttonScale },
           { translateY: slideAnim }
-        ]
+        ],
       }
     ]}>
-      <TouchableOpacity
-        style={[styles.quickActionButton, { backgroundColor: action.lightColor }]}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
+      <Animated.View
+        style={[
+          styles.quickActionButton,
+          {
+            backgroundColor: action.lightColor,
+            shadowOpacity: shadowOpacity,
+          }
+        ]}
       >
-        <View style={[styles.quickActionIconContainer, { backgroundColor: action.color }]}>
-          <Text style={styles.quickActionIcon}>{action.icon}</Text>
-          <View style={[styles.quickActionGlow, { backgroundColor: action.color }]} />
-        </View>
-        <Text style={styles.quickActionText}>{action.title}</Text>
+        <TouchableOpacity
+          onPress={handlePress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={1}
+          style={styles.quickActionTouchable}
+        >
+          {/* Gradient Overlay */}
+          <View style={[styles.quickActionGradient, { 
+            backgroundColor: action.color,
+            opacity: 0.1 
+          }]} />
+          
+          {/* Decorative Pattern */}
+          <View style={[styles.quickActionPattern, { 
+            backgroundColor: action.color,
+            opacity: 0.06 
+          }]} />
 
-        {/* Subtle pattern */}
-        <View style={[styles.quickActionPattern, { borderColor: action.color }]} />
-      </TouchableOpacity>
+          {/* Icon Container */}
+          <View style={[styles.quickActionIconContainer, { 
+            backgroundColor: action.color 
+          }]}>
+            <Text style={styles.quickActionIcon}>{action.icon}</Text>
+          </View>
+
+          {/* Title */}
+          <Text style={styles.quickActionText}>{action.title}</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -290,6 +370,8 @@ export default function HomeScreen({ navigation }) {
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
   const { isAuthenticated } = useAuth();
+  const [weatherData, setWeatherData] = useState(null);
+  const [location, setLocation] = useState(null);
 
   const languages = ['English', 'සිංහල', 'தமிழ்'];
   const t = translations[selectedLanguage];
@@ -313,6 +395,23 @@ export default function HomeScreen({ navigation }) {
       }),
     ]).start();
   }, [fadeAnim, scaleAnim, slideAnim]);
+
+  useEffect(() => {
+    // Fetch weather and location data
+    const fetchWeatherData = async () => {
+      try {
+        const result = await WeatherService.getCurrentWeather(true);
+        if (result.success && result.data) {
+          setWeatherData(result.data);
+          setLocation(result.data.location);
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      }
+    };
+
+    fetchWeatherData();
+  }, []);
 
   const mainFeatures = [
     {
@@ -362,10 +461,10 @@ export default function HomeScreen({ navigation }) {
   ];
 
   const quickActions = [
-    { title: t.connectOfficer, icon: '👥', color: '#9C27B0', lightColor: '#F3E5F5', route: 'Officers' },
-    { title: t.marketplace, icon: '🛒', color: '#FF5722', lightColor: '#FBE9E7', route: 'Marketplace' },
-    { title: t.testHistory, icon: '📊', color: '#607D8B', lightColor: '#ECEFF1', route: 'History' },
-    { title: t.settings, icon: '⚙️', color: '#795548', lightColor: '#EFEBE9', route: 'Settings' }
+    { title: t.connectOfficer, icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
+    { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+    { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+    { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
   ];
 
   const handleLanguageChange = () => {
@@ -426,6 +525,33 @@ export default function HomeScreen({ navigation }) {
               ]}>{selectedLanguage}</Text>
             <View style={styles.languageBorder} />
           </TouchableOpacity>
+
+          {/* Location and Weather - Positioned absolutely in top right */}
+          {(location || weatherData) && (
+            <View style={styles.weatherLocationContainer}>
+              {location && (
+                <View style={styles.locationContainer}>
+                  <Text style={styles.locationIcon}>📍</Text>
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {location.city}
+                  </Text>
+                </View>
+              )}
+              {weatherData && (
+                <View style={styles.weatherContainer}>
+                  <Text style={styles.weatherIcon}>
+                    {weatherData.description === 'Partly cloudy' ? '⛅' : 
+                     weatherData.description === 'Clear' ? '☀️' : 
+                     weatherData.description === 'Cloudy' ? '☁️' : 
+                     weatherData.description === 'Rainy' ? '🌧️' : '🌤️'}
+                  </Text>
+                  <Text style={styles.weatherText}>
+                    {Math.round(weatherData.temperature)}°
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
         </Animated.View>
       </View>
 
@@ -638,6 +764,54 @@ const styles = StyleSheet.create({
     paddingTop: 24,
     zIndex: 1,
   },
+  weatherLocationContainer: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    marginRight: 10,
+  },
+  locationIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  locationText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    maxWidth: 80,
+  },
+  weatherContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  weatherIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  weatherText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   menuButton: {
     position: 'absolute',
     top: 24,
@@ -819,93 +993,107 @@ const styles = StyleSheet.create({
   },
   featureCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    overflow: 'visible',
+    borderRadius: 24,
+    overflow: 'hidden',
     position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
-  },
-  cardPattern: {
-    position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    opacity: 0.3,
-  },
-  cardContent: {
-    padding: 26,
-    zIndex: 1,
-    overflow: 'hidden',
-    borderRadius: 28,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  iconContainer: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 18,
-    elevation: 4,
+    borderColor: 'rgba(0,0,0,0.06)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    position: 'relative',
-    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 16,
+    elevation: 6,
   },
-  iconGlow: {
+  cardTouchable: {
+    flex: 1,
+  },
+  cardGradientOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.3,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  cardPatternCircle: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  cardContent: {
+    padding: 24,
+    position: 'relative',
+    zIndex: 1,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    position: 'relative',
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  iconBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.15,
   },
   iconText: {
     fontSize: 32,
+    zIndex: 1,
   },
   cardTextContent: {
     flex: 1,
+    paddingTop: 4,
   },
   cardTitle: {
-    fontSize: 19,
+    fontSize: 20,
     fontWeight: '800',
     color: '#1a1a1a',
-    marginBottom: 5,
+    marginBottom: 6,
     letterSpacing: -0.3,
+    lineHeight: 26,
   },
   cardSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
-    opacity: 0.85,
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   cardDescription: {
-    fontSize: 14.5,
-    color: '#666',
+    fontSize: 15,
+    color: '#555',
     lineHeight: 22,
-    marginBottom: 18,
     fontWeight: '400',
+    marginBottom: 16,
+    letterSpacing: 0.1,
   },
   cardFooter: {
     alignItems: 'flex-end',
+    marginTop: 4,
   },
-  actionIndicator: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  actionBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
@@ -914,10 +1102,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  actionText: {
+  actionArrow: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -929,63 +1117,64 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   quickActionButton: {
-    padding: 22,
-    borderRadius: 22,
-    alignItems: 'center',
-    elevation: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    position: 'relative',
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
+    shadowRadius: 12,
+    elevation: 5,
   },
-  quickActionIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
-    justifyContent: 'center',
+  quickActionTouchable: {
+    padding: 20,
     alignItems: 'center',
-    marginBottom: 14,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    position: 'relative',
-    overflow: 'hidden',
+    minHeight: 140,
+    justifyContent: 'center',
   },
-  quickActionGlow: {
+  quickActionGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.3,
-    borderRadius: 18,
-  },
-  quickActionIcon: {
-    fontSize: 24,
-    color: 'white',
-  },
-  quickActionText: {
-    fontSize: 14.5,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    textAlign: 'center',
-    letterSpacing: 0.1,
   },
   quickActionPattern: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderWidth: 1,
+    top: -20,
+    right: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  quickActionIconContainer: {
+    width: 64,
+    height: 64,
     borderRadius: 18,
-    opacity: 0.1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    position: 'relative',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  quickActionIcon: {
+    fontSize: 32,
+    textAlign: 'center',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+  quickActionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    letterSpacing: -0.2,
+    lineHeight: 20,
   },
   activityCard: {
     backgroundColor: '#FFFFFF',

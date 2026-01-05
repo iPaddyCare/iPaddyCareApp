@@ -193,16 +193,17 @@ export default function SeedDetectionScreen({ navigation }) {
             <View style={styles.headerPattern} />
             <View style={styles.headerPattern2} />
             <View style={styles.headerContent}>
+              {/* Menu Button */}
               <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
+                style={styles.menuButton}
+                onPress={() => navigation.openDrawer()}
               >
-                <Icon name="arrow-left" size={24} color="#FFFFFF" />
+                <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.appName}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{t.title}</Text>
               </View>
-              <View style={styles.backButton} />
+              <View style={styles.backButtonPlaceholder} />
             </View>
           </View>
 
@@ -216,8 +217,6 @@ export default function SeedDetectionScreen({ navigation }) {
                 },
               ]}
             >
-              <Text style={styles.sectionTitle}>{t.selectOption}</Text>
-              
               {/* Upload Image Button */}
               <TouchableOpacity
                 style={styles.actionCard}
@@ -394,51 +393,76 @@ const styles = StyleSheet.create({
     height: height * 0.2,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   headerPattern: {
     position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    top: -80,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     transform: [{ rotate: '45deg' }],
   },
   headerPattern2: {
     position: 'absolute',
-    bottom: -30,
-    left: -30,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    bottom: -40,
+    left: -40,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   headerContent: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    zIndex: 1,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    zIndex: 1,
+    position: 'relative',
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 24,
+    left: 16,
+    zIndex: 10,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  menuIcon: {
+    fontSize: 22,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   headerText: {
     flex: 1,
     alignItems: 'center',
+    paddingHorizontal: 60,
   },
-  appName: {
+  headerTitle: {
     color: '#FFFFFF',
-    fontSize: 28,
-    fontWeight: '800',
+    fontSize: 32,
+    fontWeight: '900',
     marginBottom: 4,
+    letterSpacing: -0.5,
+    textAlign: 'center',
+  },
+  backButtonPlaceholder: {
+    width: 48,
+    height: 48,
+    position: 'absolute',
+    right: 24,
   },
   innerContent: {
     paddingHorizontal: 20,

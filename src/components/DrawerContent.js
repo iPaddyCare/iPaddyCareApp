@@ -118,14 +118,23 @@ export default function DrawerContent({
         <View style={styles.accountSection}>
           <View style={styles.accountHeader}>
             <View style={styles.avatarContainer}>
-              {isAuthenticated && user ? (
-                <Text style={styles.avatarText}>
-                  {user.displayName
-                    ? user.displayName.charAt(0).toUpperCase()
-                    : user.email.charAt(0).toUpperCase()}
-                </Text>
+              {isAuthenticated && user && user.photoURL ? (
+                <Image
+                  source={{ uri: user.photoURL }}
+                  style={styles.avatarImage}
+                />
+              ) : isAuthenticated && user ? (
+                <View style={styles.avatarFallback}>
+                  <Text style={styles.avatarText}>
+                    {user.displayName
+                      ? user.displayName.charAt(0).toUpperCase()
+                      : user.email.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
               ) : (
-                <Text style={styles.avatarText}>👤</Text>
+                <View style={styles.avatarFallback}>
+                  <Text style={styles.avatarText}>👤</Text>
+                </View>
               )}
             </View>
             <View style={styles.accountInfo}>
@@ -252,6 +261,19 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 34,
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   avatarText: {
     fontSize: 28,

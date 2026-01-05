@@ -11,6 +11,7 @@ import {
   Alert,
   Platform,
   Animated,
+  Image,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
@@ -256,20 +257,49 @@ export default function SettingsScreen({ navigation }) {
             <View style={styles.headerPattern} />
             <View style={styles.headerPattern2} />
             <View style={styles.headerContent}>
+              {/* Menu Button */}
               <TouchableOpacity
-                style={styles.backButton}
-                onPress={() => navigation.goBack()}
+                style={styles.menuButton}
+                onPress={() => navigation.openDrawer()}
               >
-                <Icon name="arrow-left" size={24} color="#FFFFFF" />
+                <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
                 <Text style={styles.headerTitle}>{t.title}</Text>
               </View>
-              <View style={styles.backButton} />
+              <View style={styles.backButtonPlaceholder} />
             </View>
           </View>
 
           <View style={styles.innerContent}>
+            {/* Profile Header Section */}
+            {isAuthenticated && user && (
+              <View style={styles.profileHeader}>
+                <View style={styles.profileAvatarContainer}>
+                  {user.photoURL ? (
+                    <Image
+                      source={{ uri: user.photoURL }}
+                      style={styles.profileAvatar}
+                    />
+                  ) : (
+                    <View style={styles.profileAvatarFallback}>
+                      <Text style={styles.profileAvatarText}>
+                        {user.displayName
+                          ? user.displayName.charAt(0).toUpperCase()
+                          : user.email.charAt(0).toUpperCase()}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.profileName}>
+                  {user.displayName || 'User'}
+                </Text>
+                <Text style={styles.profileEmail} numberOfLines={1}>
+                  {user.email}
+                </Text>
+              </View>
+            )}
+
             {/* Account Section */}
             {isAuthenticated && (
               <SettingSection title={t.account}>
@@ -482,13 +512,18 @@ const styles = StyleSheet.create({
   headerContent: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 24,
     zIndex: 1,
+    position: 'relative',
   },
-  backButton: {
+  menuButton: {
+    position: 'absolute',
+    top: 24,
+    left: 16,
+    zIndex: 10,
     width: 48,
     height: 48,
     justifyContent: 'center',
@@ -498,9 +533,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
   },
+  menuIcon: {
+    fontSize: 22,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
   headerText: {
     flex: 1,
-    marginLeft: 50,
+    alignItems: 'center',
+  },
+  backButtonPlaceholder: {
+    width: 48,
+    height: 48,
+    position: 'absolute',
+    right: 24,
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -512,6 +558,68 @@ const styles = StyleSheet.create({
   innerContent: {
     paddingHorizontal: 20,
     paddingTop: 0,
+  },
+  profileHeader: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 32,
+    alignItems: 'center',
+    marginTop: -32,
+    marginHorizontal: 4,
+    elevation: 12,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.08)',
+    marginBottom: 24,
+  },
+  profileAvatarContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 4,
+    borderColor: '#0F5132',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    overflow: 'hidden',
+  },
+  profileAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
+  profileAvatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#0F5132',
+  },
+  profileAvatarText: {
+    fontSize: 40,
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  profileName: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 6,
+    letterSpacing: -0.3,
+  },
+  profileEmail: {
+    fontSize: 15,
+    color: '#666',
+    fontWeight: '400',
   },
   section: {
     marginTop: 32,

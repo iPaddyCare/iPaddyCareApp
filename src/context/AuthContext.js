@@ -188,8 +188,10 @@ export const AuthProvider = ({ children }) => {
         }
       }
       
-      // Get the user's ID token
+      // Get the user's ID token and profile information
       let idToken;
+      let userPhotoURL = null;
+      let userDisplayName = null;
       try {
         const signInResult = await GoogleSignin.signIn();
         
@@ -200,6 +202,18 @@ export const AuthProvider = ({ children }) => {
           keys: signInResult ? Object.keys(signInResult) : 'no result',
           result: signInResult
         });
+        
+        // Extract user profile information (photo and name)
+        const userInfo = signInResult?.user || signInResult?.data?.user || signInResult?.data;
+        if (userInfo) {
+          userPhotoURL = userInfo.photo || userInfo.photoURL || userInfo.picture;
+          userDisplayName = userInfo.name || userInfo.displayName || userInfo.givenName;
+          console.log('User profile info:', { 
+            hasPhoto: !!userPhotoURL, 
+            hasName: !!userDisplayName,
+            photoURL: userPhotoURL 
+          });
+        }
         
         // Try different ways to get the idToken
         idToken = signInResult?.idToken || 
@@ -281,6 +295,34 @@ export const AuthProvider = ({ children }) => {
           success: false, 
           error: `Firebase authentication failed: ${firebaseErrorMsg}` 
         };
+      }
+      
+      // Update user profile with photo URL and display name if available
+      if (userCredential.user) {
+        const updateData = {};
+        
+        // Update photo URL if we have it and it's different from current
+        if (userPhotoURL && userCredential.user.photoURL !== userPhotoURL) {
+          updateData.photoURL = userPhotoURL;
+        }
+        
+        // Update display name if we have it and it's different from current
+        if (userDisplayName && userCredential.user.displayName !== userDisplayName) {
+          updateData.displayName = userDisplayName;
+        }
+        
+        // Update profile if we have any changes
+        if (Object.keys(updateData).length > 0) {
+          try {
+            await userCredential.user.updateProfile(updateData);
+            // Reload user to get updated profile
+            await userCredential.user.reload();
+            console.log('User profile updated with:', updateData);
+          } catch (profileError) {
+            // Don't fail sign-in if profile update fails
+            console.warn('Profile update failed (non-critical):', profileError);
+          }
+        }
       }
       
       setUser(userCredential.user);
