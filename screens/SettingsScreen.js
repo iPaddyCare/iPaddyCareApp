@@ -27,6 +27,7 @@ const translations = {
     title: 'Settings',
     account: 'Account',
     profile: 'Profile',
+    myListings: 'My Listings',
     email: 'Email',
     password: 'Password',
     preferences: 'Preferences',
@@ -67,6 +68,7 @@ const translations = {
     title: 'සැකසුම්',
     account: 'ගිණුම',
     profile: 'පැතිකඩ',
+    myListings: 'මගේ ලැයිස්තු',
     email: 'විද්‍යුත් තැපෑල',
     password: 'මුරපදය',
     preferences: 'අභිමතයන්',
@@ -107,6 +109,7 @@ const translations = {
     title: 'அமைப்புகள்',
     account: 'கணக்கு',
     profile: 'சுயவிவரம்',
+    myListings: 'எனது பட்டியல்கள்',
     email: 'மின்னஞ்சல்',
     password: 'கடவுச்சொல்',
     preferences: 'விருப்பங்கள்',
@@ -308,6 +311,11 @@ export default function SettingsScreen({ navigation }) {
                   label={t.profile}
                   value={user?.displayName || user?.email}
                   onPress={() => Alert.alert('Profile', 'Profile editing coming soon')}
+                />
+                <SettingItem
+                  icon="package-variant"
+                  label={t.myListings}
+                  onPress={() => navigation.navigate('MyListings')}
                 />
                 <SettingItem
                   icon="email"

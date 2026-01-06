@@ -17,6 +17,9 @@ import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import HelpScreen from './screens/HelpScreen';
 import AboutScreen from './screens/AboutScreen';
+import MarketplaceScreen from './screens/MarketplaceScreen';
+import AddProductScreen from './screens/AddProductScreen';
+import MyListingsScreen from './screens/MyListingsScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -80,6 +83,21 @@ function MainStack() {
       <Stack.Screen 
         name="About" 
         component={AboutScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Marketplace" 
+        component={MarketplaceScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AddProduct" 
+        component={AddProductScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="MyListings" 
+        component={MyListingsScreen} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
