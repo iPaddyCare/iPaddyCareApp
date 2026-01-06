@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Bacterial Leaf Blight",
+    "aliases": ["bacterial_leaf_blight", "Bacterial Blight", "BB", "Xanthomonas Blight"],
+    "description": "Bacterial disease caused by Xanthomonas oryzae pv. oryzae, causing water-soaked lesions on leaves that turn yellow and die.",
+    "severity": "high",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Copper-Based Bactericide",
+        "description": "Spray Copper Oxychloride (0.3%) or Streptomycin (0.05%) immediately upon detection"
+      },
+      {
+        "step": 2,
+        "title": "Remove Infected Leaves",
+        "description": "Prune and destroy infected leaves to reduce bacterial inoculum and prevent spread"
+      },
+      {
+        "step": 3,
+        "title": "Water Management",
+        "description": "Avoid overhead irrigation and reduce water splashing between plants. Maintain proper drainage."
+      },
+      {
+        "step": 4,
+        "title": "Field Sanitation",
+        "description": "Remove weeds and maintain clean field borders. Practice crop rotation with non-host crops."
+      }
+    ],
+    "prevention": [
+      "Use certified disease-free seeds",
+      "Plant resistant varieties",
+      "Avoid wounding plants during field operations",
+      "Practice crop rotation with non-host crops",
+      "Maintain proper plant spacing",
+      "Avoid excessive nitrogen fertilization"
+    ]
+  },
+  {
+    "name": "Brown Spot",
+    "aliases": ["brown_spot", "Helminthosporium Leaf Spot", "Brown Leaf Spot"],
+    "description": "A fungal disease caused by Bipolaris oryzae that affects rice leaves, causing brown spots and reducing yield.",
+    "severity": "high",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Remove Infected Plants",
+        "description": "Remove and destroy severely infected plants to prevent spread"
+      },
+      {
+        "step": 2,
+        "title": "Apply Fungicide",
+        "description": "Spray with Propiconazole (0.1%) or Mancozeb (0.2%) at 10-15 day intervals"
+      },
+      {
+        "step": 3,
+        "title": "Improve Field Drainage",
+        "description": "Ensure proper water management and avoid waterlogging"
+      },
+      {
+        "step": 4,
+        "title": "Use Resistant Varieties",
+        "description": "Plant resistant varieties like IR64, IR72 in next season"
+      }
+    ],
+    "prevention": [
+      "Use certified disease-free seeds",
+      "Maintain proper spacing (20x15 cm)",
+      "Avoid excessive nitrogen fertilization",
+      "Practice crop rotation",
+      "Improve field drainage",
+      "Remove crop residues after harvest"
+    ]
+  },
+  {
+    "name": "Leaf Blast",
+    "aliases": ["leaf_blast", "Rice Blast", "Blast Disease", "Magnaporthe Blast"],
+    "description": "A devastating fungal disease caused by Magnaporthe oryzae, affecting leaves with diamond-shaped lesions that can spread to nodes and panicles.",
+    "severity": "critical",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Immediate Fungicide Treatment",
+        "description": "Apply Tricyclazole (0.06%) or Isoprothiolane (0.1%) immediately. Alternative: Kasugamycin (20g/l SL) at 15ml/10L, repeat every 5-10 days."
+      },
+      {
+        "step": 2,
+        "title": "Remove Infected Parts",
+        "description": "Cut and burn infected leaves and panicles to prevent further spread"
+      },
+      {
+        "step": 3,
+        "title": "Adjust Water Management",
+        "description": "Maintain shallow water level (5-7 cm) and avoid drought stress"
+      },
+      {
+        "step": 4,
+        "title": "Post-Harvest Management",
+        "description": "Destroy crop residues and practice deep plowing after harvest"
+      }
+    ],
+    "prevention": [
+      "Use resistant varieties (IR64, Swarna, MTU1010)",
+      "Avoid excessive nitrogen application",
+      "Maintain proper plant spacing",
+      "Apply silicon fertilizers",
+      "Practice crop rotation",
+      "Early planting to avoid peak disease period"
+    ]
+  }
+]

@@ -10,10 +10,13 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
-import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send } from 'lucide-react-native';
+import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send, Mic } from 'lucide-react-native';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { TextInput } from 'react-native';
+import Voice from '@react-native-voice/voice';
 import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
@@ -29,10 +32,17 @@ export default function PestDetectionScreen() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
 
   // Initialize services on mount
   useEffect(() => {
     initializeServices();
+    setupVoiceRecognition();
+    return () => {
+      // Cleanup voice recognition
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
   }, []);
 
   const initializeServices = async () => {
@@ -50,6 +60,98 @@ export default function PestDetectionScreen() {
     } catch (error) {
       console.error('Failed to initialize services:', error);
       Alert.alert('Error', 'Failed to initialize detection services');
+    }
+  };
+
+  // Setup voice recognition event handlers
+  const setupVoiceRecognition = () => {
+    Voice.onSpeechStart = () => {
+      setIsRecording(true);
+      console.log('🎤 Voice recognition started');
+    };
+
+    Voice.onSpeechEnd = () => {
+      setIsRecording(false);
+      console.log('🎤 Voice recognition ended');
+    };
+
+    Voice.onSpeechResults = (event) => {
+      if (event.value && event.value.length > 0) {
+        const text = event.value[0];
+        setRecognizedText(text);
+        setChatInput(text);
+        console.log('🎤 Recognized text:', text);
+      }
+    };
+
+    Voice.onSpeechError = (event) => {
+      console.error('🎤 Voice recognition error:', event);
+      setIsRecording(false);
+      Alert.alert('Voice Error', 'Failed to recognize speech. Please try again.');
+    };
+
+    Voice.onSpeechPartialResults = (event) => {
+      if (event.value && event.value.length > 0) {
+        setRecognizedText(event.value[0]);
+      }
+    };
+  };
+
+  // Request microphone permission
+  const requestMicrophonePermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          {
+            title: 'Microphone Permission',
+            message: 'This app needs access to your microphone for voice input.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.error('Permission error:', err);
+        return false;
+      }
+    }
+    return true; // iOS handles permissions automatically
+  };
+
+  // Start voice recording
+  const startVoiceRecording = async () => {
+    try {
+      const hasPermission = await requestMicrophonePermission();
+      if (!hasPermission) {
+        Alert.alert('Permission Denied', 'Microphone permission is required for voice input.');
+        return;
+      }
+
+      await Voice.start('en-US');
+      setRecognizedText('');
+    } catch (error) {
+      console.error('Error starting voice recognition:', error);
+      Alert.alert('Error', 'Failed to start voice recording. Please try again.');
+    }
+  };
+
+  // Stop voice recording
+  const stopVoiceRecording = async () => {
+    try {
+      await Voice.stop();
+    } catch (error) {
+      console.error('Error stopping voice recognition:', error);
+    }
+  };
+
+  // Toggle voice recording
+  const toggleVoiceRecording = () => {
+    if (isRecording) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
     }
   };
 
@@ -368,13 +470,28 @@ export default function PestDetectionScreen() {
                 <View style={styles.chatInputContainer}>
                   <TextInput
                     style={styles.chatInput}
-                    placeholder="Ask a question..."
+                    placeholder={isRecording ? "Listening..." : "Ask a question or tap mic..."}
                     value={chatInput}
                     onChangeText={setChatInput}
                     multiline
-                    editable={!sendingMessage}
+                    editable={!sendingMessage && !isRecording}
                     onSubmitEditing={sendChatMessage}
                   />
+                  <TouchableOpacity
+                    style={[
+                      styles.micButton,
+                      isRecording && styles.micButtonRecording,
+                      sendingMessage && styles.micButtonDisabled
+                    ]}
+                    onPress={toggleVoiceRecording}
+                    disabled={sendingMessage}
+                  >
+                    <Mic 
+                      size={20} 
+                      color={isRecording ? "#fff" : "#0F5132"} 
+                      fill={isRecording ? "#fff" : "none"}
+                    />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.sendButton, sendingMessage && styles.sendButtonDisabled]}
                     onPress={sendChatMessage}
@@ -383,6 +500,12 @@ export default function PestDetectionScreen() {
                     <Send size={20} color="#fff" />
                   </TouchableOpacity>
                 </View>
+                {isRecording && (
+                  <View style={styles.recordingIndicator}>
+                    <View style={styles.recordingDot} />
+                    <Text style={styles.recordingText}>Recording... Speak now</Text>
+                  </View>
+                )}
               </View>
             )}
           </View>
@@ -399,14 +522,16 @@ export default function PestDetectionScreen() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>API Key Required</Text>
               <Text style={styles.modalText}>
-                To use the chat feature, you need an API key. Get one from:
+                To use the chat feature, you need a Gemini API key. Get one from:
               </Text>
-              <Text style={styles.modalLink}>• OpenAI: platform.openai.com</Text>
               <Text style={styles.modalLink}>• Google Gemini: makersuite.google.com</Text>
+              <Text style={styles.modalSubtext}>
+                Note: Your API key should be in the .env file as GEMINI_API_KEY
+              </Text>
               
               <TextInput
                 style={styles.apiKeyInput}
-                placeholder="Enter your API key"
+                placeholder="Enter your Gemini API key"
                 value={apiKeyInput}
                 onChangeText={setApiKeyInput}
                 secureTextEntry
@@ -429,7 +554,7 @@ export default function PestDetectionScreen() {
                   onPress={async () => {
                     if (apiKeyInput.trim()) {
                       try {
-                        await llmService.initialize(apiKeyInput.trim(), 'openai');
+                        await llmService.initialize(apiKeyInput.trim());
                         setShowApiKeyModal(false);
                         setApiKeyInput('');
                         Alert.alert('Success', 'API key saved! You can now use the chat.');
@@ -856,6 +981,23 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     backgroundColor: '#FAFBFC',
   },
+  micButton: {
+    backgroundColor: '#F0F9F4',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0F5132',
+  },
+  micButtonRecording: {
+    backgroundColor: '#FF3B30',
+    borderColor: '#FF3B30',
+  },
+  micButtonDisabled: {
+    opacity: 0.5,
+  },
   sendButton: {
     backgroundColor: '#0F5132',
     width: 44,
@@ -866,6 +1008,27 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  recordingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 8,
+    gap: 8,
+  },
+  recordingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FF3B30',
+  },
+  recordingText: {
+    fontSize: 14,
+    color: '#E65100',
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -896,6 +1059,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2196F3',
     marginBottom: 4,
+  },
+  modalSubtext: {
+    fontSize: 12,
+    color: '#6B6B6B',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
   apiKeyInput: {
     borderWidth: 1,

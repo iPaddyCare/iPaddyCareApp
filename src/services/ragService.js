@@ -7,7 +7,7 @@
  */
 
 // Load disease data - using require for React Native compatibility
-const diseaseData = require('../../data/pest-disease-solutions.json');
+const diseaseData = require('../../rag-data/pest-disease-solutions.json');
 
 class RAGService {
   constructor() {
