@@ -125,15 +125,15 @@ export default function DrawerContent({
                 />
               ) : isAuthenticated && user ? (
                 <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarText}>
-                    {user.displayName
-                      ? user.displayName.charAt(0).toUpperCase()
-                      : user.email.charAt(0).toUpperCase()}
-                  </Text>
+                <Text style={styles.avatarText}>
+                  {user.displayName
+                    ? user.displayName.charAt(0).toUpperCase()
+                    : user.email.charAt(0).toUpperCase()}
+                </Text>
                 </View>
               ) : (
                 <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarText}>👤</Text>
+                <Text style={styles.avatarText}>👤</Text>
                 </View>
               )}
             </View>

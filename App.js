@@ -16,6 +16,7 @@ import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import HelpScreen from './screens/HelpScreen';
+import AboutScreen from './screens/AboutScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -74,6 +75,11 @@ function MainStack() {
       <Stack.Screen 
         name="Help" 
         component={HelpScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="About" 
+        component={AboutScreen} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
