@@ -214,6 +214,7 @@ export default function SeedDetectionScreen({ navigation }) {
                 {
                   opacity: fadeAnim,
                   transform: [{ translateY: slideAnim }],
+                  marginTop: 20,
                 },
               ]}
             >

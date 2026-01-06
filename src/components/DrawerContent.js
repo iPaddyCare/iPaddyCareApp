@@ -17,6 +17,8 @@ const translations = {
     login: 'Login',
     logout: 'Logout',
     home: 'Home',
+    marketplace: 'Marketplace',
+    myListings: 'My Listings',
     settings: 'Settings',
     testHistory: 'Test History',
     help: 'Help & Support',
@@ -32,6 +34,8 @@ const translations = {
     login: 'පිවිසෙන්න',
     logout: 'ඉවත් වන්න',
     home: 'මුල් පිටුව',
+    marketplace: 'වෙළඳපොළ',
+    myListings: 'මගේ ලැයිස්තු',
     settings: 'සැකසුම්',
     testHistory: 'පරීක්ෂණ ඉතිහාසය',
     help: 'උදව් සහ සහාය',
@@ -47,6 +51,8 @@ const translations = {
     login: 'உள்நுழைக',
     logout: 'வெளியேற',
     home: 'முகப்பு',
+    marketplace: 'சந்தை',
+    myListings: 'எனது பட்டியல்கள்',
     settings: 'அமைப்புகள்',
     testHistory: 'சோதனை வரலாறு',
     help: 'உதவி மற்றும் ஆதரவு',
@@ -105,6 +111,8 @@ export default function DrawerContent({
 
   const menuItems = [
     { id: 'home', label: t.home, icon: '🏠', route: 'Home' },
+    { id: 'marketplace', label: t.marketplace, icon: '🛒', route: 'Marketplace' },
+    { id: 'myListings', label: t.myListings, icon: '📦', route: 'MyListings', requireAuth: true },
     { id: 'history', label: t.testHistory, icon: '📊', route: 'History' },
     { id: 'settings', label: t.settings, icon: '⚙️', route: 'Settings' },
     { id: 'help', label: t.help, icon: '❓', route: 'Help' },
@@ -125,15 +133,15 @@ export default function DrawerContent({
                 />
               ) : isAuthenticated && user ? (
                 <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarText}>
-                    {user.displayName
-                      ? user.displayName.charAt(0).toUpperCase()
-                      : user.email.charAt(0).toUpperCase()}
-                  </Text>
+                <Text style={styles.avatarText}>
+                  {user.displayName
+                    ? user.displayName.charAt(0).toUpperCase()
+                    : user.email.charAt(0).toUpperCase()}
+                </Text>
                 </View>
               ) : (
                 <View style={styles.avatarFallback}>
-                  <Text style={styles.avatarText}>👤</Text>
+                <Text style={styles.avatarText}>👤</Text>
                 </View>
               )}
             </View>
@@ -179,23 +187,29 @@ export default function DrawerContent({
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={() => {
-                drawerNavigation.closeDrawer?.();
-                handleNavigateToStack(item.route);
-              }}
-            >
-              <Text style={styles.menuIcon}>{item.icon}</Text>
-              <Text style={[
-                styles.menuLabel,
-                (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
-              ]}>{item.label}</Text>
-              <Text style={styles.menuArrow}>→</Text>
-            </TouchableOpacity>
-          ))}
+          {menuItems
+            .filter((item) => !item.requireAuth || isAuthenticated)
+            .map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.menuItem}
+                onPress={() => {
+                  drawerNavigation.closeDrawer?.();
+                  if (item.requireAuth && !isAuthenticated) {
+                    handleLogin();
+                  } else {
+                    handleNavigateToStack(item.route);
+                  }
+                }}
+              >
+                <Text style={styles.menuIcon}>{item.icon}</Text>
+                <Text style={[
+                  styles.menuLabel,
+                  (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
+                ]}>{item.label}</Text>
+                <Text style={styles.menuArrow}>→</Text>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
 

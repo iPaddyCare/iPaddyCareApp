@@ -166,11 +166,64 @@ export default function HelpScreen({ navigation }) {
     }).start();
   }, [fadeAnim]);
 
-  const handleSendEmail = () => {
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=Help & Support Request`;
-    Linking.openURL(emailUrl).catch((err) => {
-      Alert.alert('Error', 'Unable to open email client. Please send email to: ' + SUPPORT_EMAIL);
-    });
+  const handleSendEmail = async () => {
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Help & Support Request')}`;
+    
+    if (Platform.OS === 'ios') {
+      // On iOS, check if we can open the URL first
+      try {
+        const canOpen = await Linking.canOpenURL('mailto:');
+        if (canOpen) {
+          try {
+            await Linking.openURL(emailUrl);
+            // Give it a moment to see if it actually opened
+            setTimeout(() => {
+              // If we get here, the email might not have opened
+              // But we can't really detect this reliably, so we'll just try
+            }, 100);
+          } catch (openErr) {
+            Alert.alert(
+              'Email',
+              `Please send email to: ${SUPPORT_EMAIL}`,
+              [{ text: 'OK' }]
+            );
+          }
+        } else {
+          // Try opening anyway (sometimes canOpenURL returns false incorrectly)
+          try {
+            await Linking.openURL(emailUrl);
+          } catch (openErr) {
+            Alert.alert(
+              'Email',
+              `Please send email to: ${SUPPORT_EMAIL}`,
+              [{ text: 'OK' }]
+            );
+          }
+        }
+      } catch (err) {
+        // If canOpenURL fails, try opening directly
+        try {
+          await Linking.openURL(emailUrl);
+        } catch (openErr) {
+          Alert.alert(
+            'Email',
+            `Please send email to: ${SUPPORT_EMAIL}`,
+            [{ text: 'OK' }]
+          );
+        }
+      }
+    } else {
+      // Android - simpler approach
+      try {
+        await Linking.openURL(emailUrl);
+      } catch (err) {
+        Alert.alert(
+          'Email',
+          `Please send email to: ${SUPPORT_EMAIL}`,
+          [{ text: 'OK' }]
+        );
+      }
+    }
   };
 
   const handleCopyEmail = () => {

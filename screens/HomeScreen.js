@@ -26,9 +26,9 @@ const translations = {
     appName: 'iPaddyCare',
     tagline: 'Smart Agricultural Toolkit',
     todaysOverview: "Today's Overview",
-    activeTests: 'Active Tests',
-    recommendations: 'Recommendations',
-    officersOnline: 'Officers Online',
+    activeTests: 'Tests',
+    recommendations: 'Predicts',
+    officersOnline: 'Officers',
     coreFeatures: 'Core Features',
     quickActions: 'Quick Actions',
     recentActivity: 'Recent Activity',
@@ -56,13 +56,13 @@ const translations = {
     purityDesc: 'Purity: 95.2% - Excellent quality seeds detected.'
   },
   සිංහල: {
-    welcomeTo: 'ඔබට සාදරයෙන් පිළිගනිමු',
+    welcomeTo: 'සාදරයෙන් පිළිගනිමු',
     appName: 'අයිපැඩිකෙයා',
     tagline: 'ස්මාර්ට් කෘෂිකර්ම මෙවලම්',
     todaysOverview: 'අද දවසේ සාරාංශය',
-    activeTests: 'ක්‍රියාකාරී පරීක්ෂණ',
-    recommendations: 'නිර්දේශ',
-    officersOnline: 'සබැඳි නිලධාරීන්',
+    activeTests: 'පරීක්ෂණ',
+    recommendations: 'අනාවැකි',
+    officersOnline: 'නිලධාරීන්',
     coreFeatures: 'ප්‍රධාන විශේෂාංග',
     quickActions: 'ඉක්මන් ක්‍රියාමාර්ග',
     recentActivity: 'මෑත ක්‍රියාකලාපය',
@@ -94,9 +94,9 @@ const translations = {
     appName: 'ஐபாட்டிகேர்',
     tagline: 'ஸ்மார்ட் விவசாய கருவித்தொகுப்பு',
     todaysOverview: 'இன்றைய மேலோட்டம்',
-    activeTests: 'செயலில் உள்ள சோதனைகள்',
-    recommendations: 'பரிந்துரைகள்',
-    officersOnline: 'ஆன்லைன் அதிகாரிகள்',
+    activeTests: 'சோதனைகள்',
+    recommendations: 'கணிப்புகள்',
+    officersOnline: 'அதிகாரிகள்',
     coreFeatures: 'முக்கிய அம்சங்கள்',
     quickActions: 'விரைவு நடவடிக்கைகள்',
     recentActivity: 'சமீபத்திய செயல்பாடு',
@@ -136,37 +136,6 @@ const navigateToRootRoute = (navigation, routeName) => {
 
 // FeatureCard component moved outside HomeScreen
 const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
-  const [cardScale] = useState(new Animated.Value(1));
-  const [shadowOpacity] = useState(new Animated.Value(0.1));
-
-  const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(cardScale, {
-        toValue: 0.97,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.18,
-        duration: 150,
-        useNativeDriver: false,
-      })
-    ]).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(cardScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.1,
-        duration: 150,
-        useNativeDriver: false,
-      })
-    ]).start();
-  };
-
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
       Alert.alert(
@@ -191,26 +160,16 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
       {
         opacity: fadeAnim,
         transform: [
-          { translateY: slideAnim },
-          { scale: cardScale }
+          { translateY: slideAnim }
         ],
       }
     ]}>
-      <Animated.View
-        style={[
-          styles.featureCard,
-          {
-            shadowOpacity: shadowOpacity,
-          }
-        ]}
-      >
-        <TouchableOpacity
-          onPress={handlePress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
+      <View style={styles.featureCard}>
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.9}
           style={styles.cardTouchable}
-        >
+      >
           {/* Gradient Background Overlay */}
           <View style={[styles.cardGradientOverlay, { 
             backgroundColor: feature.accentColor,
@@ -223,74 +182,44 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
             opacity: 0.08 
           }]} />
 
-          <View style={styles.cardContent}>
-            <View style={styles.cardHeader}>
+        <View style={styles.cardContent}>
+          <View style={styles.cardHeader}>
               <View style={[styles.iconContainer, { 
-                backgroundColor: feature.primaryColor 
+                backgroundColor: feature.accentColor 
               }]}>
                 <View style={[styles.iconBackground, { 
-                  backgroundColor: feature.accentColor 
+                  backgroundColor: feature.primaryColor,
+                  opacity: 0.1
                 }]} />
-                <Text style={styles.iconText}>{feature.icon}</Text>
-              </View>
-              <View style={styles.cardTextContent}>
-                <Text style={styles.cardTitle}>{feature.title}</Text>
+              <Text style={styles.iconText}>{feature.icon}</Text>
+            </View>
+            <View style={styles.cardTextContent}>
+              <Text style={styles.cardTitle}>{feature.title}</Text>
                 <Text style={[styles.cardSubtitle, { 
                   color: feature.secondaryColor 
                 }]}>{feature.subtitle}</Text>
-              </View>
             </View>
+          </View>
             
-            <Text style={styles.cardDescription}>{feature.description}</Text>
+          <Text style={styles.cardDescription}>{feature.description}</Text>
 
             {/* Premium Action Indicator */}
-            <View style={styles.cardFooter}>
+          <View style={styles.cardFooter}>
               <View style={[styles.actionBadge, { 
                 backgroundColor: feature.primaryColor 
               }]}>
                 <Text style={styles.actionArrow}>→</Text>
-              </View>
             </View>
           </View>
-        </TouchableOpacity>
-      </Animated.View>
+        </View>
+      </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 };
 
 // QuickActionButton component moved outside HomeScreen
 const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
-  const [buttonScale] = useState(new Animated.Value(1));
-  const [shadowOpacity] = useState(new Animated.Value(0.08));
-
-  const handlePressIn = () => {
-    Animated.parallel([
-      Animated.spring(buttonScale, {
-        toValue: 0.95,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.15,
-        duration: 150,
-        useNativeDriver: false,
-      })
-    ]).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.parallel([
-      Animated.spring(buttonScale, {
-        toValue: 1,
-        useNativeDriver: true,
-      }),
-      Animated.timing(shadowOpacity, {
-        toValue: 0.08,
-        duration: 150,
-        useNativeDriver: false,
-      })
-    ]).start();
-  };
-
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
       Alert.alert(
@@ -315,25 +244,21 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
       {
         opacity: fadeAnim,
         transform: [
-          { scale: buttonScale },
           { translateY: slideAnim }
         ],
       }
     ]}>
-      <Animated.View
+      <View
         style={[
           styles.quickActionButton,
           {
             backgroundColor: action.lightColor,
-            shadowOpacity: shadowOpacity,
           }
         ]}
       >
-        <TouchableOpacity
-          onPress={handlePress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.9}
           style={styles.quickActionTouchable}
         >
           {/* Gradient Overlay */}
@@ -352,13 +277,13 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
           <View style={[styles.quickActionIconContainer, { 
             backgroundColor: action.color 
           }]}>
-            <Text style={styles.quickActionIcon}>{action.icon}</Text>
-          </View>
+          <Text style={styles.quickActionIcon}>{action.icon}</Text>
+        </View>
 
           {/* Title */}
           <Text style={styles.quickActionText}>{action.title}</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 };
@@ -1054,7 +979,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.15,
+    opacity: 0.08,
   },
   iconText: {
     fontSize: 32,
