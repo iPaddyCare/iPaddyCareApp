@@ -129,3 +129,6 @@ dependencies {
 // Apply Google Services plugin at the END - required for Firebase
 apply plugin: "com.google.gms.google-services"
 
+// Apply react-native-vector-icons fonts
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+
