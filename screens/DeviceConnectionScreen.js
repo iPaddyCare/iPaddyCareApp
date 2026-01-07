@@ -12,25 +12,39 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
+import PHSensorService from '../src/utils/phSensorService';
+import BluetoothPermissionService from '../src/utils/bluetoothPermissionService';
+import BleScanServiceEsp32 from '../src/utils/BleScanServiceEsp32';
 
-export default function DeviceConnectionScreen({ navigation }) {
+export default function DeviceConnectionScreen({ navigation, route }) {
   const [isScanning, setIsScanning] = useState(false);
   const [foundDevices, setFoundDevices] = useState([]);
   const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
   const [manualIp, setManualIp] = useState('');
   const [testingManual, setTestingManual] = useState(false);
-
+  
+  // Determine if this is for BLE (pH sensor) or WiFi (moisture sensor)
+  const isBLESensor = route?.params?.sensorType === 'pH' || route?.params?.sensorType === 'BLE';
+  const service = isBLESensor ? PHSensorService : ESP32Service;
+  console.log('isBLESensor', isBLESensor);
   // Check if already connected
   useEffect(() => {
-    const connectedDevice = ESP32Service.getConnectedDevice();
+    const connectedDevice = service.getConnectedDevice();
     if (connectedDevice) {
-      setFoundDevices([{
-        ...connectedDevice,
-        name: `ESP32-${connectedDevice.ip.split('.').pop()}`,
-        status: 'connected',
-      }]);
+      if (isBLESensor) {
+        setFoundDevices([{
+          ...connectedDevice,
+          status: 'connected',
+        }]);
+      } else {
+        setFoundDevices([{
+          ...connectedDevice,
+          name: `ESP32-${connectedDevice.ip?.split('.').pop() || 'Device'}`,
+          status: 'connected',
+        }]);
+      }
     }
-  }, []);
+  }, [isBLESensor]);
 
   const handleScan = async () => {
     setIsScanning(true);
@@ -38,28 +52,71 @@ export default function DeviceConnectionScreen({ navigation }) {
     setScanProgress({ current: 0, total: 0 });
 
     try {
-      const devices = await ESP32Service.scanForDevices(
-        (device) => {
-          // Device found callback
-          setFoundDevices(prev => {
-            // Avoid duplicates
-            if (prev.find(d => d.ip === device.ip)) {
-              return prev;
-            }
-            return [...prev, device];
-          });
-        },
-        (current, total) => {
-          // Progress callback
-          setScanProgress({ current, total });
+      if (isBLESensor) {
+        console.log('Scanning for BLE devices');
+        // Request Bluetooth permissions before scanning
+        const hasPermission = await BluetoothPermissionService.checkPermissions();
+        if (!hasPermission) {
+          const permissionGranted = await BluetoothPermissionService.requestPermissions();
+          if (!permissionGranted) {
+            Alert.alert(
+              'Permission Required',
+              'Bluetooth permissions are required to scan for devices. Please grant permissions in app settings.'
+            );
+            setIsScanning(false);
+            return;
+          }
         }
-      );
 
-      if (devices.length === 0) {
-        Alert.alert(
-          'No Devices Found',
-          'No ESP32 devices were found on your network. Make sure:\n\n• ESP32 is powered on\n• ESP32 is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry'
+        // BLE scan
+        const devices = await BleScanServiceEsp32.scanForDevices(
+          (device) => {
+            // Device found callback
+            setFoundDevices(prev => {
+              // Avoid duplicates
+              if (prev.find(d => d.id === device.id)) {
+                return prev;
+              }
+              return [...prev, device];
+            });
+          },
+          (current, total) => {
+            // Progress callback
+            setScanProgress({ current, total });
+          }
         );
+
+        if (devices.length === 0) {
+          Alert.alert(
+            'No Devices Found',
+            'No ESP32-Soil-Sensor devices were found. Make sure:\n\n• ESP32 sensor is powered on\n• Bluetooth is enabled on your phone\n• ESP32 sensor is in range'
+          );
+        }
+      } else {
+        // WiFi scan
+        const devices = await service.scanForDevices(
+          (device) => {
+            // Device found callback
+            setFoundDevices(prev => {
+              // Avoid duplicates
+              if (prev.find(d => d.ip === device.ip)) {
+                return prev;
+              }
+              return [...prev, device];
+            });
+          },
+          (current, total) => {
+            // Progress callback
+            setScanProgress({ current, total });
+          }
+        );
+
+        if (devices.length === 0) {
+          Alert.alert(
+            'No Devices Found',
+            'No ESP32 devices were found on your network. Make sure:\n\n• ESP32 is powered on\n• ESP32 is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry'
+          );
+        }
       }
     } catch (error) {
       Alert.alert('Scan Error', error.message || 'Failed to scan for devices');
@@ -68,31 +125,176 @@ export default function DeviceConnectionScreen({ navigation }) {
     }
   };
 
+  // const handleConnect = async (device) => {
+  //   try {
+  //     if (isBLESensor) {
+  //       // BLE connection
+  //       console.log('Connecting to BLE device', device);
+        
+  //       // Create a promise that resolves when first data is received
+  //       let firstDataResolver = null;
+  //       let dataReceived = false;
+        
+  //       const firstDataPromise = new Promise((resolve) => {
+  //         firstDataResolver = resolve;
+  //         // Timeout after 15 seconds if no data received (ESP32 sends every 5 seconds)
+  //         setTimeout(() => {
+  //           if (!dataReceived && firstDataResolver === resolve) {
+  //             console.log('Timeout waiting for first data');
+  //             resolve(null);
+  //           }
+  //         }, 15000);
+  //       });
+        
+  //       // Set up data callback
+  //       const dataCallback = (data) => {
+  //         console.log('Received sensor data in callback:', data);
+  //         // Resolve the promise with first data
+  //         if (firstDataResolver && data && !dataReceived) {
+  //           dataReceived = true;
+  //           console.log('Resolving promise with data:', data);
+  //           firstDataResolver(data);
+  //           firstDataResolver = null;
+  //         }
+  //       };
+        
+  //       const result = await BleScanServiceEsp32.connectAndListen(device, dataCallback);
+        
+  //       if (result.success) {
+  //         // Store connected device info in PHSensorService for compatibility
+  //         // This allows SoilPHScreen to access the device
+  //         PHSensorService.connectedDevice = result.device;
+  //         PHSensorService.isConnected = true;
+          
+  //         console.log('Connection successful, waiting for first data...');
+          
+  //         // Wait for first data packet (sensor sends every 5 seconds)
+  //         const firstData = await firstDataPromise;
+  //         console.log('firstData received:', firstData);
+  //         console.log('BleScanServiceEsp32.latestData:', BleScanServiceEsp32.getLatestData());
+          
+  //         if (firstData) {
+  //           // Verify data is stored
+  //           const storedData = BleScanServiceEsp32.getLatestData();
+  //           console.log('Stored data after receiving:', storedData);
+            
+  //           Alert.alert(
+  //             'Connected!',
+  //             `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
+  //             [
+  //               {
+  //                 text: 'OK',
+  //                 onPress: () => {
+  //                   navigation.goBack();
+  //                 },
+  //               },
+  //             ]
+  //           );
+  //         } else {
+  //           // Connection successful but no data yet (timeout)
+  //           // Check if data arrived anyway
+  //           const storedData = BleScanServiceEsp32.getLatestData();
+  //           console.log('No data in promise, but checking stored data:', storedData);
+            
+  //           if (storedData) {
+  //             Alert.alert(
+  //               'Connected!',
+  //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data available!`,
+  //               [
+  //                 {
+  //                   text: 'OK',
+  //                   onPress: () => {
+  //                     navigation.goBack();
+  //                   },
+  //                 },
+  //               ]
+  //             );
+  //           } else {
+  //             Alert.alert(
+  //               'Connected!',
+  //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
+  //               [
+  //                 {
+  //                   text: 'OK',
+  //                   onPress: () => {
+  //                     navigation.goBack();
+  //                   },
+  //                 },
+  //               ]
+  //             );
+  //           }
+  //         }
+  //       } else {
+  //         Alert.alert('Connection Failed', result.error || 'Could not connect to device');
+  //       }
+  //     } else {
+  //       // WiFi connection
+  //       service.configure(device.ip, device.port, device.endpoint);
+  //       const testResult = await service.testConnection();
+        
+  //       if (testResult) {
+  //         Alert.alert(
+  //           'Connected!',
+  //           `Successfully connected to ${device.name || device.ip}`,
+  //           [
+  //             {
+  //               text: 'OK',
+  //               onPress: () => {
+  //                 navigation.goBack();
+  //               },
+  //             },
+  //           ]
+  //         );
+  //       } else {
+  //         Alert.alert('Connection Failed', 'Could not connect to device');
+  //       }
+  //     }
+  //   } catch (error) {
+  //     Alert.alert('Connection Error', error.message || 'Failed to connect');
+  //   }
+  // };
   const handleConnect = async (device) => {
     try {
-      ESP32Service.configure(device.ip, device.port, device.endpoint);
-      const testResult = await ESP32Service.testConnection();
-      
-      if (testResult) {
+      if (!isBLESensor) return;
+  
+      console.log('Connecting to BLE device', device);
+  
+      // Connect and listen
+      const result = await BleScanServiceEsp32.connectAndListen(device, (data) => {
+        console.log('Data callback:', data);
+      });
+  
+      if (!result.success) {
+        Alert.alert('Connection Failed', result.error || 'Could not connect to device');
+        return;
+      }
+  
+      PHSensorService.connectedDevice = result.device;
+      PHSensorService.isConnected = true;
+  
+      console.log('Waiting for first sensor data...');
+  
+      // Wait for first data (from promise returned)
+      const firstData = await result.firstDataPromise;
+  
+      if (firstData) {
         Alert.alert(
           'Connected!',
-          `Successfully connected to ${device.name || device.ip}`,
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                navigation.goBack();
-              },
-            },
-          ]
+          `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       } else {
-        Alert.alert('Connection Failed', 'Could not connect to device');
+        Alert.alert(
+          'Connected!',
+          `Connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
+          [{ text: 'OK', onPress: () => navigation.goBack() }]
+        );
       }
     } catch (error) {
       Alert.alert('Connection Error', error.message || 'Failed to connect');
     }
   };
+  
 
   const handleDisconnect = () => {
     Alert.alert(
@@ -104,7 +306,7 @@ export default function DeviceConnectionScreen({ navigation }) {
           text: 'Disconnect',
           style: 'destructive',
           onPress: () => {
-            ESP32Service.disconnect();
+            service.disconnect();
             setFoundDevices([]);
             Alert.alert('Disconnected', 'Device has been disconnected');
           },
@@ -150,7 +352,7 @@ export default function DeviceConnectionScreen({ navigation }) {
     }
   };
 
-  const connectedDevice = ESP32Service.getConnectedDevice();
+  const connectedDevice = service.getConnectedDevice();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -169,15 +371,26 @@ export default function DeviceConnectionScreen({ navigation }) {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Instructions */}
         <View style={styles.instructionsCard}>
-          <Icon name="wifi" size={24} color="#2196F3" />
-          <Text style={styles.instructionsTitle}>Find Your ESP32 Device</Text>
+          <Icon name={isBLESensor ? "bluetooth" : "wifi"} size={24} color="#2196F3" />
+          <Text style={styles.instructionsTitle}>
+            {isBLESensor ? 'Find Your ESP32 Soil Sensor' : 'Find Your ESP32 Device'}
+          </Text>
           <Text style={styles.instructionsText}>
-            <Text style={styles.instructionsBold}>AP Mode:</Text> Connect your phone to ESP32's WiFi network (e.g., "ESP32-Moisture-Sensor"), then tap "Try 192.168.4.1" or scan.{'\n\n'}
-            <Text style={styles.instructionsBold}>WiFi Mode:</Text> Make sure ESP32 and phone are on the same WiFi network, then scan for devices.
+            {isBLESensor ? (
+              <>
+                <Text style={styles.instructionsBold}>Bluetooth:</Text> Make sure Bluetooth is enabled on your phone and ESP32 sensor is powered on. Tap "Scan for Devices" to search for nearby sensors.
+              </>
+            ) : (
+              <>
+                <Text style={styles.instructionsBold}>AP Mode:</Text> Connect your phone to ESP32's WiFi network (e.g., "ESP32-Moisture-Sensor"), then tap "Try 192.168.4.1" or scan.{'\n\n'}
+                <Text style={styles.instructionsBold}>WiFi Mode:</Text> Make sure ESP32 and phone are on the same WiFi network, then scan for devices.
+              </>
+            )}
           </Text>
         </View>
 
-        {/* Manual IP Entry */}
+        {/* Manual IP Entry - Only for WiFi */}
+        {!isBLESensor && (
         <View style={styles.manualCard}>
           <Text style={styles.sectionTitle}>Manual IP Entry</Text>
           <Text style={styles.sectionSubtitle}>
@@ -247,6 +460,7 @@ export default function DeviceConnectionScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </View>
+        )}
 
         {/* Scan Button */}
         <TouchableOpacity
@@ -291,27 +505,39 @@ export default function DeviceConnectionScreen({ navigation }) {
               Found Devices ({foundDevices.length})
             </Text>
             {foundDevices.map((device, index) => {
-              const isConnected = connectedDevice && connectedDevice.ip === device.ip;
+              const isConnected = isBLESensor 
+                ? (connectedDevice && connectedDevice.id === device.id)
+                : (connectedDevice && connectedDevice.ip === device.ip);
               return (
-                <View key={`${device.ip}-${index}`} style={styles.deviceCard}>
+                <View key={isBLESensor ? `${device.id}-${index}` : `${device.ip}-${index}`} style={styles.deviceCard}>
                   <View style={styles.deviceHeader}>
                     <View style={styles.deviceInfo}>
                       <View style={styles.deviceIconContainer}>
                         {isConnected ? (
                           <Icon name="check-circle" size={24} color="#4CAF50" />
                         ) : (
-                          <Icon name="wifi" size={24} color="#2196F3" />
+                          <Icon name={isBLESensor ? "bluetooth" : "wifi"} size={24} color="#2196F3" />
                         )}
                       </View>
                       <View style={styles.deviceDetails}>
                         <Text style={styles.deviceName}>
-                          {device.name || `ESP32-${device.ip.split('.').pop()}`}
+                          {device.name || (isBLESensor ? 'ESP32-Soil-Sensor' : `ESP32-${device.ip?.split('.').pop()}`)}
                         </Text>
-                        <Text style={styles.deviceIp}>{device.ip}</Text>
-                        {device.moisture !== undefined && (
-                          <Text style={styles.deviceMoisture}>
-                            Moisture: {device.moisture.toFixed(1)}%
-                          </Text>
+                        {isBLESensor ? (
+                          <>
+                            {device.rssi && (
+                              <Text style={styles.deviceIp}>Signal: {device.rssi} dBm</Text>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <Text style={styles.deviceIp}>{device.ip}</Text>
+                            {device.moisture !== undefined && (
+                              <Text style={styles.deviceMoisture}>
+                                Moisture: {device.moisture.toFixed(1)}%
+                              </Text>
+                            )}
+                          </>
                         )}
                       </View>
                     </View>
@@ -349,10 +575,12 @@ export default function DeviceConnectionScreen({ navigation }) {
         {/* No Devices State */}
         {!isScanning && foundDevices.length === 0 && (
           <View style={styles.emptyState}>
-            <Icon name="wifi-off" size={48} color="#CCC" />
+            <Icon name={isBLESensor ? "bluetooth-off" : "wifi-off"} size={48} color="#CCC" />
             <Text style={styles.emptyStateText}>No devices found</Text>
             <Text style={styles.emptyStateSubtext}>
-              Tap "Scan for Devices" to search your network
+              {isBLESensor 
+                ? 'Tap "Scan for Devices" to search for Bluetooth sensors'
+                : 'Tap "Scan for Devices" to search your network'}
             </Text>
           </View>
         )}
