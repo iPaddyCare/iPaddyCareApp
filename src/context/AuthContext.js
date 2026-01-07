@@ -9,6 +9,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isOfficer, setIsOfficer] = useState(false);
 
   useEffect(() => {
     // React Native Firebase auto-initializes from config files
@@ -43,6 +44,12 @@ export const AuthProvider = ({ children }) => {
         (user) => {
           setUser(user);
           setIsAuthenticated(!!user);
+          // Check if user is an officer based on email domain
+          if (user && user.email && user.email.endsWith('@agri.gov.lk')) {
+            setIsOfficer(true);
+          } else {
+            setIsOfficer(false);
+          }
           setLoading(false);
         },
         (error) => {
@@ -69,6 +76,10 @@ export const AuthProvider = ({ children }) => {
       const userCredential = await auth().signInWithEmailAndPassword(email, password);
       setUser(userCredential.user);
       setIsAuthenticated(true);
+      // Check if officer based on email
+      if (userCredential.user.email && userCredential.user.email.endsWith('@agri.gov.lk')) {
+        setIsOfficer(true);
+      }
       return { success: true };
     } catch (error) {
       let errorMessage = 'Login failed. Please try again.';
@@ -113,6 +124,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userCredential.user);
       setIsAuthenticated(true);
+      // Check if officer based on email
+      if (userCredential.user.email && userCredential.user.email.endsWith('@agri.gov.lk')) {
+        setIsOfficer(true);
+      }
       return { success: true };
     } catch (error) {
       let errorMessage = 'Registration failed. Please try again.';
@@ -327,6 +342,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(userCredential.user);
       setIsAuthenticated(true);
+      // Check if officer based on email
+      if (userCredential.user.email && userCredential.user.email.endsWith('@agri.gov.lk')) {
+        setIsOfficer(true);
+      }
       return { success: true };
     } catch (error) {
       let errorMessage = 'Google sign-in failed. Please try again.';
@@ -405,17 +424,36 @@ export const AuthProvider = ({ children }) => {
   };
 
 
+  // Officer-specific sign in (validates @agri.gov.lk domain)
+  const signInAsOfficer = async (email, password) => {
+    if (!email.endsWith('@agri.gov.lk')) {
+      return { success: false, error: 'Only @agri.gov.lk email addresses are allowed for officer login.' };
+    }
+    return await signIn(email, password);
+  };
+
+  // Officer-specific sign up (validates @agri.gov.lk domain)
+  const signUpAsOfficer = async (email, password, displayName) => {
+    if (!email.endsWith('@agri.gov.lk')) {
+      return { success: false, error: 'Only @agri.gov.lk email addresses are allowed for officer registration.' };
+    }
+    return await signUp(email, password, displayName);
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
         isAuthenticated,
+        isOfficer,
         signIn,
         signUp,
         signOut,
         resetPassword,
         signInWithGoogle,
+        signInAsOfficer,
+        signUpAsOfficer,
       }}
     >
       {children}
