@@ -14,7 +14,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
-import BottomNavigation from '../src/components/BottomNavigation';
 import WeatherService from '../src/utils/weatherService';
 
 const { width, height } = Dimensions.get('window');
@@ -29,6 +28,8 @@ const translations = {
     activeTests: 'Tests',
     recommendations: 'Predicts',
     officersOnline: 'Officers',
+    products: 'Products',
+    inbox: 'Inbox',
     coreFeatures: 'Core Features',
     quickActions: 'Quick Actions',
     recentActivity: 'Recent Activity',
@@ -63,6 +64,8 @@ const translations = {
     activeTests: 'පරීක්ෂණ',
     recommendations: 'අනාවැකි',
     officersOnline: 'නිලධාරීන්',
+    products: 'නිෂ්පාදන',
+    inbox: 'එන ලිපි',
     coreFeatures: 'ප්‍රධාන විශේෂාංග',
     quickActions: 'ඉක්මන් ක්‍රියාමාර්ග',
     recentActivity: 'මෑත ක්‍රියාකලාපය',
@@ -97,6 +100,8 @@ const translations = {
     activeTests: 'சோதனைகள்',
     recommendations: 'கணிப்புகள்',
     officersOnline: 'அதிகாரிகள்',
+    products: 'தயாரிப்புகள்',
+    inbox: 'இன்பாக்ஸ்',
     coreFeatures: 'முக்கிய அம்சங்கள்',
     quickActions: 'விரைவு நடவடிக்கைகள்',
     recentActivity: 'சமீபத்திய செயல்பாடு',
@@ -294,7 +299,7 @@ export default function HomeScreen({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isOfficer } = useAuth();
   const [weatherData, setWeatherData] = useState(null);
   const [location, setLocation] = useState(null);
 
@@ -385,12 +390,19 @@ export default function HomeScreen({ navigation }) {
     }
   ];
 
-  const quickActions = [
-    { title: t.connectOfficer, icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
-    { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
-    { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
-    { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
-  ];
+  const quickActions = isOfficer
+    ? [
+        { title: t.inbox, icon: '📬', color: '#E91E63', lightColor: '#FCE4EC', route: 'OfficerInbox' },
+        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+      ]
+    : [
+        { title: t.connectOfficer, icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
+        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+      ];
 
   const handleLanguageChange = () => {
     const currentIndex = languages.indexOf(selectedLanguage);
@@ -491,30 +503,91 @@ export default function HomeScreen({ navigation }) {
         ]}>
           <Text style={styles.dashboardTitle}>{t.todaysOverview}</Text>
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
-                <Text style={styles.statEmoji}>🧪</Text>
-              </View>
-              <Text style={styles.statValue}>3</Text>
-              <Text style={styles.statLabel}>{t.activeTests}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
-                <Text style={styles.statEmoji}>💡</Text>
-              </View>
-              <Text style={styles.statValue}>2</Text>
-              <Text style={styles.statLabel}>{t.recommendations}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
-                <Text style={styles.statEmoji}>👥</Text>
-              </View>
-              <Text style={styles.statValue}>12</Text>
-              <Text style={styles.statLabel}>{t.officersOnline}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
-            </View>
+            {isOfficer ? (
+              <>
+                {/* Officer View: Tests, Products, Inbox */}
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('History')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
+                    <Text style={styles.statEmoji}>🧪</Text>
+                  </View>
+                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('ProductApproval')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E3F2FD' }]}>
+                    <Text style={styles.statEmoji}>📦</Text>
+                  </View>
+                  <Text style={styles.statValue}>5</Text>
+                  <Text style={styles.statLabel}>{t.products}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#2196F3' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('OfficerInbox')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#FCE4EC' }]}>
+                    <Text style={styles.statEmoji}>📬</Text>
+                  </View>
+                  <Text style={styles.statValue}>8</Text>
+                  <Text style={styles.statLabel}>{t.inbox}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#E91E63' }]} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Regular User View: Tests, Predicts, Officers */}
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('History')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
+                    <Text style={styles.statEmoji}>🧪</Text>
+                  </View>
+                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => {
+                    // Navigate to home or scroll to recommendations section
+                    // For now, just show an alert or navigate to History
+                    navigation.navigate('History');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
+                    <Text style={styles.statEmoji}>💡</Text>
+                  </View>
+                  <Text style={styles.statValue}>2</Text>
+                  <Text style={styles.statLabel}>{t.recommendations}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('Officers')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
+                    <Text style={styles.statEmoji}>👥</Text>
+                  </View>
+                  <Text style={styles.statValue}>12</Text>
+                  <Text style={styles.statLabel}>{t.officersOnline}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Animated.View>
 
@@ -626,7 +699,6 @@ export default function HomeScreen({ navigation }) {
         </View>
       </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }
@@ -860,6 +932,9 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     position: 'relative',
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   statIcon: {
     width: 56,

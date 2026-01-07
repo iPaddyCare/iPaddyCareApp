@@ -16,7 +16,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -120,6 +119,7 @@ const sampleProducts = [
     image: '🌾',
     featured: true,
     description: 'High quality paddy seeds with 95% germination rate',
+    status: 'approved',
   },
   {
     id: 2,
@@ -131,6 +131,7 @@ const sampleProducts = [
     image: '🌱',
     featured: true,
     description: 'Natural organic fertilizer for healthy crop growth',
+    status: 'approved',
   },
   {
     id: 3,
@@ -142,6 +143,7 @@ const sampleProducts = [
     image: '🔧',
     featured: false,
     description: 'Complete set of harvesting tools for paddy farming',
+    status: 'approved',
   },
   {
     id: 4,
@@ -153,6 +155,7 @@ const sampleProducts = [
     image: '🛡️',
     featured: false,
     description: 'Environmentally safe pesticide for pest control',
+    status: 'approved',
   },
   {
     id: 5,
@@ -164,6 +167,7 @@ const sampleProducts = [
     image: '🌾',
     featured: true,
     description: 'Certified organic paddy seeds',
+    status: 'approved',
   },
   {
     id: 6,
@@ -175,8 +179,9 @@ const sampleProducts = [
     image: '🌱',
     featured: false,
     description: 'Balanced NPK fertilizer for optimal growth',
+    status: 'approved',
   },
-];
+].filter(product => product.status === 'approved' || !product.status); // Only show approved products
 
 const CategoryButton = ({ category, label, icon, isActive, onPress }) => (
   <TouchableOpacity
@@ -237,7 +242,7 @@ const ProductCard = ({ product, onContact }) => (
 
 export default function MarketplaceScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -293,6 +298,15 @@ export default function MarketplaceScreen({ navigation }) {
   };
 
   const handleAddProduct = () => {
+    if (isOfficer) {
+      Alert.alert(
+        'Access Restricted',
+        'Officers cannot list products in the marketplace.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+    
     if (!isAuthenticated) {
       Alert.alert(
         'Login Required',
@@ -334,12 +348,21 @@ export default function MarketplaceScreen({ navigation }) {
                 <Text style={styles.headerTitle}>{t.title}</Text>
                 <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
               </View>
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={handleAddProduct}
-              >
-                <Icon name="plus" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
+              {isOfficer ? (
+                <TouchableOpacity
+                  style={styles.approvalButton}
+                  onPress={() => navigation.navigate('ProductApproval')}
+                >
+                  <Icon name="check-circle" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={handleAddProduct}
+                >
+                  <Icon name="plus" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -405,7 +428,7 @@ export default function MarketplaceScreen({ navigation }) {
                   <Text style={styles.emptyStateIcon}>📦</Text>
                   <Text style={styles.emptyStateTitle}>{t.noProducts}</Text>
                   <Text style={styles.emptyStateText}>{t.noProductsDesc}</Text>
-                  {isAuthenticated && (
+                  {isAuthenticated && !isOfficer && (
                     <TouchableOpacity
                       style={styles.addProductButton}
                       onPress={handleAddProduct}
@@ -420,7 +443,6 @@ export default function MarketplaceScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }
@@ -533,6 +555,16 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.2)',
   },
   addButton: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  approvalButton: {
     width: 48,
     height: 48,
     justifyContent: 'center',

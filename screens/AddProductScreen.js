@@ -17,7 +17,6 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { launchImageLibrary } from 'react-native-image-picker';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -43,8 +42,9 @@ const translations = {
     imageOptional: 'Optional',
     submit: 'Submit Listing',
     cancel: 'Cancel',
-    success: 'Product Listed!',
-    successMessage: 'Your product has been listed successfully.',
+    success: 'Product Submitted!',
+    successMessage: 'Your product has been submitted and is pending officer approval.',
+    pendingApprovalMessage: 'Your product has been submitted and is pending officer approval. You will be notified once it is approved.',
     error: 'Error',
     fillAllFields: 'Please fill all required fields',
     invalidPrice: 'Please enter a valid price',
@@ -70,8 +70,9 @@ const translations = {
     imageOptional: 'විකල්ප',
     submit: 'ලැයිස්තුව ඉදිරිපත් කරන්න',
     cancel: 'අවලංගු කරන්න',
-    success: 'නිෂ්පාදනය ලැයිස්තුගත කරන ලදී!',
-    successMessage: 'ඔබේ නිෂ්පාදනය සාර්ථකව ලැයිස්තුගත කරන ලදී.',
+    success: 'නිෂ්පාදනය ඉදිරිපත් කරන ලදී!',
+    successMessage: 'ඔබේ නිෂ්පාදනය ඉදිරිපත් කරන ලද අතර නිලධාරී අනුමත කිරීමට අපේක්ෂාවෙන් පවතී.',
+    pendingApprovalMessage: 'ඔබේ නිෂ්පාදනය ඉදිරිපත් කරන ලද අතර නිලධාරී අනුමත කිරීමට අපේක්ෂාවෙන් පවතී. එය අනුමත කරන විට ඔබට දැනුම් දෙනු ලැබේ.',
     error: 'දෝෂය',
     fillAllFields: 'කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න',
     invalidPrice: 'කරුණාකර වලංගු මිලක් ඇතුළත් කරන්න',
@@ -97,8 +98,9 @@ const translations = {
     imageOptional: 'விருப்பமானது',
     submit: 'பட்டியலை சமர்ப்பிக்கவும்',
     cancel: 'ரத்துசெய்',
-    success: 'தயாரிப்பு பட்டியலிடப்பட்டது!',
-    successMessage: 'உங்கள் தயாரிப்பு வெற்றிகரமாக பட்டியலிடப்பட்டது.',
+    success: 'தயாரிப்பு சமர்ப்பிக்கப்பட்டது!',
+    successMessage: 'உங்கள் தயாரிப்பு சமர்ப்பிக்கப்பட்டு அதிகாரி அனுமதிக்காக நிலுவையில் உள்ளது.',
+    pendingApprovalMessage: 'உங்கள் தயாரிப்பு சமர்ப்பிக்கப்பட்டு அதிகாரி அனுமதிக்காக நிலுவையில் உள்ளது. அது அனுமதிக்கப்படும்போது உங்களுக்கு அறிவிக்கப்படும்.',
     error: 'பிழை',
     fillAllFields: 'தயவுசெய்து அனைத்து தேவையான புலங்களையும் நிரப்பவும்',
     invalidPrice: 'தயவுசெய்து சரியான விலையை உள்ளிடவும்',
@@ -116,7 +118,7 @@ const categories = [
 
 export default function AddProductScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -134,12 +136,27 @@ export default function AddProductScreen({ navigation }) {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
 
   React.useEffect(() => {
+    // Block officers from accessing this screen
+    if (isOfficer) {
+      Alert.alert(
+        'Access Restricted',
+        'Officers cannot list products in the marketplace.',
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+      return;
+    }
+
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim]);
+  }, [isOfficer, navigation, fadeAnim]);
 
   const handleImagePicker = () => {
     launchImageLibrary(
@@ -193,7 +210,7 @@ export default function AddProductScreen({ navigation }) {
     // For demo, just show success message
     Alert.alert(
       t.success,
-      t.successMessage,
+      t.pendingApprovalMessage || t.successMessage,
       [
         {
           text: 'OK',
@@ -402,7 +419,6 @@ export default function AddProductScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

@@ -15,7 +15,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -223,7 +222,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
 
 export default function MyListingsScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -283,6 +282,37 @@ export default function MyListingsScreen({ navigation }) {
   const handleAddProduct = () => {
     navigation.navigate('AddProduct');
   };
+
+  if (isOfficer) {
+    return (
+      <View style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#0F5132" translucent={false} />
+        <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+          <View style={styles.statusBarContainer} />
+        </SafeAreaView>
+        <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => navigation.openDrawer()}
+            >
+              <Text style={styles.menuIcon}>☰</Text>
+            </TouchableOpacity>
+            <View style={styles.headerText}>
+              <Text style={styles.headerTitle}>{t.title}</Text>
+              <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+            </View>
+            <View style={styles.headerRight} />
+          </View>
+          <View style={styles.emptyState}>
+            <Icon name="shield-off" size={64} color="#CCC" />
+            <Text style={styles.emptyStateTitle}>Access Restricted</Text>
+            <Text style={styles.emptyStateText}>Officers cannot list products in the marketplace.</Text>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -394,7 +424,6 @@ export default function MyListingsScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

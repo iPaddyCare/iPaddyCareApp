@@ -23,16 +23,34 @@ import MyListingsScreen from './screens/MyListingsScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import OfficersScreen from './screens/OfficersScreen';
 import MessageScreen from './screens/MessageScreen';
+import OfficerLoginScreen from './screens/OfficerLoginScreen';
+import OfficerInboxScreen from './screens/OfficerInboxScreen';
+import ProductApprovalScreen from './screens/ProductApprovalScreen';
 import DrawerContent from './src/components/DrawerContent';
+import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
+// Wrapper component that includes BottomNavigation
+function MainStackWithBottomNav({ navigation }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <MainStack />
+      <BottomNavigation drawerNavigation={navigation} />
+    </View>
+  );
+}
+
 // Main Stack Navigator with Drawer
 function MainStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        animation: 'fade', // Simple fade animation instead of slide
+      }}
+    >
       <Stack.Screen 
         name="Home" 
         component={HomeScreen} 
@@ -118,6 +136,16 @@ function MainStack() {
         component={MessageScreen} 
         options={{ headerShown: false }}
       />
+      <Stack.Screen 
+        name="OfficerInbox" 
+        component={OfficerInboxScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ProductApproval" 
+        component={ProductApprovalScreen} 
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -127,20 +155,28 @@ function DrawerNavigator() {
   const { selectedLanguage } = useLanguage();
 
   return (
-    <Drawer.Navigator
-      drawerContent={(props) => (
-        <DrawerContent {...props} selectedLanguage={selectedLanguage} />
-      )}
-      screenOptions={{
-        headerShown: false,
-        drawerType: 'front',
-        drawerStyle: {
-          width: 280,
-        },
-      }}
-    >
-      <Drawer.Screen name="Main" component={MainStack} />
-    </Drawer.Navigator>
+    <View style={{ flex: 1 }}>
+      <Drawer.Navigator
+        drawerContent={(props) => (
+          <DrawerContent {...props} selectedLanguage={selectedLanguage} />
+        )}
+        screenOptions={{
+          headerShown: false,
+          drawerType: 'front',
+          drawerStyle: {
+            width: 280,
+          },
+        }}
+      >
+        <Drawer.Screen 
+          name="Main" 
+          component={MainStackWithBottomNav}
+          options={{
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+      </Drawer.Navigator>
+    </View>
   );
 }
 
@@ -210,6 +246,7 @@ function RootNavigator({ navigationRef }) {
           />
         )}
       </Stack.Screen>
+      <Stack.Screen name="OfficerLogin" component={OfficerLoginScreen} />
       <Stack.Screen name="Main" component={DrawerNavigator} />
     </Stack.Navigator>
   );
