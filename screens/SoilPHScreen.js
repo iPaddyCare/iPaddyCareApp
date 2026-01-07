@@ -1,6 +1,5 @@
 import React from 'react';
 import { SafeAreaView, View, Text, StyleSheet } from 'react-native';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 export default function SoilPHScreen() {
   return (
@@ -13,7 +12,6 @@ export default function SoilPHScreen() {
           translate the results into clear fertilizer and amendment instructions.
         </Text>
       </View>
-      <BottomNavigation />
     </SafeAreaView>
   );
 }

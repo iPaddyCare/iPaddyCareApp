@@ -17,7 +17,6 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { launchImageLibrary } from 'react-native-image-picker';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -402,7 +401,6 @@ export default function AddProductScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

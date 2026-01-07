@@ -19,7 +19,6 @@ import BLEService from '../src/utils/bleService';
 import WeatherService from '../src/utils/weatherService';
 import PredictionService from '../src/utils/predictionService';
 import { useLanguage } from '../src/context/LanguageContext';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -860,7 +859,6 @@ export default function MoistureDetectorScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

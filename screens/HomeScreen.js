@@ -14,7 +14,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
-import BottomNavigation from '../src/components/BottomNavigation';
 import WeatherService from '../src/utils/weatherService';
 
 const { width, height } = Dimensions.get('window');
@@ -626,7 +625,6 @@ export default function HomeScreen({ navigation }) {
         </View>
       </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

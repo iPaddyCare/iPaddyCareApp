@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -39,15 +39,29 @@ const translations = {
   },
 };
 
-export default function BottomNavigation() {
+export default function BottomNavigation({ drawerNavigation }) {
   const navigation = useNavigation();
-  const route = useRoute();
   const { selectedLanguage } = useLanguage();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
+  
+  // Use drawerNavigation if provided, otherwise try to get it from navigation context
+  const drawerNav = drawerNavigation || navigation.getParent() || navigation;
 
-  // Get current route name - use route.name as it's the most reliable
-  const currentRoute = route.name || 'Home';
+  // Get current route name from navigation state
+  const getCurrentRoute = () => {
+    const state = navigation.getState();
+    if (!state) return 'Home';
+    
+    // Navigate through nested navigators to find the active route
+    let route = state.routes[state.index];
+    while (route.state) {
+      route = route.state.routes[route.state.index];
+    }
+    return route.name || 'Home';
+  };
+
+  const currentRoute = getCurrentRoute();
 
   // Hide on certain screens
   const hideOnRoutes = ['SeedCamera', 'DeviceConnection', 'Login'];
@@ -97,11 +111,28 @@ export default function BottomNavigation() {
   const handleNavigate = (targetRoute) => {
     if (targetRoute === currentRoute) return;
     
-    // Navigate to the route in the same stack
+    // Navigate to the route through the Drawer Navigator to Main stack
+    // BottomNavigation receives drawerNavigation prop from MainStackWithBottomNav
     try {
-      navigation.navigate(targetRoute);
+      // Navigate through Drawer to Main stack, then to target route
+      drawerNav.navigate('Main', {
+        screen: targetRoute,
+      });
     } catch (e) {
       console.log('Navigation error:', e);
+      // Fallback: try using CommonActions
+      try {
+        drawerNav.dispatch(
+          CommonActions.navigate({
+            name: 'Main',
+            params: {
+              screen: targetRoute,
+            },
+          })
+        );
+      } catch (e2) {
+        console.log('CommonActions navigation error:', e2);
+      }
     }
   };
 

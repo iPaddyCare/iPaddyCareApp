@@ -12,7 +12,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLanguage } from '../src/context/LanguageContext';
 import PredictionService from '../src/utils/predictionService';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width } = Dimensions.get('window');
 
@@ -368,7 +367,6 @@ export default function ReadingResultsScreen({ route, navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

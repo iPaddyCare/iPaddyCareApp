@@ -16,7 +16,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 const APP_VERSION = '1.0.0';
@@ -386,7 +385,6 @@ export default function AboutScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }

@@ -13,7 +13,6 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BottomNavigation from '../src/components/BottomNavigation';
 
 const { width, height } = Dimensions.get('window');
 
@@ -450,7 +449,6 @@ export default function HistoryScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }
