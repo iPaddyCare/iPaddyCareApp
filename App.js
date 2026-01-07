@@ -12,6 +12,8 @@ import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
+import CoordinateInputScreen from './screens/CoordinateInputScreen';
+import MapPickerScreen from './screens/MapPickerScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -51,6 +53,16 @@ function MainStack() {
         name="DeviceConnection" 
         component={DeviceConnectionScreen} 
         options={{ title: 'Connect Device' }}
+      />
+      <Stack.Screen 
+        name="MapPicker" 
+        component={MapPickerScreen} 
+        options={{ title: 'Select Location' }}
+      />
+      <Stack.Screen 
+        name="CoordinateInput" 
+        component={CoordinateInputScreen} 
+        options={{ title: 'Enter Coordinates' }}
       />
     </Stack.Navigator>
   );
