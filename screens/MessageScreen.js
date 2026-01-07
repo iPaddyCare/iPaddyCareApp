@@ -75,14 +75,14 @@ const sampleMessages = [
     id: 1,
     text: 'Hello! I need advice on seed quality for my paddy field.',
     sender: 'user',
-    timestamp: '10:30 AM',
+    timestamp: '08:30 AM',
     date: 'Today',
   },
   {
     id: 2,
     text: 'Hello! How can I help you with your agricultural needs today?',
     sender: 'officer',
-    timestamp: '10:32 AM',
+    timestamp: '08:32 AM',
     date: 'Today',
   },
 
