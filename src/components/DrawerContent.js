@@ -23,6 +23,8 @@ const translations = {
     testHistory: 'Test History',
     help: 'Help & Support',
     about: 'About',
+    inbox: 'Inbox',
+    approvals: 'Product Approvals',
     version: 'Version 1.0.0',
     logoutConfirm: 'Are you sure you want to logout?',
     yes: 'Yes',
@@ -40,6 +42,8 @@ const translations = {
     testHistory: 'පරීක්ෂණ ඉතිහාසය',
     help: 'උදව් සහ සහාය',
     about: 'මෙහි ගැන',
+    inbox: 'එන ලිපි',
+    approvals: 'නිෂ්පාදන අනුමත කිරීම්',
     version: 'අනුවාදය 1.0.0',
     logoutConfirm: 'ඔබට ඉවත් වීමට අවශ්‍යද?',
     yes: 'ඔව්',
@@ -57,6 +61,8 @@ const translations = {
     testHistory: 'சோதனை வரலாறு',
     help: 'உதவி மற்றும் ஆதரவு',
     about: 'பற்றி',
+    inbox: 'இன்பாக்ஸ்',
+    approvals: 'தயாரிப்பு அனுமதிகள்',
     version: 'பதிப்பு 1.0.0',
     logoutConfirm: 'நீங்கள் வெளியேற விரும்புகிறீர்களா?',
     yes: 'ஆம்',
@@ -68,7 +74,7 @@ export default function DrawerContent({
   navigation: drawerNavigation,
   selectedLanguage = 'English',
 }) {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, isOfficer, signOut } = useAuth();
   const t = translations[selectedLanguage];
 
   const getRootNavigation = () => {
@@ -111,8 +117,12 @@ export default function DrawerContent({
 
   const menuItems = [
     { id: 'home', label: t.home, icon: '🏠', route: 'Home' },
+    ...(isOfficer ? [
+      { id: 'inbox', label: t.inbox || 'Inbox', icon: '📬', route: 'OfficerInbox' },
+      { id: 'approvals', label: t.approvals || 'Approvals', icon: '✅', route: 'ProductApproval' },
+    ] : []),
     { id: 'marketplace', label: t.marketplace, icon: '🛒', route: 'Marketplace' },
-    { id: 'myListings', label: t.myListings, icon: '📦', route: 'MyListings', requireAuth: true },
+    ...(!isOfficer ? [{ id: 'myListings', label: t.myListings, icon: '📦', route: 'MyListings', requireAuth: true }] : []),
     { id: 'history', label: t.testHistory, icon: '📊', route: 'History' },
     { id: 'settings', label: t.settings, icon: '⚙️', route: 'Settings' },
     { id: 'help', label: t.help, icon: '❓', route: 'Help' },
@@ -207,6 +217,11 @@ export default function DrawerContent({
                   styles.menuLabel,
                   (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
                 ]}>{item.label}</Text>
+                {item.id === 'approvals' && isOfficer && (
+                  <View style={styles.menuBadge}>
+                    <Text style={styles.menuBadgeText}>3</Text>
+                  </View>
+                )}
                 <Text style={styles.menuArrow}>→</Text>
               </TouchableOpacity>
             ))}
@@ -374,6 +389,21 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#999',
     fontWeight: '600',
+  },
+  menuBadge: {
+    backgroundColor: '#E91E63',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    marginLeft: 8,
+  },
+  menuBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
   footer: {
     paddingHorizontal: 20,

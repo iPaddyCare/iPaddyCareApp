@@ -23,6 +23,9 @@ import MyListingsScreen from './screens/MyListingsScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import OfficersScreen from './screens/OfficersScreen';
 import MessageScreen from './screens/MessageScreen';
+import OfficerLoginScreen from './screens/OfficerLoginScreen';
+import OfficerInboxScreen from './screens/OfficerInboxScreen';
+import ProductApprovalScreen from './screens/ProductApprovalScreen';
 import DrawerContent from './src/components/DrawerContent';
 import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -133,6 +136,16 @@ function MainStack() {
         component={MessageScreen} 
         options={{ headerShown: false }}
       />
+      <Stack.Screen 
+        name="OfficerInbox" 
+        component={OfficerInboxScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ProductApproval" 
+        component={ProductApprovalScreen} 
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -233,6 +246,7 @@ function RootNavigator({ navigationRef }) {
           />
         )}
       </Stack.Screen>
+      <Stack.Screen name="OfficerLogin" component={OfficerLoginScreen} />
       <Stack.Screen name="Main" component={DrawerNavigator} />
     </Stack.Navigator>
   );

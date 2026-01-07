@@ -111,27 +111,49 @@ export default function BottomNavigation({ drawerNavigation }) {
   const handleNavigate = (targetRoute) => {
     if (targetRoute === currentRoute) return;
     
-    // Navigate to the route through the Drawer Navigator to Main stack
-    // BottomNavigation receives drawerNavigation prop from MainStackWithBottomNav
     try {
-      // Navigate through Drawer to Main stack, then to target route
-      drawerNav.navigate('Main', {
-        screen: targetRoute,
-      });
-    } catch (e) {
-      console.log('Navigation error:', e);
-      // Fallback: try using CommonActions
-      try {
-        drawerNav.dispatch(
-          CommonActions.navigate({
-            name: 'Main',
-            params: {
-              screen: targetRoute,
-            },
+      // Use drawerNavigation if available, otherwise use navigation
+      const nav = drawerNavigation || navigation;
+      
+      // For Home, reset the stack to Home to clear navigation history
+      if (targetRoute === 'Home') {
+        // Navigate through Drawer to Main stack, then reset to Home
+        nav.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'Main',
+                state: {
+                  routes: [{ name: 'Home' }],
+                  index: 0,
+                },
+              },
+            ],
           })
         );
+      } else {
+        // For other routes, navigate through Drawer to Main stack, then to target route
+        nav.navigate('Main', {
+          screen: targetRoute,
+        });
+      }
+    } catch (e) {
+      console.log('Navigation error:', e);
+      // Fallback: try direct navigation
+      try {
+        if (targetRoute === 'Home') {
+          navigation.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'Home' }],
+            })
+          );
+        } else {
+          navigation.navigate(targetRoute);
+        }
       } catch (e2) {
-        console.log('CommonActions navigation error:', e2);
+        console.log('Fallback navigation error:', e2);
       }
     }
   };
