@@ -21,6 +21,8 @@ import MarketplaceScreen from './screens/MarketplaceScreen';
 import AddProductScreen from './screens/AddProductScreen';
 import MyListingsScreen from './screens/MyListingsScreen';
 import HistoryScreen from './screens/HistoryScreen';
+import OfficersScreen from './screens/OfficersScreen';
+import MessageScreen from './screens/MessageScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
@@ -104,6 +106,16 @@ function MainStack() {
       <Stack.Screen 
         name="History" 
         component={HistoryScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Officers" 
+        component={OfficersScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Message" 
+        component={MessageScreen} 
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
