@@ -87,15 +87,21 @@ const detectSeeds = (frame) => {
   const detections = [];
   const numDetections = Math.floor(Math.random() * 3) + 1; // 1-3 detections
   
+  // Available varieties: BG_375, suwadel, perumal, wild seeds
+  const varieties = ['BG_375', 'suwadel', 'perumal'];
+  
   for (let i = 0; i < numDetections; i++) {
+    const isWild = Math.random() > 0.7; // 30% chance of wild seeds
+    const variety = isWild ? 'wild seeds' : varieties[Math.floor(Math.random() * varieties.length)];
+    
     detections.push({
       x: Math.random() * (width - 100) + 50,
       y: Math.random() * (height - 200) + 100,
       width: 80 + Math.random() * 60,
       height: 80 + Math.random() * 60,
-      variety: ['Basmati', 'Jasmine', 'Sona Masuri'][Math.floor(Math.random() * 3)],
+      variety: variety,
       confidence: 0.7 + Math.random() * 0.25,
-      isWild: Math.random() > 0.6,
+      isWild: isWild,
     });
   }
   
