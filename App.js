@@ -84,7 +84,7 @@ function MainStack() {
       <Stack.Screen 
         name="PestDetection" 
         component={PestDetectionScreen} 
-        options={{ title: 'Pest & Disease Detection' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="DeviceConnection" 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  SafeAreaView,
   View,
   Text,
   StyleSheet,
@@ -12,16 +11,23 @@ import {
   Modal,
   Platform,
   PermissionsAndroid,
+  Dimensions,
+  Animated,
+  StatusBar,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send } from 'lucide-react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { TextInput } from 'react-native';
 import { Camera as VisionCamera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
 
-export default function PestDetectionScreen() {
+const { width, height } = Dimensions.get('window');
+
+export default function PestDetectionScreen({ navigation }) {
   const [imageUri, setImageUri] = useState(null);
   const [detecting, setDetecting] = useState(false);
   const [result, setResult] = useState(null);
@@ -39,10 +45,38 @@ export default function PestDetectionScreen() {
   const cameraRef = useRef(null);
   const mainScrollViewRef = useRef(null);
   const chatSectionRef = useRef(null);
+  const insets = useSafeAreaInsets();
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
 
   // Initialize services on mount
   useEffect(() => {
     initializeServices();
+  }, []);
+
+  // Animation on mount
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 50,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   // Debug: Log when imageUri changes
@@ -246,84 +280,158 @@ export default function PestDetectionScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView 
-        ref={mainScrollViewRef}
-        style={styles.scrollView} 
-        contentContainerStyle={[
-          styles.content,
-          showChat && styles.contentWithChat
-        ]}
-      >
-        <View style={styles.header}>
-          <Text style={styles.title}>Pest & Disease Detection</Text>
-          <Text style={styles.subtitle}>Capture or upload plant images for AI-powered detection</Text>
-        </View>
-
-        {/* Image Selection */}
-        <View style={styles.imageSection}>
-          {imageUri ? (
-            <View style={styles.imageContainer}>
-              <Image 
-                source={{ uri: imageUri }}
-                style={styles.image}
-                resizeMode="cover"
-                onLoad={() => {
-                  console.log('✅ Image loaded successfully');
-                }}
-                onError={(e) => {
-                  console.error('❌ Image error:', e.nativeEvent);
-                }}
-              />
-              <TouchableOpacity style={styles.removeButton} onPress={clearImage}>
-                <X size={20} color="#fff" />
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#0F5132" translucent={false} />
+      <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
+        <View style={styles.statusBarContainer} />
+      </SafeAreaView>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
+        <ScrollView
+          ref={mainScrollViewRef}
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: 72 + insets.bottom + 20 }
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero Header */}
+          <View style={styles.heroHeader}>
+            <View style={styles.headerPattern} />
+            <View style={styles.headerPattern2} />
+            <View style={styles.headerContent}>
+              {/* Menu Button */}
+              <TouchableOpacity
+                style={styles.menuButton}
+                onPress={() => navigation?.openDrawer?.()}
+              >
+                <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
+              <View style={styles.headerText}>
+                <Text style={styles.headerTitle}>Pest & Disease Detection</Text>
+              </View>
             </View>
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Camera size={48} color="#0F5132" />
-              <Text style={styles.placeholderText}>Select an image to detect disease</Text>
-            </View>
-          )}
-        </View>
+          </View>
 
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          {!imageUri && (
-            <View style={styles.imageOptionsContainer}>
-              <TouchableOpacity style={styles.cameraButton} onPress={openCamera}>
-                <Camera size={24} color="#fff" />
-                <Text style={styles.cameraButtonText}>Take Photo</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.galleryButton} onPress={openGallery}>
-                <Upload size={24} color="#fff" />
-                <Text style={styles.galleryButtonText}>Choose from Gallery</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <View style={styles.innerContent}>
+            {/* Action Buttons */}
+            <Animated.View
+              style={[
+                {
+                  opacity: fadeAnim,
+                  transform: [{ translateY: slideAnim }],
+                  marginTop: 20,
+                },
+              ]}
+            >
+              {!imageUri && (
+                <>
+                  {/* Camera Button */}
+                  <TouchableOpacity
+                    style={styles.actionCard}
+                    onPress={openCamera}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.actionCardContent}>
+                      <View style={[styles.actionIconContainer, { backgroundColor: '#E8F5E8' }]}>
+                        <Icon name="camera" size={32} color="#4CAF50" />
+                      </View>
+                      <View style={styles.actionTextContainer}>
+                        <Text style={styles.actionTitle}>Take Photo</Text>
+                        <Text style={styles.actionDescription}>Capture plant images using camera</Text>
+                      </View>
+                      <Icon name="chevron-right" size={24} color="#999" />
+                    </View>
+                  </TouchableOpacity>
 
-          {imageUri && !detecting && (
-            <View style={styles.detectActionsContainer}>
-              <TouchableOpacity style={styles.detectButton} onPress={detectDisease}>
-                <Text style={styles.detectButtonText}>Detect Disease</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.changeImageButton} onPress={handleImagePicker}>
-                <Text style={styles.changeImageButtonText}>Change Image</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                  {/* Gallery Button */}
+                  <TouchableOpacity
+                    style={styles.actionCard}
+                    onPress={openGallery}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.actionCardContent}>
+                      <View style={[styles.actionIconContainer, { backgroundColor: '#E3F2FD' }]}>
+                        <Icon name="image-plus" size={32} color="#2196F3" />
+                      </View>
+                      <View style={styles.actionTextContainer}>
+                        <Text style={styles.actionTitle}>Choose from Gallery</Text>
+                        <Text style={styles.actionDescription}>Select an image from your gallery</Text>
+                      </View>
+                      <Icon name="chevron-right" size={24} color="#999" />
+                    </View>
+                  </TouchableOpacity>
+                </>
+              )}
+            </Animated.View>
 
-          {detecting && (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#0F5132" />
-              <Text style={styles.loadingText}>Analyzing image...</Text>
-            </View>
-          )}
-        </View>
+            {/* Selected Image Preview */}
+            {imageUri && (
+              <Animated.View
+                style={[
+                  styles.imageCard,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ scale: scaleAnim }],
+                  },
+                ]}
+              >
+                <View style={styles.imageCardHeader}>
+                  <Text style={styles.imageCardTitle}>Selected Image</Text>
+                  <TouchableOpacity onPress={clearImage}>
+                    <Icon name="close-circle" size={24} color="#666" />
+                  </TouchableOpacity>
+                </View>
+                <Image 
+                  source={{ uri: imageUri }}
+                  style={styles.previewImage}
+                  resizeMode="cover"
+                  onLoad={() => {
+                    console.log('✅ Image loaded successfully');
+                  }}
+                  onError={(e) => {
+                    console.error('❌ Image error:', e.nativeEvent);
+                  }}
+                />
+                {!detecting && (
+                  <View style={styles.imageActionsContainer}>
+                    <TouchableOpacity
+                      style={styles.processButton}
+                      onPress={detectDisease}
+                      disabled={!servicesReady}
+                    >
+                      <Text style={styles.processButtonText}>Detect Disease</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.changeImageButton}
+                      onPress={handleImagePicker}
+                    >
+                      <Text style={styles.changeImageButtonText}>Change Image</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                {detecting && (
+                  <View style={styles.processButton}>
+                    <View style={styles.processButtonContent}>
+                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <Text style={styles.processButtonText}>Analyzing image...</Text>
+                    </View>
+                  </View>
+                )}
+              </Animated.View>
+            )}
 
-        {/* Results */}
-        {result && (
-          <View style={styles.results}>
+            {/* Results */}
+            {result && (
+              <Animated.View
+                style={[
+                  styles.resultCard,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ scale: scaleAnim }],
+                  },
+                ]}
+              >
             <View style={styles.resultHeader}>
               {result.solution.found ? (
                 <CheckCircle size={24} color="#4CAF50" />
@@ -420,12 +528,21 @@ export default function PestDetectionScreen() {
                 </Text>
               </View>
             )}
-          </View>
-        )}
+              </Animated.View>
+            )}
 
-        {/* Chat Section */}
-        {result && result.solution.found && (
-          <View ref={chatSectionRef} style={styles.chatSection}>
+            {/* Chat Section */}
+            {result && result.solution.found && (
+              <Animated.View
+                ref={chatSectionRef}
+                style={[
+                  styles.chatSection,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ scale: scaleAnim }],
+                  },
+                ]}
+              >
             <TouchableOpacity
               style={styles.chatToggle}
               onPress={() => setShowChat(!showChat)}
@@ -494,8 +611,30 @@ export default function PestDetectionScreen() {
                 </View>
               </View>
             )}
+              </Animated.View>
+            )}
+
+            {/* Placeholder when no image selected */}
+            {!imageUri && !result && (
+              <Animated.View
+                style={[
+                  styles.emptyState,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }],
+                  },
+                ]}
+              >
+                <View style={styles.emptyIconContainer}>
+                  <Icon name="image-outline" size={64} color="#CCC" />
+                </View>
+                <Text style={styles.emptyStateTitle}>No image selected</Text>
+                <Text style={styles.emptyStateText}>Please select an image to detect disease</Text>
+              </Animated.View>
+            )}
           </View>
-        )}
+        </ScrollView>
+      </SafeAreaView>
 
         {/* API Key Modal */}
         <Modal
@@ -619,236 +758,223 @@ export default function PestDetectionScreen() {
             )}
           </SafeAreaView>
         </Modal>
-      </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFBFC',
+    backgroundColor: '#0F5132',
+  },
+  safeAreaTop: {
+    backgroundColor: '#0F5132',
+  },
+  statusBarContainer: {
+    height: 0,
+  },
+  safeAreaContent: {
+    flex: 1,
+    backgroundColor: '#F0F7F3',
   },
   scrollView: {
     flex: 1,
   },
-  content: {
-    padding: 20,
-    paddingBottom: 100, // Extra padding for system navigation buttons (home/back tabs)
+  scrollContent: {
+    paddingBottom: 20,
   },
-  contentWithChat: {
-    paddingBottom: 150, // Extra padding when chat is open
+  heroHeader: {
+    backgroundColor: '#0F5132',
+    height: height * 0.2,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
-  header: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#0F5132',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#6B6B6B',
-    lineHeight: 22,
-  },
-  imageSection: {
-    marginBottom: 24,
-  },
-  imageContainer: {
-    width: '100%',
-    height: 300,
-    backgroundColor: '#e0e0e0',
-  } ,
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  removeButton: {
+  headerPattern: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 20,
-    width: 40,
-    height: 40,
+    top: -80,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    transform: [{ rotate: '45deg' }],
+  },
+  headerPattern2: {
+    position: 'absolute',
+    bottom: -40,
+    left: -40,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+  },
+  headerContent: {
+    flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    zIndex: 1,
+    position: 'relative',
+  },
+  menuButton: {
+    position: 'absolute',
+    top: 24,
+    left: 16,
     zIndex: 10,
-  },
-  debugInfo: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    padding: 8,
-    borderRadius: 4,
-    zIndex: 5,
-  },
-  debugText: {
-    color: '#fff',
-    fontSize: 10,
-    fontFamily: 'monospace',
-  },
-  imageLoadingOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 5,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
-  imageLoadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: '#0F5132',
-    fontWeight: '600',
+  menuIcon: {
+    fontSize: 22,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
-  imagePlaceholder: {
-    height: 300,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#E0E0E0',
-    borderStyle: 'dashed',
-    justifyContent: 'center',
+  headerText: {
+    flex: 1,
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 60,
   },
-  placeholderText: {
-    marginTop: 12,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#0F5132',
-    marginBottom: 20,
+  headerTitle: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: '900',
+    marginBottom: 4,
+    letterSpacing: -0.5,
     textAlign: 'center',
   },
-  placeholderButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-    justifyContent: 'center',
-  },
-  placeholderCameraButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F0F9F4',
-    paddingVertical: 12,
+  innerContent: {
     paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#0F5132',
-    gap: 8,
+    paddingTop: 4,
   },
-  placeholderGalleryButton: {
+  actionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    overflow: 'hidden',
+  },
+  actionCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E3F2FD',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#2196F3',
-    gap: 8,
+    padding: 20,
   },
-  placeholderButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0F5132',
-  },
-  placeholderGalleryButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2196F3',
-  },
-  actions: {
-    marginBottom: 24,
-  },
-  imageOptionsContainer: {
-    gap: 12,
-  },
-  cameraButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  actionIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 16,
     justifyContent: 'center',
-    backgroundColor: '#0F5132',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    gap: 10,
-  },
-  cameraButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  galleryButton: {
-    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#2196F3',
-    paddingVertical: 16,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    gap: 10,
+    marginRight: 16,
   },
-  galleryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  actionTextContainer: {
+    flex: 1,
   },
-  detectActionsContainer: {
-    gap: 12,
-  },
-  detectButton: {
-    backgroundColor: '#0F5132',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  detectButtonText: {
-    color: '#fff',
+  actionTitle: {
     fontSize: 18,
     fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 4,
+  },
+  actionDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+  },
+  imageCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    marginTop: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  imageCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  imageCardTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  previewImage: {
+    width: '100%',
+    height: 300,
+    borderRadius: 16,
+    marginBottom: 16,
+    resizeMode: 'cover',
+    backgroundColor: '#F0F0F0',
+  },
+  processButton: {
+    backgroundColor: '#4CAF50',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#4CAF50',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  processButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  processButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  imageActionsContainer: {
+    gap: 12,
   },
   changeImageButton: {
     backgroundColor: '#6B6B6B',
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 8,
+    borderRadius: 12,
+    padding: 16,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
   },
   changeImageButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  loadingContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: '#6B6B6B',
-  },
-  results: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+  resultCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 24,
     marginTop: 8,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
   },
   resultHeader: {
     flexDirection: 'row',
@@ -857,15 +983,21 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   resultTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
-    color: '#0F5132',
+    color: '#1A1A1A',
+    marginBottom: 20,
   },
   diseaseInfo: {
     marginBottom: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
+  },
+  resultContent: {
+    backgroundColor: '#F8F9FA',
+    borderRadius: 16,
+    padding: 16,
   },
   diseaseName: {
     fontSize: 22,
@@ -1003,15 +1135,15 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   chatSection: {
-    marginTop: 24,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
   },
   chatToggle: {
     flexDirection: 'row',
@@ -1255,5 +1387,32 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  emptyState: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    marginTop: 20,
+  },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#666',
+    marginBottom: 8,
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
 });
