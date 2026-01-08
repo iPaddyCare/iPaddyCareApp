@@ -37,15 +37,32 @@ target 'iPaddyCare' do
     
     # Enable modular headers for Firebase and related pods
     installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        # Set minimum iOS version
+        if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 13.0
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+        end
+        
+        # Fix for react-native-vision-camera and static frameworks
+        if target.name.include?('VisionCamera') || target.name.include?('react-native-vision-camera')
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+        end
+        
+        # Enable modular headers for Firebase and related pods
       if target.name.include?('Firebase') || 
          target.name.include?('GoogleUtilities') || 
          target.name.include?('RecaptchaInterop') ||
          target.name.include?('GTMSessionFetcher')
-        target.build_configurations.each do |config|
           config.build_settings['DEFINES_MODULE'] = 'YES'
           config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
         end
       end
+    end
+    
+    # Fix for react-native-vision-camera build issues
+    installer.pods_project.build_configurations.each do |config|
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
     end
   end
 end

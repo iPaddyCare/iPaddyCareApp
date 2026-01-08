@@ -32,7 +32,17 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Location permission is required for Bluetooth device scanning</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bluetooth permission is required to connect to ESP32 devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth permission is required to connect to ESP32 devices</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera permission is required to detect seed quality using live camera</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library permission is required to select images for seed quality detection</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Photo library permission is required to save seed detection images</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires access to your microphone for voice input in the chatbot.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
@@ -53,6 +63,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>UIAppFonts</key>
+	<array>
+		<string>MaterialCommunityIcons.ttf</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -63,6 +77,12 @@
 				<string>com.googleusercontent.apps.1005945714864-snl98chrm7ub9jsorbm528bjagqufalm</string>
 			</array>
 		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+		<string>tel</string>
+		<string>sms</string>
 	</array>
 </dict>
 </plist>
