@@ -26,6 +26,8 @@ import MessageScreen from './screens/MessageScreen';
 import OfficerLoginScreen from './screens/OfficerLoginScreen';
 import OfficerInboxScreen from './screens/OfficerInboxScreen';
 import ProductApprovalScreen from './screens/ProductApprovalScreen';
+import CoordinateInputScreen from './screens/CoordinateInputScreen';
+import MapPickerScreen from './screens/MapPickerScreen';
 import DrawerContent from './src/components/DrawerContent';
 import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
@@ -145,6 +147,16 @@ function MainStack() {
         name="ProductApproval" 
         component={ProductApprovalScreen} 
         options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="MapPicker" 
+        component={MapPickerScreen} 
+        options={{ title: 'Select Location' }}
+      />
+      <Stack.Screen 
+        name="CoordinateInput" 
+        component={CoordinateInputScreen} 
+        options={{ title: 'Enter Coordinates' }}
       />
     </Stack.Navigator>
   );
