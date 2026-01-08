@@ -42,6 +42,7 @@
     "react-native-svg": "^15.15.1",
     "react-native-vector-icons": "^10.3.0",
     "react-native-vision-camera": "^4.0.0",
+    "@react-native-voice/voice": "^3.2.4",
     "twrnc": "^4.9.0"
   },
   "devDependencies": {

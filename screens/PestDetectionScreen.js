@@ -16,7 +16,8 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send } from 'lucide-react-native';
+import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send, Mic } from 'lucide-react-native';
+import Voice from '@react-native-voice/voice';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { TextInput } from 'react-native';
 import { Camera as VisionCamera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
@@ -40,6 +41,8 @@ export default function PestDetectionScreen({ navigation }) {
   const [apiKeyInput, setApiKeyInput] = useState('');
   const [showCamera, setShowCamera] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recognizedText, setRecognizedText] = useState('');
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const cameraRef = useRef(null);
@@ -55,6 +58,12 @@ export default function PestDetectionScreen({ navigation }) {
   // Initialize services on mount
   useEffect(() => {
     initializeServices();
+    setupVoiceRecognition();
+    
+    return () => {
+      // Cleanup voice recognition
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
   }, []);
 
   // Animation on mount
@@ -124,6 +133,99 @@ export default function PestDetectionScreen({ navigation }) {
     } catch (error) {
       console.error('Failed to initialize services:', error);
       Alert.alert('Error', 'Failed to initialize detection services');
+    }
+  };
+
+  const setupVoiceRecognition = () => {
+    Voice.onSpeechStart = () => {
+      setIsRecording(true);
+      setRecognizedText('');
+    };
+
+    Voice.onSpeechRecognized = () => {
+      // Speech recognized
+    };
+
+    Voice.onSpeechEnd = () => {
+      setIsRecording(false);
+    };
+
+    Voice.onSpeechError = (e) => {
+      console.error('Speech recognition error:', e);
+      setIsRecording(false);
+      Alert.alert('Error', 'Speech recognition failed. Please try again.');
+    };
+
+    Voice.onSpeechResults = (e) => {
+      if (e.value && e.value.length > 0) {
+        const text = e.value[0];
+        setRecognizedText(text);
+        setChatInput(text);
+        setIsRecording(false);
+      }
+    };
+
+    Voice.onSpeechPartialResults = (e) => {
+      if (e.value && e.value.length > 0) {
+        setRecognizedText(e.value[0]);
+      }
+    };
+  };
+
+  const requestMicrophonePermission = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          {
+            title: 'Microphone Permission',
+            message: 'This app needs access to your microphone for voice input.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+        return granted === PermissionsAndroid.RESULTS.GRANTED;
+      } catch (err) {
+        console.warn(err);
+        return false;
+      }
+    }
+    return true; // iOS permissions are handled in Info.plist
+  };
+
+  const startVoiceRecording = async () => {
+    try {
+      const hasPermission = await requestMicrophonePermission();
+      if (!hasPermission) {
+        Alert.alert('Permission Denied', 'Microphone permission is required for voice input.');
+        return;
+      }
+
+      await Voice.start('en-US');
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting voice recognition:', error);
+      Alert.alert('Error', 'Failed to start voice recognition. Please try again.');
+      setIsRecording(false);
+    }
+  };
+
+  const stopVoiceRecording = async () => {
+    try {
+      await Voice.stop();
+      setIsRecording(false);
+    } catch (error) {
+      console.error('Error stopping voice recognition:', error);
+      setIsRecording(false);
+    }
+  };
+
+  const toggleVoiceRecording = () => {
+    if (isRecording) {
+      stopVoiceRecording();
+    } else {
+      startVoiceRecording();
     }
   };
 
@@ -598,9 +700,20 @@ export default function PestDetectionScreen({ navigation }) {
                     value={chatInput}
                     onChangeText={setChatInput}
                     multiline
-                    editable={!sendingMessage}
+                    editable={!sendingMessage && !isRecording}
                     onSubmitEditing={sendChatMessage}
                   />
+                  <TouchableOpacity
+                    style={[
+                      styles.micButton,
+                      isRecording && styles.micButtonRecording,
+                      (sendingMessage || isRecording) && styles.micButtonDisabled
+                    ]}
+                    onPress={toggleVoiceRecording}
+                    disabled={sendingMessage}
+                  >
+                    <Mic size={20} color={isRecording ? "#fff" : "#0F5132"} />
+                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.sendButton, sendingMessage && styles.sendButtonDisabled]}
                     onPress={sendChatMessage}
@@ -609,6 +722,14 @@ export default function PestDetectionScreen({ navigation }) {
                     <Send size={20} color="#fff" />
                   </TouchableOpacity>
                 </View>
+                {isRecording && (
+                  <View style={styles.recordingIndicator}>
+                    <View style={styles.recordingDot} />
+                    <Text style={styles.recordingText}>
+                      {recognizedText || 'Listening...'}
+                    </Text>
+                  </View>
+                )}
               </View>
             )}
               </Animated.View>
@@ -1226,6 +1347,24 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     backgroundColor: '#FAFBFC',
   },
+  micButton: {
+    backgroundColor: '#F0F9F4',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#0F5132',
+    marginRight: 8,
+  },
+  micButtonRecording: {
+    backgroundColor: '#FF3B30',
+    borderColor: '#FF3B30',
+  },
+  micButtonDisabled: {
+    opacity: 0.5,
+  },
   sendButton: {
     backgroundColor: '#0F5132',
     width: 44,
@@ -1236,6 +1375,27 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  recordingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 8,
+    gap: 8,
+  },
+  recordingDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#FF3B30',
+  },
+  recordingText: {
+    fontSize: 14,
+    color: '#E65100',
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
