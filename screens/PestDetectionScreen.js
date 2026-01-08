@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   SafeAreaView,
   View,
@@ -13,10 +13,10 @@ import {
   Platform,
   PermissionsAndroid,
 } from 'react-native';
-import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send, Mic } from 'lucide-react-native';
-import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
+import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send } from 'lucide-react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { TextInput } from 'react-native';
-import Voice from '@react-native-voice/voice';
+import { Camera as VisionCamera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
@@ -32,18 +32,48 @@ export default function PestDetectionScreen() {
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
-  const [recognizedText, setRecognizedText] = useState('');
+  const [showCamera, setShowCamera] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const device = useCameraDevice('back');
+  const cameraRef = useRef(null);
+  const mainScrollViewRef = useRef(null);
+  const chatSectionRef = useRef(null);
 
   // Initialize services on mount
   useEffect(() => {
     initializeServices();
-    setupVoiceRecognition();
-    return () => {
-      // Cleanup voice recognition
-      Voice.destroy().then(Voice.removeAllListeners);
-    };
   }, []);
+
+  // Debug: Log when imageUri changes
+  useEffect(() => {
+    if (imageUri) {
+      console.log('🖼️ imageUri state updated:', imageUri);
+      console.log('🖼️ imageUri length:', imageUri.length);
+      console.log('🖼️ imageUri starts with file://:', imageUri.startsWith('file://'));
+    } else {
+      console.log('🖼️ imageUri cleared');
+    }
+  }, [imageUri]);
+
+  // Auto-scroll main view when new messages arrive
+  useEffect(() => {
+    if (showChat && chatMessages.length > 0 && mainScrollViewRef.current) {
+      setTimeout(() => {
+        mainScrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 200);
+    }
+  }, [chatMessages, showChat]);
+
+  // Scroll main view to chat section when chat opens
+  useEffect(() => {
+    if (showChat && mainScrollViewRef.current) {
+      // Scroll to bottom of main ScrollView to show chat section
+      setTimeout(() => {
+        mainScrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 400);
+    }
+  }, [showChat]);
 
   const initializeServices = async () => {
     try {
@@ -63,97 +93,6 @@ export default function PestDetectionScreen() {
     }
   };
 
-  // Setup voice recognition event handlers
-  const setupVoiceRecognition = () => {
-    Voice.onSpeechStart = () => {
-      setIsRecording(true);
-      console.log('🎤 Voice recognition started');
-    };
-
-    Voice.onSpeechEnd = () => {
-      setIsRecording(false);
-      console.log('🎤 Voice recognition ended');
-    };
-
-    Voice.onSpeechResults = (event) => {
-      if (event.value && event.value.length > 0) {
-        const text = event.value[0];
-        setRecognizedText(text);
-        setChatInput(text);
-        console.log('🎤 Recognized text:', text);
-      }
-    };
-
-    Voice.onSpeechError = (event) => {
-      console.error('🎤 Voice recognition error:', event);
-      setIsRecording(false);
-      Alert.alert('Voice Error', 'Failed to recognize speech. Please try again.');
-    };
-
-    Voice.onSpeechPartialResults = (event) => {
-      if (event.value && event.value.length > 0) {
-        setRecognizedText(event.value[0]);
-      }
-    };
-  };
-
-  // Request microphone permission
-  const requestMicrophonePermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-          {
-            title: 'Microphone Permission',
-            message: 'This app needs access to your microphone for voice input.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
-        return granted === PermissionsAndroid.RESULTS.GRANTED;
-      } catch (err) {
-        console.error('Permission error:', err);
-        return false;
-      }
-    }
-    return true; // iOS handles permissions automatically
-  };
-
-  // Start voice recording
-  const startVoiceRecording = async () => {
-    try {
-      const hasPermission = await requestMicrophonePermission();
-      if (!hasPermission) {
-        Alert.alert('Permission Denied', 'Microphone permission is required for voice input.');
-        return;
-      }
-
-      await Voice.start('en-US');
-      setRecognizedText('');
-    } catch (error) {
-      console.error('Error starting voice recognition:', error);
-      Alert.alert('Error', 'Failed to start voice recording. Please try again.');
-    }
-  };
-
-  // Stop voice recording
-  const stopVoiceRecording = async () => {
-    try {
-      await Voice.stop();
-    } catch (error) {
-      console.error('Error stopping voice recognition:', error);
-    }
-  };
-
-  // Toggle voice recording
-  const toggleVoiceRecording = () => {
-    if (isRecording) {
-      stopVoiceRecording();
-    } else {
-      startVoiceRecording();
-    }
-  };
 
   const handleImagePicker = () => {
     Alert.alert(
@@ -167,21 +106,44 @@ export default function PestDetectionScreen() {
     );
   };
 
-  const openCamera = () => {
-    launchCamera(
-      {
-        mediaType: 'photo',
-        quality: 0.8,
-        maxWidth: 1024,
-        maxHeight: 1024,
-      },
-      (response) => {
-        if (response.assets && response.assets[0]) {
-          setImageUri(response.assets[0].uri);
-          setResult(null);
-        }
+  const openCamera = async () => {
+    if (!hasPermission) {
+      const permissionResult = await requestPermission();
+      if (!permissionResult) {
+        Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
+        return;
       }
-    );
+    }
+    setShowCamera(true);
+  };
+
+  const takePicture = async () => {
+    try {
+      if (!cameraRef.current) {
+        Alert.alert('Error', 'Camera not ready');
+        return;
+      }
+      
+      const photo = await cameraRef.current.takePhoto({
+        qualityPrioritization: 'speed',
+        flash: 'off',
+        photoFormat: 'jpeg', // Force JPEG - React Native Image can't render HEIC/HEIF
+      });
+      
+      // Vision Camera returns raw path, React Native Image REQUIRES file:// prefix on Android
+      const uri = `file://${photo.path}`;
+      
+      console.log('📸 Photo path:', photo.path);
+      console.log('📸 Photo format:', photo.format || 'unknown');
+      console.log('📸 Final URI:', uri);
+      
+      setImageUri(uri);
+      setResult(null);
+      setShowCamera(false);
+    } catch (error) {
+      console.error('Error taking picture:', error);
+      Alert.alert('Error', 'Failed to take picture. Please try again.');
+    }
   };
 
   const openGallery = () => {
@@ -194,7 +156,13 @@ export default function PestDetectionScreen() {
       },
       (response) => {
         if (response.assets && response.assets[0]) {
-          setImageUri(response.assets[0].uri);
+          const uri = response.assets[0].uri;
+          console.log('🖼️ Gallery image selected, URI:', uri);
+          // Ensure proper URI format for Android
+          const imagePath = Platform.OS === 'android' && !uri.startsWith('file://') && !uri.startsWith('content://')
+            ? `file://${uri}`
+            : uri;
+          setImageUri(imagePath);
           setResult(null);
         }
       }
@@ -279,7 +247,14 @@ export default function PestDetectionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
+      <ScrollView 
+        ref={mainScrollViewRef}
+        style={styles.scrollView} 
+        contentContainerStyle={[
+          styles.content,
+          showChat && styles.contentWithChat
+        ]}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Pest & Disease Detection</Text>
           <Text style={styles.subtitle}>Capture or upload plant images for AI-powered detection</Text>
@@ -289,7 +264,17 @@ export default function PestDetectionScreen() {
         <View style={styles.imageSection}>
           {imageUri ? (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: imageUri }} style={styles.image} />
+              <Image 
+                source={{ uri: imageUri }}
+                style={styles.image}
+                resizeMode="cover"
+                onLoad={() => {
+                  console.log('✅ Image loaded successfully');
+                }}
+                onError={(e) => {
+                  console.error('❌ Image error:', e.nativeEvent);
+                }}
+              />
               <TouchableOpacity style={styles.removeButton} onPress={clearImage}>
                 <X size={20} color="#fff" />
               </TouchableOpacity>
@@ -298,16 +283,6 @@ export default function PestDetectionScreen() {
             <View style={styles.imagePlaceholder}>
               <Camera size={48} color="#0F5132" />
               <Text style={styles.placeholderText}>Select an image to detect disease</Text>
-              <View style={styles.placeholderButtons}>
-                <TouchableOpacity style={styles.placeholderCameraButton} onPress={openCamera}>
-                  <Camera size={20} color="#0F5132" />
-                  <Text style={styles.placeholderButtonText}>Camera</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.placeholderGalleryButton} onPress={openGallery}>
-                  <Upload size={20} color="#2196F3" />
-                  <Text style={styles.placeholderGalleryButtonText}>Gallery</Text>
-                </TouchableOpacity>
-              </View>
             </View>
           )}
         </View>
@@ -362,42 +337,74 @@ export default function PestDetectionScreen() {
 
             {result.solution.found && (
               <>
-                <View style={styles.diseaseInfo}>
-                  <Text style={styles.diseaseName}>{result.solution.diseaseName}</Text>
-                  <Text style={styles.confidence}>
-                    Confidence: {(result.prediction.confidence * 100).toFixed(1)}%
-                  </Text>
-                  {result.solution.description && (
-                    <Text style={styles.description}>{result.solution.description}</Text>
-                  )}
-                </View>
-
-                {/* Solutions */}
-                <View style={styles.solutionsSection}>
-                  <Text style={styles.solutionsTitle}>Treatment Solutions</Text>
-                  {result.solution.solutions.map((solution, index) => (
-                    <View key={index} style={styles.solutionCard}>
-                      <View style={styles.solutionStep}>
-                        <Text style={styles.stepNumber}>{solution.step}</Text>
-                      </View>
-                      <View style={styles.solutionContent}>
-                        <Text style={styles.solutionTitle}>{solution.title}</Text>
-                        <Text style={styles.solutionDescription}>{solution.description}</Text>
-                      </View>
+                {/* Only show disease details if confidence >= 60% (or if it's "normal" - healthy crop) */}
+                {result.prediction.confidence >= 0.6 || result.solution.diseaseName === 'Healthy Crop' ? (
+                  <>
+                    <View style={styles.diseaseInfo}>
+                      <Text style={styles.diseaseName}>{result.solution.diseaseName}</Text>
+                      {result.solution.aliases && result.solution.aliases.length > 0 && (
+                        <View style={styles.aliasesContainer}>
+                          <Text style={styles.aliasesLabel}>Also known as: </Text>
+                          <Text style={styles.aliasesText}>
+                            {result.solution.aliases.join(', ')}
+                          </Text>
+                        </View>
+                      )}
+                      <Text style={styles.confidence}>
+                        Confidence: {(result.prediction.confidence * 100).toFixed(1)}%
+                      </Text>
+                      {result.prediction.isLowConfidence && (
+                        <View style={styles.lowConfidenceWarning}>
+                          <AlertCircle size={16} color="#FF9800" />
+                          <Text style={styles.lowConfidenceText}>
+                            ⚠️ Low confidence prediction. The image may not be a paddy crop, or the prediction is uncertain. Please verify with an expert.
+                          </Text>
+                        </View>
+                      )}
+                      {result.solution.description && (
+                        <Text style={styles.description}>{result.solution.description}</Text>
+                      )}
                     </View>
-                  ))}
-                </View>
 
-                {/* Prevention */}
-                {result.solution.prevention && result.solution.prevention.length > 0 && (
-                  <View style={styles.preventionSection}>
-                    <Text style={styles.preventionTitle}>Prevention Tips</Text>
-                    {result.solution.prevention.map((tip, index) => (
-                      <View key={index} style={styles.preventionItem}>
-                        <Text style={styles.preventionBullet}>•</Text>
-                        <Text style={styles.preventionText}>{tip}</Text>
+                    {/* Solutions - only show if not "normal" */}
+                    {result.solution.diseaseName !== 'Healthy Crop' && result.solution.solutions.length > 0 && (
+                      <View style={styles.solutionsSection}>
+                        <Text style={styles.solutionsTitle}>Treatment Solutions</Text>
+                        {result.solution.solutions.map((solution, index) => (
+                          <View key={index} style={styles.solutionCard}>
+                            <View style={styles.solutionStep}>
+                              <Text style={styles.stepNumber}>{solution.step}</Text>
+                            </View>
+                            <View style={styles.solutionContent}>
+                              <Text style={styles.solutionTitle}>{solution.title}</Text>
+                              <Text style={styles.solutionDescription}>{solution.description}</Text>
+                            </View>
+                          </View>
+                        ))}
                       </View>
-                    ))}
+                    )}
+
+                    {/* Prevention - only show if not "normal" */}
+                    {result.solution.diseaseName !== 'Healthy Crop' && result.solution.prevention && result.solution.prevention.length > 0 && (
+                      <View style={styles.preventionSection}>
+                        <Text style={styles.preventionTitle}>Prevention Tips</Text>
+                        {result.solution.prevention.map((tip, index) => (
+                          <View key={index} style={styles.preventionItem}>
+                            <Text style={styles.preventionBullet}>•</Text>
+                            <Text style={styles.preventionText}>{tip}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                ) : (
+                  <View style={styles.notFoundContainer}>
+                    <Text style={styles.notFoundText}>
+                      Prediction confidence is too low ({(result.prediction.confidence * 100).toFixed(1)}%).
+                    </Text>
+                    <Text style={styles.notFoundSubtext}>
+                      The model is not confident enough to provide a reliable diagnosis. Please try with a clearer image of a paddy crop leaf, or consult with an agricultural expert.
+                    </Text>
                   </View>
                 )}
               </>
@@ -418,7 +425,7 @@ export default function PestDetectionScreen() {
 
         {/* Chat Section */}
         {result && result.solution.found && (
-          <View style={styles.chatSection}>
+          <View ref={chatSectionRef} style={styles.chatSection}>
             <TouchableOpacity
               style={styles.chatToggle}
               onPress={() => setShowChat(!showChat)}
@@ -470,28 +477,13 @@ export default function PestDetectionScreen() {
                 <View style={styles.chatInputContainer}>
                   <TextInput
                     style={styles.chatInput}
-                    placeholder={isRecording ? "Listening..." : "Ask a question or tap mic..."}
+                    placeholder="Ask a question..."
                     value={chatInput}
                     onChangeText={setChatInput}
                     multiline
-                    editable={!sendingMessage && !isRecording}
+                    editable={!sendingMessage}
                     onSubmitEditing={sendChatMessage}
                   />
-                  <TouchableOpacity
-                    style={[
-                      styles.micButton,
-                      isRecording && styles.micButtonRecording,
-                      sendingMessage && styles.micButtonDisabled
-                    ]}
-                    onPress={toggleVoiceRecording}
-                    disabled={sendingMessage}
-                  >
-                    <Mic 
-                      size={20} 
-                      color={isRecording ? "#fff" : "#0F5132"} 
-                      fill={isRecording ? "#fff" : "none"}
-                    />
-                  </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.sendButton, sendingMessage && styles.sendButtonDisabled]}
                     onPress={sendChatMessage}
@@ -500,12 +492,6 @@ export default function PestDetectionScreen() {
                     <Send size={20} color="#fff" />
                   </TouchableOpacity>
                 </View>
-                {isRecording && (
-                  <View style={styles.recordingIndicator}>
-                    <View style={styles.recordingDot} />
-                    <Text style={styles.recordingText}>Recording... Speak now</Text>
-                  </View>
-                )}
               </View>
             )}
           </View>
@@ -522,16 +508,16 @@ export default function PestDetectionScreen() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>API Key Required</Text>
               <Text style={styles.modalText}>
-                To use the chat feature, you need a Gemini API key. Get one from:
+                To use the chat feature, you need an OpenAI API key. Get one from:
               </Text>
-              <Text style={styles.modalLink}>• Google Gemini: makersuite.google.com</Text>
+              <Text style={styles.modalLink}>• OpenAI: platform.openai.com/api-keys</Text>
               <Text style={styles.modalSubtext}>
-                Note: Your API key should be in the .env file as GEMINI_API_KEY
+                Note: Your API key should be in the .env file as OPENAI_API_KEY
               </Text>
               
               <TextInput
                 style={styles.apiKeyInput}
-                placeholder="Enter your Gemini API key"
+                placeholder="Enter your OpenAI API key"
                 value={apiKeyInput}
                 onChangeText={setApiKeyInput}
                 secureTextEntry
@@ -572,6 +558,67 @@ export default function PestDetectionScreen() {
             </View>
           </View>
         </Modal>
+
+        {/* Camera Modal */}
+        <Modal
+          visible={showCamera}
+          transparent={false}
+          animationType="slide"
+          onRequestClose={() => setShowCamera(false)}
+        >
+          <SafeAreaView style={styles.cameraContainer}>
+            {device && hasPermission ? (
+              <>
+                <VisionCamera
+                  style={styles.camera}
+                  device={device}
+                  isActive={showCamera}
+                  photo={true}
+                  ref={cameraRef}
+                />
+                <View style={styles.cameraControls}>
+                  <TouchableOpacity
+                    style={styles.cameraCloseButton}
+                    onPress={() => setShowCamera(false)}
+                  >
+                    <X size={24} color="#fff" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.captureButton}
+                    onPress={takePicture}
+                  >
+                    <View style={styles.captureButtonInner} />
+                  </TouchableOpacity>
+                  <View style={styles.cameraSpacer} />
+                </View>
+              </>
+            ) : (
+              <View style={styles.cameraPermissionContainer}>
+                <Text style={styles.cameraPermissionText}>
+                  Camera permission is required
+                </Text>
+                <TouchableOpacity
+                  style={styles.cameraPermissionButton}
+                  onPress={async () => {
+                    const result = await requestPermission();
+                    if (!result) {
+                      Alert.alert('Permission Denied', 'Camera permission is required.');
+                      setShowCamera(false);
+                    }
+                  }}
+                >
+                  <Text style={styles.cameraPermissionButtonText}>Grant Permission</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.cameraCloseButton2}
+                  onPress={() => setShowCamera(false)}
+                >
+                  <Text style={styles.cameraCloseButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </SafeAreaView>
+        </Modal>
       </ScrollView>
     </SafeAreaView>
   );
@@ -587,6 +634,10 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 100, // Extra padding for system navigation buttons (home/back tabs)
+  },
+  contentWithChat: {
+    paddingBottom: 150, // Extra padding when chat is open
   },
   header: {
     marginBottom: 24,
@@ -606,19 +657,13 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   imageContainer: {
-    position: 'relative',
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  image: {
     width: '100%',
     height: 300,
+    backgroundColor: '#e0e0e0',
+  } ,
+  image: {
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
   removeButton: {
@@ -631,6 +676,39 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 10,
+  },
+  debugInfo: {
+    position: 'absolute',
+    bottom: 12,
+    left: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    padding: 8,
+    borderRadius: 4,
+    zIndex: 5,
+  },
+  debugText: {
+    color: '#fff',
+    fontSize: 10,
+    fontFamily: 'monospace',
+  },
+  imageLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  imageLoadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#0F5132',
+    fontWeight: '600',
   },
   imagePlaceholder: {
     height: 300,
@@ -795,10 +873,45 @@ const styles = StyleSheet.create({
     color: '#0F5132',
     marginBottom: 4,
   },
+  aliasesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  aliasesLabel: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '600',
+  },
+  aliasesText: {
+    fontSize: 13,
+    color: '#666',
+    fontStyle: 'italic',
+    flexShrink: 1,
+  },
   confidence: {
     fontSize: 14,
     color: '#4CAF50',
     marginBottom: 8,
+  },
+  lowConfidenceWarning: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FFF3E0',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#FFB74D',
+  },
+  lowConfidenceText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#E65100',
+    marginLeft: 8,
+    lineHeight: 18,
   },
   description: {
     fontSize: 14,
@@ -918,7 +1031,6 @@ const styles = StyleSheet.create({
     paddingTop: 12,
   },
   chatMessages: {
-    maxHeight: 300,
     marginBottom: 12,
   },
   chatWelcome: {
@@ -955,6 +1067,7 @@ const styles = StyleSheet.create({
   chatMessageText: {
     fontSize: 14,
     lineHeight: 20,
+    flexShrink: 1,
   },
   userMessageText: {
     color: '#fff',
@@ -981,23 +1094,6 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     backgroundColor: '#FAFBFC',
   },
-  micButton: {
-    backgroundColor: '#F0F9F4',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#0F5132',
-  },
-  micButtonRecording: {
-    backgroundColor: '#FF3B30',
-    borderColor: '#FF3B30',
-  },
-  micButtonDisabled: {
-    opacity: 0.5,
-  },
   sendButton: {
     backgroundColor: '#0F5132',
     width: 44,
@@ -1008,27 +1104,6 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
-  },
-  recordingIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: '#FFF3E0',
-    borderRadius: 8,
-    gap: 8,
-  },
-  recordingDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#FF3B30',
-  },
-  recordingText: {
-    fontSize: 14,
-    color: '#E65100',
-    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,
@@ -1059,6 +1134,85 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#2196F3',
     marginBottom: 4,
+  },
+  cameraContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraControls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    paddingTop: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  cameraCloseButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#0F5132',
+  },
+  captureButtonInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#0F5132',
+  },
+  cameraSpacer: {
+    width: 50,
+  },
+  cameraPermissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+    padding: 20,
+  },
+  cameraPermissionText: {
+    fontSize: 18,
+    color: '#fff',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  cameraPermissionButton: {
+    backgroundColor: '#0F5132',
+    paddingHorizontal: 30,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  cameraPermissionButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  cameraCloseButton2: {
+    paddingVertical: 12,
+  },
+  cameraCloseButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
   modalSubtext: {
     fontSize: 12,

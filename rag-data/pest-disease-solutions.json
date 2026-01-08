@@ -1,110 +1,585 @@
 [
   {
-    "name": "Bacterial Leaf Blight",
-    "aliases": ["bacterial_leaf_blight", "Bacterial Blight", "BB", "Xanthomonas Blight"],
-    "description": "Bacterial disease caused by Xanthomonas oryzae pv. oryzae, causing water-soaked lesions on leaves that turn yellow and die.",
+    "name": "Blast (Magnaporthe grisea)",
+    "model_var": "blast",
+    "aliases": ["blast", "rice blast", "leaf blast"],
+    "description": "A fungal disease caused by Magnaporthe grisea, affecting leaves, stems, and panicles, which can cause severe yield reduction.",
     "severity": "high",
     "solutions": [
       {
         "step": 1,
-        "title": "Copper-Based Bactericide",
-        "description": "Spray Copper Oxychloride (0.3%) or Streptomycin (0.05%) immediately upon detection"
+        "title": "Kasugamycin 20 g/l SL",
+        "description": "Dilution rate: 15 ml/10L, Application rate: Low canopy 475-600 ml/ha, High canopy 750-900 ml/ha. Spray interval: 5-10 days. Pre-harvest interval (PHI): 14 days."
       },
       {
         "step": 2,
-        "title": "Remove Infected Leaves",
-        "description": "Prune and destroy infected leaves to reduce bacterial inoculum and prevent spread"
+        "title": "Tebuconazole 250 g/l EW",
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days."
       },
       {
         "step": 3,
-        "title": "Water Management",
-        "description": "Avoid overhead irrigation and reduce water splashing between plants. Maintain proper drainage."
+        "title": "Isoprothiolane 400 g/l EC",
+        "description": "Dilution rate: 12.5 ml/10L, Application rate: Low canopy 400-500 ml/ha, High canopy 625-750 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
       },
       {
         "step": 4,
-        "title": "Field Sanitation",
-        "description": "Remove weeds and maintain clean field borders. Practice crop rotation with non-host crops."
+        "title": "Carbendazim 50% WG or 500 g/l SC",
+        "description": "Dilution rate: 7 g or 7 ml/10L, Application rate: Low canopy 225-275 g/ml/ha, High canopy 350-425 g/ml/ha. Spray interval: 10-14 days. PHI: 14 days."
+      },
+      {
+        "step": 5,
+        "title": "Tricyclazole 75% WP",
+        "description": "Dilution rate: 6 g/10L, Application rate: Low canopy 200-250 g/ha, High canopy 300-350 g/ha. Spray interval: 10-14 days. PHI: 14 days."
       }
     ],
     "prevention": [
-      "Use certified disease-free seeds",
       "Plant resistant varieties",
-      "Avoid wounding plants during field operations",
-      "Practice crop rotation with non-host crops",
-      "Maintain proper plant spacing",
-      "Avoid excessive nitrogen fertilization"
+      "Maintain proper plant spacing for ventilation and light penetration",
+      "Avoid excessive nitrogen fertilization",
+      "Ensure timely drainage to avoid waterlogging",
+      "Remove and destroy infected plant debris to reduce pathogen sources"
     ]
   },
   {
-    "name": "Brown Spot",
-    "aliases": ["brown_spot", "Helminthosporium Leaf Spot", "Brown Leaf Spot"],
-    "description": "A fungal disease caused by Bipolaris oryzae that affects rice leaves, causing brown spots and reducing yield.",
+    "name": "Sheath Blight (Rhizoctonia solani)",
+    "aliases": ["sheath blight", "Rhizoctonia sheath blight"],
+    "description": "A fungal disease caused by Rhizoctonia solani, primarily affecting sheaths but can also infect leaves and panicles, leading to lodging and yield reduction.",
     "severity": "high",
     "solutions": [
       {
         "step": 1,
-        "title": "Remove Infected Plants",
-        "description": "Remove and destroy severely infected plants to prevent spread"
+        "title": "Tebuconazole 250 g/l EW",
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days. Spray should be directed at the sheaths."
       },
       {
         "step": 2,
-        "title": "Apply Fungicide",
-        "description": "Spray with Propiconazole (0.1%) or Mancozeb (0.2%) at 10-15 day intervals"
+        "title": "Pencycuron 25% WP",
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-14 days. PHI: 14 days."
       },
       {
         "step": 3,
-        "title": "Improve Field Drainage",
-        "description": "Ensure proper water management and avoid waterlogging"
+        "title": "Hexaconazole 50 g/l EC",
+        "description": "Dilution rate: 20 ml/10L, Application rate: Low canopy 650-800 ml/ha, High canopy 1000-1200 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
       },
       {
         "step": 4,
-        "title": "Use Resistant Varieties",
-        "description": "Plant resistant varieties like IR64, IR72 in next season"
+        "title": "Thiophanate-methyl 70% WP",
+        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 14 days."
+      },
+      {
+        "step": 5,
+        "title": "Propiconazole 250 g/l EC",
+        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
+      }
+    ],
+    "prevention": [
+      "Maintain proper plant spacing for field ventilation",
+      "Avoid excessive nitrogen fertilization",
+      "Ensure timely drainage to reduce field humidity",
+      "Remove and destroy infected plant debris and weeds",
+      "Practice crop rotation with non-host crops"
+    ]
+  },
+  {
+    "name": "Brown spot",
+    "model_var": "brown_spot",
+    "aliases": ["Leaf spot", "Alternaria", "Cercospora"],
+    "description": "Refers to leaf spot diseases caused by various fungi (such as Alternaria, Cercospora, Mycosphaerella, etc.), characterized by brown or gray spots on leaves.",
+    "severity": "medium",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Mancozeb 75% WG or Maneb 80% WP",
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+      },
+      {
+        "step": 2,
+        "title": "Tebuconazole 250 g/l EW",
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days."
+      },
+      {
+        "step": 3,
+        "title": "Thiophanate-methyl 70% WP",
+        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 21 days."
+      },
+      {
+        "step": 4,
+        "title": "Propiconazole 250 g/l EC",
+        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
+      },
+      {
+        "step": 5,
+        "title": "Chlorothalonil 500g/l SC",
+        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
+      }
+    ],
+    "prevention": [
+      "Select resistant varieties",
+      "Apply balanced fertilization and avoid excessive nitrogen",
+      "Maintain field hygiene by removing infected plant debris",
+      "Practice proper irrigation to avoid prolonged leaf wetness",
+      "Rotate with non-host crops"
+    ]
+  },
+  {
+    "name": "Downy Mildew",
+    "model_var": "downy_mildew",
+    "aliases": ["Downy Mildew", "Peronospora", "Pseudoperonospora"],
+    "description": "A disease caused by oomycete fungi (such as Peronospora, Pseudoperonospora), characterized by grayish-white mold on the underside of leaves.",
+    "severity": "medium",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Mancozeb 75% WG or Maneb 80% WP",
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+      },
+      {
+        "step": 2,
+        "title": "Mancozeb 64% + Metalaxyl 8% WP",
+        "description": "Dilution rate: 12.5 g/10L, Application rate: Low canopy 400-500 g/ha, High canopy 625-750 g/ha. Spray interval: 12-14 days. PHI: 14 days."
+      },
+      {
+        "step": 3,
+        "title": "Propineb 70% WP",
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+      },
+      {
+        "step": 4,
+        "title": "Propanocarb 607 g/l SL",
+        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
+      },
+      {
+        "step": 5,
+        "title": "Captan 50% WP",
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 6-8 days. PHI: 14 days."
+      }
+    ],
+    "prevention": [
+      "Plant resistant varieties",
+      "Avoid dense planting to ensure ventilation and light penetration",
+      "Practice proper irrigation to avoid prolonged leaf wetness",
+      "Remove and destroy infected plant debris and weeds",
+      "Rotate with non-host crops"
+    ]
+  },
+  {
+    "name": "Bacterial Leaf Blight",
+    "model_var": "bacterial_leaf_blight",
+    "aliases": ["Bacterial Leaf Blight", "Bacterial Blight", "BLB", "Xanthomonas Blight"],
+    "description": "A bacterial disease caused by Xanthomonas oryzae pv. oryzae, producing water-soaked orange/yellow stripes on leaves, wilting in seedlings (kresek), and bacterial ooze from tissue.",
+    "severity": "high",
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Copper Oxychloride 50% WP",
+        "description": "Dilution rate: 0.3% (30 g per 10 L water). Spray when first symptoms appear. Spray interval: 7-10 days. PHI: 14 days. Ensure thorough leaf coverage."
+      },
+      {
+        "step": 2,
+        "title": "Streptomycin 20% SC",
+        "description": "Dilution rate: 0.05% (5 ml per 10 L water). Apply in combination with copper oxychloride for severe outbreaks. Spray interval: 7-10 days. PHI: 14 days."
+      },
+      {
+        "step": 3,
+        "title": "Field Sanitation & Cultural Practices",
+        "description": "Remove and destroy infected leaves and weeds immediately. Drain fields promptly. Avoid prolonged standing water. Avoid excess nitrogen application. Prevent water from infected fields from entering healthy fields."
+      },
+      {
+        "step": 4,
+        "title": "Balanced Fertilization",
+        "description": "Apply potassium fertilizer to improve plant resistance. Use leaf colour chart for nitrogen application to avoid over-fertilization."
+      },
+      {
+        "step": 5,
+        "title": "Seed Treatment",
+        "description": "Soak seeds for 8 hours in Agrimycin (0.025%) + wettable Ceresan (0.05%), followed by hot water treatment for 30 min at 52–54°C; or soak seeds in Ceresan (0.1%) + Streptocyclin (3 g/L). Apply bleaching powder @ 100 g/L and zinc sulfate 2%. Optional foliar sprays: Streptomycin sulfate + Tetracycline (300 g) + Copper oxychloride (1.25 kg/ha), repeat after 15 days if necessary."
+      },
+      {
+        "step": 6,
+        "title": "Foliar Control",
+        "description": "Spray neem oil 3% or NSKE 5%, or fresh cow dung extract (20 g in 1 L water, use supernatant) starting from initial appearance of disease, repeat at fortnightly intervals."
       }
     ],
     "prevention": [
       "Use certified disease-free seeds",
-      "Maintain proper spacing (20x15 cm)",
+      "Grow tolerant/resistant varieties (e.g., IR20, IR72, Ponmani, TKM6, Bg 250, At 362)",
+      "Maintain proper plant spacing",
       "Avoid excessive nitrogen fertilization",
-      "Practice crop rotation",
-      "Improve field drainage",
-      "Remove crop residues after harvest"
+      "Practice crop rotation with non-host crops",
+      "Keep fields clean and remove weeds",
+      "Ensure good field drainage",
+      "Prevent water from infected fields entering healthy fields"
     ]
   },
   {
-    "name": "Leaf Blast",
-    "aliases": ["leaf_blast", "Rice Blast", "Blast Disease", "Magnaporthe Blast"],
-    "description": "A devastating fungal disease caused by Magnaporthe oryzae, affecting leaves with diamond-shaped lesions that can spread to nodes and panicles.",
-    "severity": "critical",
-    "solutions": [
+    "name": "Bacterial Leaf Streak",
+    "model_var": "bacterial_leaf_streak",
+    "aliases": ["Bacterial Leaf Streak", "Leaf Streak", "BLS", "Xanthomonas oryzicola streak"],
+    "description": "A bacterial disease caused by Xanthomonas oryzae pv. oryzicola, producing narrow interveinal brownish-yellow streaks on rice leaves. Favors warm, humid conditions, heavy rain, clay soils, and high nitrogen applications.",
+    "severity": "high",
+    "monitoring": [
       {
         "step": 1,
-        "title": "Immediate Fungicide Treatment",
-        "description": "Apply Tricyclazole (0.06%) or Isoprothiolane (0.1%) immediately. Alternative: Kasugamycin (20g/l SL) at 15ml/10L, repeat every 5-10 days."
+        "title": "Field Survey Every 2 Weeks",
+        "description": "Walk the field every 14 days from tillering to heading stage. Look for narrow brownish-yellow streaks between leaf veins indicating early bacterial streak."
       },
       {
         "step": 2,
-        "title": "Remove Infected Parts",
-        "description": "Cut and burn infected leaves and panicles to prevent further spread"
+        "title": "Weather Condition Monitoring",
+        "description": "Record temperature, relative humidity, and rainfall. Disease risk increases when temperature ~28°C, RH >80%, heavy rains, high water levels, and strong winds occur."
       },
       {
         "step": 3,
-        "title": "Adjust Water Management",
-        "description": "Maintain shallow water level (5-7 cm) and avoid drought stress"
-      },
-      {
-        "step": 4,
-        "title": "Post-Harvest Management",
-        "description": "Destroy crop residues and practice deep plowing after harvest"
+        "title": "Soil & Field Condition Watch",
+        "description": "Clay or fertile soils with high water content increase bacterial streak risk. Reduce excessive water depth when possible."
       }
     ],
     "prevention": [
-      "Use resistant varieties (IR64, Swarna, MTU1010)",
-      "Avoid excessive nitrogen application",
-      "Maintain proper plant spacing",
-      "Apply silicon fertilizers",
-      "Practice crop rotation",
-      "Early planting to avoid peak disease period"
+      "Rice field sanitation: plough soil up and over to expose to the sun",
+      "Avoid susceptible varieties in hotspot areas (e.g., RD47, RD41, PSL2, KDML105, RD15, RD6)",
+      "Do not grow a single rice variety monoculture; mix or rotate varieties",
+      "If sowing, use seed rate of 15–20 kg/rai",
+      "Apply lower nitrogen rates (<25 kg/rai on fertile soil)",
+      "Split nitrogen fertilizer into two applications (~10 kg/rai each time)",
+      "Maintain good drainage and avoid prolonged standing water",
+      "Prevent water movement from infected fields into healthy fields",
+      "Ensure weeds and collateral hosts are removed early"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Copper Oxychloride 50% WP",
+        "description": "Dilution rate: 0.25% (25 g per 10 L water). Spray when disease symptoms first appear. Spray interval: 7 days. PHI (pre-harvest interval): 14 days. Apply in early morning or late afternoon for better coverage."
+      },
+      {
+        "step": 2,
+        "title": "Copper Hydroxide 77% WP",
+        "description": "Dilution rate: 0.2% (20 g per 10 L water). Spray once symptoms detected. Repeat every 7–10 days until control achieved, avoiding excessive use to protect beneficial microbes. PHI: 14 days."
+      },
+      {
+        "step": 3,
+        "title": "Copper Sulfate 20% WP",
+        "description": "Dilution rate: 0.15–0.2% (15–20 g per 10 L water). Use at first sign of disease. Spray interval: 7 days. PHI: 14 days. Ensure good coverage of leaf surfaces."
+      },
+      {
+        "step": 4,
+        "title": "Bactericide Rotation for Resistance Management",
+        "description": "Rotate copper products with different active ingredients to avoid bacterial resistance: e.g., Copper Oxychloride → Copper Hydroxide → combined product. Do not exceed three applications per season without extension guidance."
+      },
+      {
+        "step": 5,
+        "title": "Field Sanitation After Detection",
+        "description": "Immediately remove heavily infected leaves and debris. Do not drain water from infected rice fields into adjacent fields. Maintain clean field borders and remove weeds promptly."
+      }
+    ],
+    "restrictions": [
+      "Apply bactericides only when at least 25% disease incidence is found in the field",
+      "Avoid overuse of any single bactericide to prevent resistance development",
+      "Follow label instructions and extension officer guidance strictly",
+      "Ensure no water from treated fields flows into neighboring healthy fields during chemical application"
+    ]
+  },
+  {
+    "name": "Bacterial Panicle Blight",
+    "model_var": "bacterial_panicle_blight",
+    "aliases": ["Bacterial Panicle Blight", "Panicle Blight", "Burkholderia glumae infection"],
+    "description": "A bacterial disease of rice caused by Burkholderia glumae, leading to panicle and grain rot, discoloration, flower sterility, and yield loss. The bacteria thrive under warm temperatures (30–37°C) and high humidity, especially at flowering.",
+    "severity": "critical",
+    "symptoms": [
+      "Straw‑colored or discolored spikelets on panicles",
+      "Grain rotting and panicle blanking",
+      "Sheath rot in flag leaves",
+      "Flower sterility and aborted grains",
+      "Seed germination inhibition in infected seeds"
+    ],
+    "monitoring": [
+      {
+        "step": 1,
+        "title": "Field Scouting at Key Stages",
+        "description": "Inspect rice fields during panicle emergence and flowering. Look for symptomatic panicles (straw color, empty grain). Check seedling emergence for poor germination."
+      },
+      {
+        "step": 2,
+        "title": "Environmental Conditions",
+        "description": "Monitor temperature (30–37°C) and humidity (RH >80%). High humidity and frequent rain or cloudy conditions increase risk."
+      },
+      {
+        "step": 3,
+        "title": "Soil and Field History",
+        "description": "Record if Burkholderia glumae has occurred previously. Clay or poorly drained soils favor disease development."
+      }
+    ],
+    "prevention": [
+      "Use certified disease‑free seeds (reduce bacterial inoculum source)",
+      "Practice crop rotation with non‑host crops (maize, legumes)",
+      "Plant early or short‑duration rice varieties to avoid peak disease periods",
+      "Avoid monoculture and rotate susceptible cultivars",
+      "Maintain proper plant spacing to reduce relative humidity in the canopy",
+      "Avoid excessive nitrogen and manage balanced fertility",
+      "Improve field drainage and avoid standing water during flowering"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Oxolinic Acid (Starner 20 WP)",
+        "description": "Preventive foliar application at panicle initiation. Apply at **500–1000 ppm (0.05–0.10%) dilution** (5–10 g of Starner 20 WP per 10 L of water). If risk is very high, research indicates up to **1500 ppm (0.15%)** can be effective under controlled conditions. Spray interval: **10–14 days** before symptoms appear. Follow product label for PHI and safety."
+      },
+      {
+        "step": 2,
+        "title": "Copper Hydroxide 77% WP (Seed Treatment)",
+        "description": "Soak seeds in **5% solution** of copper hydroxide fungicide for seed disinfection prior to sowing to reduce seedborne Burkholderia glumae populations. Use clean water, soak for appropriate time, then dry seeds before sowing."
+      },
+      {
+        "step": 3,
+        "title": "Hot Water Seed Treatment",
+        "description": "Soak seeds in clean water then treat with hot water at **52–54°C for 30 minutes** to reduce seedborne bacteria. After treatment, cool seeds before sowing."
+      },
+      {
+        "step": 4,
+        "title": "Integrated Field Management",
+        "description": "Combine preventive foliar spray + balanced nutrition + improved drainage and sanitation. Do not rely solely on chemicals once disease pressure is high; use management strategies before outbreak."
+      }
+    ],
+    "restrictions": [
+      "Do not apply the same bactericide more than **two times per crop cycle** (due to resistance risk)",
+      "Always follow product label instructions for dose, PHI, and application timing",
+      "Avoid chemical application once symptoms are widespread (control is preventive, not curative at advanced stages)",
+      "Do not drain water from infected fields into healthy fields during chemical application or field operations"
+    ]
+  },
+  {
+    "name": "Dead Heart",
+    "model_var": "dead_heart",
+    "aliases": ["Dead Heart", "Stem Borer Damage", "Yellow Stem Borer (YSB)"],
+    "description": "A symptom in rice caused by stem borer insects (especially Yellow Stem Borer, Scirpophaga incertulas) where the central shoot (tiller) becomes yellow and dies due to larval feeding inside the stem. This leads to yield loss and tiller death.",
+    "severity": "high",
+    "symptoms": [
+      "Central tiller turns yellow and wilts mid‑season (‘dead heart’)",
+      "Dead or broken tillers when squeezed show stem boring damage",
+      "Presence of small holes and frass (sawdust) at base of damaged tillers",
+      "Uneven plant growth and reduced tiller count"
+    ],
+    "monitoring": [
+      {
+        "step": 1,
+        "title": "Field Scouting Early Season",
+        "description": "Inspect fields weekly from 20–60 days after transplanting. Look for yellowing and dead central tillers."
+      },
+      {
+        "step": 2,
+        "title": "Pheromone Trap Monitoring",
+        "description": "Set pheromone traps for Yellow Stem Borer (YSB) before transplanting. Monitor trap catches weekly; increased numbers indicate potential outbreak risk."
+      },
+      {
+        "step": 3,
+        "title": "Economic Threshold Check",
+        "description": "Apply control measures when 5–10% of tillers show ‘dead heart’ symptoms or when pest counts from traps exceed threshold levels."
+      }
+    ],
+    "prevention": [
+      "Use resistant or moderately tolerant rice varieties where available",
+      "Avoid over‑fertilization with nitrogen especially early in crop growth",
+      "Practice synchronous planting to limit pest buildup",
+      "Maintain clean field borders and remove plant residues where stem borers can multiply",
+      "Rotate crops away from rice to disrupt stem borer life cycles",
+      "Maintain proper water levels (shallow flooding) to deter excessive moth activity"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Fipronil 0.3% Granules (Soil/Seed Treatment)",
+        "description": "Apply Fipronil 0.3% G at **4–5 kg/ha**, incorporated into soil or applied at transplanting near base of plants. Controls early larval establishment and reduces dead heart incidence."
+      },
+      {
+        "step": 2,
+        "title": "Chlorantraniliprole 18.5% SC Foliar Spray",
+        "description": "Prepare **200–300 ml per 100 L water (0.04–0.06%)** and apply as a **foliar spray at tillering stage** when stem borer activity begins. Re‑spray only if larvae counts exceed threshold at 10–14 day intervals."
+      },
+      {
+        "step": 3,
+        "title": "Carbosulfan 200g/l SC Foliar Spray",
+        "description": "Dilute **250–300 ml per 100 L water (0.05–0.06%)** and spray evenly across the crop when stem borer larval activity is confirmed. Repeat after 10–14 days if needed and justified by monitoring."
+      },
+      {
+        "step": 4,
+        "title": "Thiamethoxam + Chlorantraniliprole Combination",
+        "description": "Use **combination formulations (e.g., 25–30 g per 15–20 L water per acre)** as early foliar treatment if pheromone traps indicate high YSB activity. Repeat based on monitoring, up to **2 applications per cycle**."
+      },
+      {
+        "step": 5,
+        "title": "Chlorpyriphos 20% EC (Alternative)",
+        "description": "Apply as **foliar spray 500–600 ml/ha** in 200–300 L water if stem borer infestations are severe and other products are ineffective. Use as alternative, not first choice, due to effects on beneficial insects."
+      }
+    ],
+    "safety": [
+      "Wear protective clothing (gloves, mask, long sleeves) during pesticide mixing and application",
+      "Avoid eating or drinking while handling pesticides",
+      "Do not spray during windy conditions to reduce drift",
+      "Wash equipment and hands thoroughly after application",
+      "Observe the product’s Pre‑Harvest Interval (PHI) and re‑entry intervals"
+    ],
+    "restrictions": [
+      "Do not exceed more than **2 foliar applications per crop cycle** with the same active ingredient to prevent resistance development",
+      "Apply chemicals **only when stem borer counts exceed threshold levels** (5–10% dead heart or high pheromone trap counts)",
+      "Follow pesticide label instructions exactly; do not mix incompatible chemicals",
+      "Avoid spraying during flowering to protect pollinators and beneficial insects"
+    ]
+  },
+  {
+    "name": "Hispa",
+    "model_var": "hispa",
+    "aliases": ["hispa", "rice hispa", "spiny beetle"],
+    "description": "Rice hispa (Dicladispa armigera) is a common insect pest in paddy causing leaf scraping, longitudinal white streaks, and reduced photosynthesis. Severe infestations cause leaf drying and yield reduction.",
+    "severity": "high",
+    "symptoms": [
+      "Silvering or longitudinal white streaks on leaf blades",
+      "Leaf tips turn brown and dry (hopper burn)",
+      "Young seedlings show stunted growth",
+      "Severe feeding can reduce tillering and yield"
+    ],
+    "monitoring": [
+      {
+        "step": 1,
+        "title": "Field Inspection",
+        "description": "Inspect paddy fields weekly from 20 days after transplanting. Look for silver streaks and small dark beetles on leaf surfaces."
+      },
+      {
+        "step": 2,
+        "title": "Beat Sheet Sampling",
+        "description": "Tap plants over a white tray or sheet to dislodge adult beetles. Record counts. If average >3 adult hispa per 50 tillers, consider action."
+      },
+      {
+        "step": 3,
+        "title": "Weather Monitoring",
+        "description": "Warm, humid conditions favor hispa. Monitor rainfall and temperature; outbreaks often appear after weed growth or rain events."
+      }
+    ],
+    "prevention": [
+      "Maintain proper plant spacing for good air circulation",
+      "Avoid excessive nitrogen application early in crop growth",
+      "Remove weeds and alternate host plants near fields",
+      "Practice crop rotation with non‑host crops (maize, legumes)",
+      "Ensure healthy, vigorous seedlings at transplanting",
+      "Avoid monocropping and rotate cultivars to reduce pest buildup"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Emamectin Benzoate 5% SG",
+        "description": "Dilute **5 g per 10 L water (0.05%)** and spray evenly over leaves when hispa adults or larvae are first observed. Spray interval: **10–14 days** if needed. Use lower volume (~200–300 L/ha for foliar spray)."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil + Imidacloprid Combination",
+        "description": "Use **recommended granule formulation at 4–5 kg/ha** applied at transplanting or early tillering. Effective soil and early leaf protection against larvae and adults."
+      },
+      {
+        "step": 3,
+        "title": "Carbofuran 3G Granules",
+        "description": "Apply **3G granules at 6–8 kg/ha** evenly at transplanting or when infestation is confirmed. Incorporate lightly into the soil surface to target early larvae stages."
+      },
+      {
+        "step": 4,
+        "title": "Thiamethoxam 25% WG",
+        "description": "Use **25–30 g per 15–20 L water per acre** as foliar spray when >3 adults/50 tillers are detected. Spray in the early morning or late afternoon to minimize beneficial insect impact."
+      },
+      {
+        "step": 5,
+        "title": "Rotational Control & IPM",
+        "description": "Rotate active ingredients between sprays (e.g., Emamectin→Thiamethoxam→Fipronil combo) to prevent resistance. Do **not exceed two sprays of the same class** per season."
+      }
+    ],
+    "safety": [
+      "Use protective gear (gloves, mask, long sleeves) during pesticide application",
+      "Avoid spraying during windy or hot midday periods",
+      "Do not apply during flowering to protect pollinators and aquatic fauna",
+      "Wash equipment and protective clothing after use"
+    ],
+    "restrictions": [
+      "Do not apply the same chemical class more than **twice per crop cycle**",
+      "Follow product label instructions for doses and PHI (pre‑harvest interval)",
+      "Only apply chemical control when monitoring thresholds are exceeded",
+      "Avoid draining sprayed water into irrigation channels to protect fish and downstream fields"
+    ]
+  },
+  {
+    "name": "Tungro Disease",
+    "model_var": "tungro",
+    "aliases": ["tungro", "rice tungro", "tungro virus disease"],
+    "description": "Tungro is a viral disease of rice transmitted primarily by leafhoppers (Nephotettix spp. such as Nephotettix virescens). Infected plants cannot be cured once infected. Management focuses on vector control, resistant varieties, and cultural practices to reduce vector populations.",
+    "severity": "critical",
+    "symptoms": [
+      "Stunted plants with shortened internodes",
+      "Yellow to orange discoloration of leaves (tungro yellowing)",
+      "Reduced tillering",
+      "Delayed flowering and panicle formation",
+      "Poor grain filling leading to ‘chaffy’ seeds"
+    ],
+    "monitoring": [
+      {
+        "step": 1,
+        "title": "Regular Field Inspection",
+        "description": "Inspect fields weekly from seedling to booting stages. Look for yellow/orange leaf discoloration and stunted plants."
+      },
+      {
+        "step": 2,
+        "title": "Leafhopper Monitoring",
+        "description": "Use light traps or visual counts along 5–10 paddy rows. Record average leafhopper counts; high populations often precede tungro outbreaks."
+      },
+      {
+        "step": 3,
+        "title": "Environmental Monitoring",
+        "description": "Warm temperatures (above 25°C), high humidity, and dense rice canopies can favor leafhopper populations. Note weather trends as part of risk assessment."
+      }
+    ],
+    "prevention": [
+      "Use certified disease‑free seeds to reduce inoculum",
+      "Grow resistant or tolerant rice varieties (as recommended by local extension)",
+      "Practice synchronized planting within local villages to reduce vector movement",
+      "Maintain proper plant spacing for good airflow",
+      "Remove volunteer rice and alternate host plants near fields",
+      "Avoid excessive nitrogen application which can encourage leafhopper build‑up",
+      "Maintain clean bunds and reduce weeds where leafhoppers can breed",
+      "Implement crop rotation to disrupt vector life cycles"
+    ],
+    "solutions": [
+      {
+        "step": 1,
+        "title": "Buprofezin 250 g/l SC (e.g., Jawwa)",
+        "description": "Dilute **60–80 ml per 15–20 L water per acre** and spray when leafhopper numbers exceed 5–10 per 50 tillers. Spray at early morning or late afternoon. Repeat only if monitoring thresholds are exceeded after 7–10 days."
+      },
+      {
+        "step": 2,
+        "title": "Pymetrozine 50% WG (e.g., Active Ingredient)",
+        "description": "Dilute **25–30 g per 20 L water per acre** as a foliar spray when significant leafhopper activity is observed. Pymetrozine acts as an insect feeding inhibitor and disrupts vector transmission."
+      },
+      {
+        "step": 3,
+        "title": "Vector Control Rotation",
+        "description": "Rotate active ingredients between applications (e.g., Buprofezin → Pymetrozine) to delay resistance development in leafhopper populations. Do not apply the same class more than twice per season."
+      },
+      {
+        "step": 4,
+        "title": "Border Sprays",
+        "description": "Spray a protective spray barrier along the first 2–3 rows at field edges when neighboring fields show high leafhopper pressure. Use the same dilution rates as step 1 or step 2."
+      },
+      {
+        "step": 5,
+        "title": "Combined Cultural + Chemical Action",
+        "description": "Vector control works best with cultural practices. After spraying, continue monitoring and integrate inter‑plot rotation and weed control to reduce leafhopper refuges."
+      }
+    ],
+    "safety": [
+      "Use protective equipment (gloves, mask, long sleeves) when mixing and spraying",
+      "Avoid spraying during flowering to protect beneficial insects",
+      "Do not enter treated areas until spray deposits have dried",
+      "Wash equipment and clothing after use"
+    ],
+    "restrictions": [
+      "Do not apply the same active ingredient more than **two times per crop cycle**",
+      "Follow label instructions for doses, Pre‑Harvest Intervals (PHI), and re‑entry intervals",
+      "Apply insecticides only when monitoring thresholds are exceeded to protect natural enemies",
+      "Avoid draining sprayed water into irrigation channels or neighboring plots"
     ]
   }
 ]

@@ -1,10 +1,9 @@
-
-import { GEMINI_API_KEY } from '@env';
+import { OPENAI_API_KEY } from '@env';
 
 class LLMService {
   constructor() {
     this.apiKey = null;
-    this.baseURL = 'https://generativelanguage.googleapis.com/v1';
+    this.baseURL = 'https://api.openai.com/v1';
     this.initialized = false;
   }
 
@@ -13,15 +12,15 @@ class LLMService {
    */
   async loadFromStorage() {
     try {
-      // Load from .env file (Gemini API key)
-      if (GEMINI_API_KEY && GEMINI_API_KEY.trim()) {
-        this.apiKey = GEMINI_API_KEY.trim();
+      // Load from .env file (OpenAI API key)
+      if (OPENAI_API_KEY && OPENAI_API_KEY.trim()) {
+        this.apiKey = OPENAI_API_KEY.trim();
         this.initialized = true;
-        console.log('✅ LLM Service loaded from .env (Gemini)');
+        console.log('✅ LLM Service loaded from .env (OpenAI)');
         return true;
       }
       
-      console.warn('⚠️ GEMINI_API_KEY not found in .env file');
+      console.warn('⚠️ OPENAI_API_KEY not found in .env file');
       return false;
     } catch (error) {
       console.error('Failed to load API key:', error);
@@ -31,12 +30,12 @@ class LLMService {
 
   /**
    * Initialize with API key (manual override if needed)
-   * @param {string} apiKey - Your Gemini API key
+   * @param {string} apiKey - Your OpenAI API key
    */
   async initialize(apiKey) {
     this.apiKey = apiKey;
     this.initialized = true;
-    console.log('✅ LLM Service initialized with Gemini');
+    console.log('✅ LLM Service initialized with OpenAI');
   }
 
   /**
@@ -49,7 +48,7 @@ class LLMService {
   }
 
   /**
-   * Generate response using Gemini API
+   * Generate response using OpenAI API
    * @param {string} userQuestion - User's question
    * @param {object} ragContext - Context from RAG (disease info, solutions)
    * @returns {string} - Generated response
@@ -63,8 +62,8 @@ class LLMService {
       // Build context from RAG data
       const contextPrompt = this.buildContextPrompt(ragContext);
       
-      // Generate response using Gemini
-      return await this.generateGemini(userQuestion, contextPrompt);
+      // Generate response using OpenAI
+      return await this.generateOpenAI(userQuestion, contextPrompt);
     } catch (error) {
       console.error('LLM API error:', error);
       throw new Error(`Failed to generate response: ${error.message}`);
@@ -103,33 +102,46 @@ class LLMService {
   }
 
   /**
-   * Generate response using Google Gemini API
+   * Generate response using OpenAI API
    */
-  async generateGemini(userQuestion, contextPrompt) {
+  async generateOpenAI(userQuestion, contextPrompt) {
+    // Use gpt-3.5-turbo (cheaper) or gpt-4 (better quality) depending on your needs
+    const modelName = 'gpt-3.5-turbo';
+    
     const response = await fetch(
-      `${this.baseURL}/models/gemini-pro:generateContent?key=${this.apiKey}`,
+      `${this.baseURL}/chat/completions`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `You are an expert agricultural advisor. Based on this context:\n\n${contextPrompt}\n\nQuestion: ${userQuestion}\n\nProvide a helpful answer:`
-            }]
-          }]
+          model: modelName,
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a polite and helpful agricultural advisor for paddy crops. Answer questions briefly and clearly based on the provided context.'
+            },
+            {
+              role: 'user',
+              content: `Context:\n${contextPrompt}\n\nQuestion: ${userQuestion}`
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
         }),
       }
     );
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Gemini API error');
+      const errorData = await response.json();
+      const errorMessage = errorData.error?.message || 'OpenAI API error';
+      throw new Error(errorMessage);
     }
 
     const data = await response.json();
-    return data.candidates[0].content.parts[0].text;
+    return data.choices[0].message.content;
   }
 
   /**
@@ -142,4 +154,3 @@ class LLMService {
 
 // Export singleton instance
 export default new LLMService();
-

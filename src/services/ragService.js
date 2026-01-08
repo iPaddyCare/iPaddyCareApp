@@ -43,23 +43,33 @@ class RAGService {
       return null;
     }
 
-    // Normalize search term
+    // Normalize search term: lowercase and trim
     const normalizedSearch = diseaseName.toLowerCase().trim();
 
-    // Exact match first
+    // Priority 1: Exact match on model_var (the actual class label from model)
     let match = this.diseaseDatabase.find(
-      disease => disease.name.toLowerCase() === normalizedSearch
+      disease => disease.model_var && disease.model_var.toLowerCase() === normalizedSearch
     );
 
-    // Fuzzy match if no exact match
+    // Priority 2: Exact match on disease name
     if (!match) {
+      const normalizedSearchSpace = normalizedSearch.replace(/_/g, ' ');
+      match = this.diseaseDatabase.find(
+        disease => disease.name.toLowerCase().replace(/_/g, ' ') === normalizedSearchSpace
+      );
+    }
+
+    // Priority 3: Fuzzy match on name or aliases
+    if (!match) {
+      const normalizedSearchSpace = normalizedSearch.replace(/_/g, ' ');
       match = this.diseaseDatabase.find(disease => {
-        const name = disease.name.toLowerCase();
-        const aliases = (disease.aliases || []).map(a => a.toLowerCase());
+        const name = disease.name.toLowerCase().replace(/_/g, ' ');
+        const aliases = (disease.aliases || []).map(a => a.toLowerCase().replace(/_/g, ' '));
         
-        return name.includes(normalizedSearch) || 
-               normalizedSearch.includes(name) ||
-               aliases.some(alias => alias.includes(normalizedSearch));
+        return name === normalizedSearchSpace ||
+               name.includes(normalizedSearchSpace) || 
+               normalizedSearchSpace.includes(name) ||
+               aliases.some(alias => alias === normalizedSearchSpace || alias.includes(normalizedSearchSpace) || normalizedSearchSpace.includes(alias));
       });
     }
 
@@ -72,6 +82,21 @@ class RAGService {
    * @returns {Object} - Solution object with treatment steps
    */
   getSolution(diseaseName) {
+    // Handle "normal" (healthy crop) specially
+    const normalizedName = diseaseName.toLowerCase().trim();
+    if (normalizedName === 'normal') {
+      return {
+        found: true,
+        diseaseName: 'Healthy Crop',
+        description: 'There is nothing wrong with your crop. No disease or pest detected.',
+        severity: 'none',
+        solutions: [],
+        prevention: [],
+        images: []
+      };
+    }
+
+    // Search for actual diseases
     const disease = this.searchDisease(diseaseName);
 
     if (!disease) {
@@ -86,6 +111,7 @@ class RAGService {
     return {
       found: true,
       diseaseName: disease.name,
+      aliases: disease.aliases || [],
       description: disease.description || '',
       severity: disease.severity || 'medium',
       solutions: disease.solutions || [],
