@@ -36,13 +36,15 @@ class RiceVarietyApiService {
         top_n: data.top_n || 3,
         water_depth_cm: data.water_depth_cm,
       };
-      console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+      // Only log in development
+      if (__DEV__) {
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        const endpoint = "/rice-variety/predict";
+        const fullUrl = `${api.defaults.baseURL}${endpoint}`;
+        console.log('Calling API:', fullUrl);
+      }
 
-      // Log the full URL being called
       const endpoint = "/rice-variety/predict";
-      const fullUrl = `${api.defaults.baseURL}${endpoint}`;
-      console.log('Calling API:', fullUrl);
-      console.log('Base URL:', api.defaults.baseURL);
 
       const response = await api.post(endpoint, requestBody);
       console.log('API Response:', response.data);
