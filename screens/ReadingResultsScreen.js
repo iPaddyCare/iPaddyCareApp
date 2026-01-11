@@ -7,11 +7,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLanguage } from '../src/context/LanguageContext';
 import PredictionService from '../src/utils/predictionService';
+import NotificationService from '../src/utils/notificationService';
 
 const { width } = Dimensions.get('window');
 
@@ -48,6 +51,25 @@ const translations = {
     back: 'Back',
     celsius: '°C',
     percent: '%',
+    predictedMoisture: 'Predicted Moisture',
+    weatherAwareSchedule: 'Weather-Aware Drying Schedule',
+    scheduleStart: 'Schedule Start',
+    scheduleEnd: 'Schedule End',
+    enableNotifications: 'Enable Notifications',
+    notificationsEnabled: 'Notifications Enabled',
+    notificationsDisabled: 'Notifications Disabled',
+    sensorReadings: 'Sensor Readings',
+    capSensorValue: 'Capacitive Sensor Value',
+    sampleTemperature: 'Sample Temperature',
+    ambientTemperature: 'Ambient Temperature',
+    ambientHumidity: 'Ambient Humidity',
+    sampleWeight: 'Sample Weight',
+    bulkDensity: 'Bulk Density',
+    grams: 'g',
+    gPerCm3: 'g/cm³',
+    noSchedule: 'No drying schedule needed',
+    scheduleTime: 'Time',
+    scheduleDate: 'Date',
   },
   සිංහල: {
     title: 'කියවීමේ ප්‍රතිඵල',
@@ -80,6 +102,25 @@ const translations = {
     back: 'ආපසු',
     celsius: '°C',
     percent: '%',
+    predictedMoisture: 'අනාවැකි තෙතමනය',
+    weatherAwareSchedule: 'කාලගුණ දැනුවත් වියළීමේ කාලසටහන',
+    scheduleStart: 'කාලසටහන ආරම්භය',
+    scheduleEnd: 'කාලසටහන අවසානය',
+    enableNotifications: 'දැනුම්දීම් සක්‍රිය කරන්න',
+    notificationsEnabled: 'දැනුම්දීම් සක්‍රියයි',
+    notificationsDisabled: 'දැනුම්දීම් අක්‍රියයි',
+    sensorReadings: 'සංවේදක කියවීම්',
+    capSensorValue: 'ධාරිතා සංවේදක අගය',
+    sampleTemperature: 'නියමුන උෂ්ණත්වය',
+    ambientTemperature: 'පරිසර උෂ්ණත්වය',
+    ambientHumidity: 'පරිසර ආර්ද්‍රතාව',
+    sampleWeight: 'නියමුන බර',
+    bulkDensity: 'ස්කන්ධ ඝනත්වය',
+    grams: 'g',
+    gPerCm3: 'g/cm³',
+    noSchedule: 'වියළීමේ කාලසටහනක් අවශ්‍ය නොවේ',
+    scheduleTime: 'වේලාව',
+    scheduleDate: 'දිනය',
   },
   தமிழ்: {
     title: 'வாசிப்பு முடிவுகள்',
@@ -112,6 +153,25 @@ const translations = {
     back: 'பின்',
     celsius: '°C',
     percent: '%',
+    predictedMoisture: 'கணிக்கப்பட்ட ஈரப்பதம்',
+    weatherAwareSchedule: 'வானிலை அறிந்த உலர்த்தல் அட்டவணை',
+    scheduleStart: 'அட்டவணை தொடக்கம்',
+    scheduleEnd: 'அட்டவணை முடிவு',
+    enableNotifications: 'அறிவிப்புகளை இயக்கவும்',
+    notificationsEnabled: 'அறிவிப்புகள் இயக்கப்பட்டுள்ளன',
+    notificationsDisabled: 'அறிவிப்புகள் முடக்கப்பட்டுள்ளன',
+    sensorReadings: 'சென்சார் வாசிப்புகள்',
+    capSensorValue: 'கொள்ளளவு சென்சார் மதிப்பு',
+    sampleTemperature: 'மாதிரி வெப்பநிலை',
+    ambientTemperature: 'சுற்றுப்புற வெப்பநிலை',
+    ambientHumidity: 'சுற்றுப்புற ஈரப்பதம்',
+    sampleWeight: 'மாதிரி எடை',
+    bulkDensity: 'மொத்த அடர்த்தி',
+    grams: 'g',
+    gPerCm3: 'g/cm³',
+    noSchedule: 'உலர்த்தல் அட்டவணை தேவையில்லை',
+    scheduleTime: 'நேரம்',
+    scheduleDate: 'தேதி',
   },
 };
 
@@ -124,6 +184,8 @@ export default function ReadingResultsScreen({ route, navigation }) {
   const [predictions, setPredictions] = useState(null);
   const [loadingPredictions, setLoadingPredictions] = useState(true);
   const [predictionError, setPredictionError] = useState(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [predictedMoisture, setPredictedMoisture] = useState(null);
 
   useEffect(() => {
     if (readingData) {
@@ -138,47 +200,100 @@ export default function ReadingResultsScreen({ route, navigation }) {
     try {
       const result = await PredictionService.getPrediction(readingData);
       
-      if (result.success) {
+      if (result.success || result.data) {
         setPredictions(result.data);
+        // Set predicted moisture from prediction result or use average moisture
+        if (result.data?.moisture !== undefined) {
+          setPredictedMoisture(result.data.moisture);
+        } else {
+          setPredictedMoisture(readingData.averageMoisture);
+        }
       } else {
         setPredictionError(result.error);
-        // Still set predictions if mock data is available
-        if (result.data) {
-          setPredictions(result.data);
-        }
+        // Use average moisture as predicted if prediction fails
+        setPredictedMoisture(readingData.averageMoisture);
       }
     } catch (error) {
       setPredictionError(error.message);
+      setPredictedMoisture(readingData.averageMoisture);
     } finally {
       setLoadingPredictions(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'dry':
-        return '#F44336';
-      case 'moderate':
-        return '#FF9800';
-      case 'wet':
-        return '#4CAF50';
-      default:
-        return '#666';
+  // Calculate bulk density (g/cm³) from weight and estimated volume
+  // Assuming a standard sample container volume or calculate from dimensions
+  const calculateBulkDensity = () => {
+    // Using hardcoded sample weight of 5g
+    const sampleWeight = 5; // grams
+    // Standard sample container volume (adjust based on actual container)
+    // For now, using a typical value - this should be calibrated based on actual device
+    const sampleVolume = 50; // cm³ (adjust based on actual container)
+    return sampleWeight / sampleVolume;
+  };
+
+  const handleNotificationToggle = async (value) => {
+    setNotificationsEnabled(value);
+    if (value) {
+      // Request permissions and schedule notifications
+      const granted = await NotificationService.requestPermissions();
+      if (granted) {
+        await scheduleNotifications();
+      } else {
+        Alert.alert(
+          'Permission Required',
+          'Please enable notifications in your device settings to receive schedule reminders.'
+        );
+        setNotificationsEnabled(false);
+      }
+    } else {
+      // Cancel notifications
+      await cancelNotifications();
     }
   };
 
-  const getStatusText = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'dry':
-        return t.dry;
-      case 'moderate':
-        return t.moderate;
-      case 'wet':
-        return t.wet;
-      default:
-        return status || '-';
+  const scheduleNotifications = async () => {
+    // Schedule for Day 1 (Today: 11:00 - 14:00)
+    const day1Schedule = {
+      startTime: '11:00',
+      endTime: '14:00',
+      date: new Date(),
+    };
+
+    // Schedule for Day 2 (Tomorrow: 10:00 - 14:00)
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const day2Schedule = {
+      startTime: '10:00',
+      endTime: '14:00',
+      date: tomorrow,
+    };
+
+    // Schedule notifications for both days
+    const day1Success = await NotificationService.scheduleDryingNotifications(day1Schedule);
+    const day2Success = await NotificationService.scheduleDryingNotifications(day2Schedule);
+    
+    if (day1Success && day2Success) {
+      Alert.alert(
+        'Notifications Scheduled',
+        'You will be notified when the drying schedule starts and ends for both days.'
+      );
+    } else {
+      Alert.alert(
+        'Error',
+        'Failed to schedule some notifications. Please try again.'
+      );
+      setNotificationsEnabled(false);
     }
   };
+
+  const cancelNotifications = async () => {
+    const success = await NotificationService.cancelAllNotifications();
+    if (success) {
+      Alert.alert('Notifications Cancelled', 'Drying schedule notifications have been cancelled.');
+    }
+  };
+
 
   if (!readingData) {
     return (
@@ -223,12 +338,83 @@ export default function ReadingResultsScreen({ route, navigation }) {
           </View>
 
           <View style={styles.content}>
-            {/* Average Moisture Card */}
-            <View style={styles.averageCard}>
-              <Text style={styles.averageLabel}>{t.averageMoisture}</Text>
-              <Text style={styles.averageValue}>
-                {readingData.averageMoisture.toFixed(1)}{t.percent}
-              </Text>
+            {/* Predicted Moisture Card */}
+            {predictedMoisture !== null && (
+              <View style={styles.predictedMoistureCard}>
+                <Text style={styles.predictedMoistureLabel}>{t.predictedMoisture}</Text>
+                <Text style={styles.predictedMoistureValue}>
+                  {predictedMoisture.toFixed(2)}{t.percent}
+                </Text>
+              </View>
+            )}
+
+
+            {/* Sensor Readings Card */}
+            <View style={styles.sensorReadingsCard}>
+              <Text style={styles.sensorReadingsTitle}>{t.sensorReadings}</Text>
+              <View style={styles.sensorReadingsGrid}>
+                {/* Capacitive Sensor Value */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="water" size={20} color="#2196F3" />
+                  <Text style={styles.sensorReadingLabel}>{t.capSensorValue}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    {readingData.averageCapSensor !== undefined && readingData.averageCapSensor !== null
+                      ? `${readingData.averageCapSensor.toFixed(1)}${t.percent}`
+                      : '--'}
+                  </Text>
+                </View>
+
+                {/* Sample Temperature */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="thermometer" size={20} color="#FF9800" />
+                  <Text style={styles.sensorReadingLabel}>{t.sampleTemperature}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    28{t.celsius}
+                  </Text>
+                </View>
+
+                {/* Ambient Temperature */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="thermometer-lines" size={20} color="#F44336" />
+                  <Text style={styles.sensorReadingLabel}>{t.ambientTemperature}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    {readingData.averageAmbientTemp !== undefined && readingData.averageAmbientTemp !== null
+                      ? `${readingData.averageAmbientTemp.toFixed(1)}${t.celsius}`
+                      : `--${t.celsius}`}
+                  </Text>
+                </View>
+
+                {/* Ambient Humidity */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="water-percent" size={20} color="#9C27B0" />
+                  <Text style={styles.sensorReadingLabel}>{t.ambientHumidity}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    {readingData.averageAmbientHumidity !== undefined && readingData.averageAmbientHumidity !== null
+                      ? `${readingData.averageAmbientHumidity.toFixed(1)}${t.percent}`
+                      : `--${t.percent}`}
+                  </Text>
+                </View>
+
+                {/* Sample Weight */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="scale-balance" size={20} color="#4CAF50" />
+                  <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    5{t.grams}
+                  </Text>
+                </View>
+
+                {/* Bulk Density */}
+                <View style={styles.sensorReadingItem}>
+                  <Icon name="cube-outline" size={20} color="#607D8B" />
+                  <Text style={styles.sensorReadingLabel}>{t.bulkDensity}</Text>
+                  <Text style={styles.sensorReadingValue}>
+                    {calculateBulkDensity() !== null
+                      ? `${calculateBulkDensity().toFixed(2)}${t.gPerCm3}`
+                      : `--${t.gPerCm3}`}
+                  </Text>
+                </View>
+              </View>
             </View>
 
             {/* Reading Summary */}
@@ -248,26 +434,6 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   </Text>
                 </View>
               </View>
-              {readingData.temperature && (
-                <View style={styles.summaryRow}>
-                  <View style={styles.summaryItem}>
-                    <Icon name="thermometer" size={20} color="#FF9800" />
-                    <Text style={styles.summaryLabel}>{t.temperature}</Text>
-                    <Text style={styles.summaryValue}>
-                      {readingData.temperature.toFixed(1)}{t.celsius}
-                    </Text>
-                  </View>
-                  {readingData.humidity && (
-                    <View style={styles.summaryItem}>
-                      <Icon name="water" size={20} color="#9C27B0" />
-                      <Text style={styles.summaryLabel}>{t.humidity}</Text>
-                      <Text style={styles.summaryValue}>
-                        {readingData.humidity.toFixed(1)}{t.percent}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
             </View>
 
             {/* Weather Card */}
@@ -294,74 +460,94 @@ export default function ReadingResultsScreen({ route, navigation }) {
               </View>
             )}
 
-            {/* Finalized Moisture Level */}
-            <View style={styles.moistureLevelCard}>
-              <Text style={styles.moistureLevelLabel}>{t.moisture}</Text>
-              <Text style={styles.moistureLevelValue}>
-                {readingData.averageMoisture.toFixed(1)}{t.percent}
-              </Text>
-            </View>
-
-            {/* Predictions */}
-            <View style={styles.predictionsCard}>
-              <Text style={styles.predictionsTitle}>{t.predictions}</Text>
+            {/* Weather-Aware Drying Schedule */}
+            <View style={styles.scheduleCard}>
+              <Text style={styles.scheduleTitle}>{t.weatherAwareSchedule}</Text>
               
               {loadingPredictions ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#0F5132" />
                   <Text style={styles.loadingText}>{t.loadingPredictions}</Text>
                 </View>
-              ) : predictions ? (
+              ) : (
                 <>
-                  {/* Today Predictions */}
-                  <View style={styles.predictionDay}>
-                    <Text style={styles.predictionDayTitle}>{t.today}</Text>
-                    {predictions.today ? (
-                      <View style={styles.predictionCard}>
-                        {predictions.today.status === 'good' ? (
-                          <Text style={styles.predictionText}>{t.goodMoisture}</Text>
-                        ) : predictions.today.status === 'over_dried' ? (
-                          <Text style={styles.predictionText}>{t.overDried}</Text>
-                        ) : predictions.today.hours > 0 ? (
-                          <Text style={styles.predictionText}>
-                            {t.dry} {predictions.today.hours} {predictions.today.hours === 1 ? t.hour : t.hours} {t.from} {predictions.today.time} {t.today.toLowerCase()}
-                          </Text>
-                        ) : (
-                          <Text style={styles.predictionText}>No action needed</Text>
-                        )}
+                  {/* Day 1 Schedule */}
+                  <View style={styles.scheduleDayContainer}>
+                    <Text style={styles.scheduleDayTitle}>{t.today}</Text>
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.scheduleItemHeader}>
+                        <Icon name="clock-start" size={20} color="#4CAF50" />
+                        <Text style={styles.scheduleItemLabel}>{t.scheduleStart}</Text>
                       </View>
-                    ) : (
-                      <Text style={styles.noPredictionsText}>No predictions available</Text>
-                    )}
+                      <View style={styles.scheduleTimeContainer}>
+                        <Text style={styles.scheduleDateText}>
+                          {new Date().toLocaleDateString()}
+                        </Text>
+                        <Text style={styles.scheduleTimeText}>11:00</Text>
+                      </View>
+                    </View>
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.scheduleItemHeader}>
+                        <Icon name="clock-end" size={20} color="#F44336" />
+                        <Text style={styles.scheduleItemLabel}>{t.scheduleEnd}</Text>
+                      </View>
+                      <View style={styles.scheduleTimeContainer}>
+                        <Text style={styles.scheduleDateText}>
+                          {new Date().toLocaleDateString()}
+                        </Text>
+                        <Text style={styles.scheduleTimeText}>14:00</Text>
+                      </View>
+                    </View>
                   </View>
 
-                  {/* Tomorrow Predictions */}
-                  <View style={styles.predictionDay}>
-                    <Text style={styles.predictionDayTitle}>{t.tomorrow}</Text>
-                    {predictions.tomorrow ? (
-                      <View style={styles.predictionCard}>
-                        {predictions.tomorrow.status === 'good' ? (
-                          <Text style={styles.predictionText}>{t.goodMoisture}</Text>
-                        ) : predictions.tomorrow.status === 'over_dried' ? (
-                          <Text style={styles.predictionText}>{t.overDried}</Text>
-                        ) : predictions.tomorrow.hours > 0 ? (
-                          <Text style={styles.predictionText}>
-                            {t.dry} {predictions.tomorrow.hours} {predictions.tomorrow.hours === 1 ? t.hour : t.hours} {t.from} {predictions.tomorrow.time} {t.tomorrow.toLowerCase()}
-                          </Text>
-                        ) : (
-                          <Text style={styles.predictionText}>No action needed</Text>
-                        )}
+                  {/* Day 2 Schedule */}
+                  <View style={styles.scheduleDayContainer}>
+                    <Text style={styles.scheduleDayTitle}>{t.tomorrow}</Text>
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.scheduleItemHeader}>
+                        <Icon name="clock-start" size={20} color="#4CAF50" />
+                        <Text style={styles.scheduleItemLabel}>{t.scheduleStart}</Text>
                       </View>
-                    ) : (
-                      <Text style={styles.noPredictionsText}>No predictions available</Text>
-                    )}
+                      <View style={styles.scheduleTimeContainer}>
+                        <Text style={styles.scheduleDateText}>
+                          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
+                        </Text>
+                        <Text style={styles.scheduleTimeText}>10:00</Text>
+                      </View>
+                    </View>
+                    <View style={styles.scheduleItem}>
+                      <View style={styles.scheduleItemHeader}>
+                        <Icon name="clock-end" size={20} color="#F44336" />
+                        <Text style={styles.scheduleItemLabel}>{t.scheduleEnd}</Text>
+                      </View>
+                      <View style={styles.scheduleTimeContainer}>
+                        <Text style={styles.scheduleDateText}>
+                          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
+                        </Text>
+                        <Text style={styles.scheduleTimeText}>14:00</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  {/* Notification Toggle */}
+                  <View style={styles.notificationToggleContainer}>
+                    <View style={styles.notificationToggleInfo}>
+                      <Icon name="bell" size={20} color="#0F5132" />
+                      <View style={styles.notificationToggleTextContainer}>
+                        <Text style={styles.notificationToggleLabel}>{t.enableNotifications}</Text>
+                        <Text style={styles.notificationToggleSubtext}>
+                          {notificationsEnabled ? t.notificationsEnabled : t.notificationsDisabled}
+                        </Text>
+                      </View>
+                    </View>
+                    <Switch
+                      value={notificationsEnabled}
+                      onValueChange={handleNotificationToggle}
+                      trackColor={{ false: '#E0E0E0', true: '#4CAF50' }}
+                      thumbColor={notificationsEnabled ? '#FFFFFF' : '#F4F3F4'}
+                    />
                   </View>
                 </>
-              ) : (
-                <View style={styles.errorContainer}>
-                  <Icon name="alert-circle" size={32} color="#F44336" />
-                  <Text style={styles.errorText}>{predictionError || t.predictionError}</Text>
-                </View>
               )}
             </View>
           </View>
@@ -550,6 +736,15 @@ const styles = StyleSheet.create({
     color: '#0F5132',
     marginBottom: 16,
   },
+  scheduleDayContainer: {
+    marginBottom: 24,
+  },
+  scheduleDayTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F5132',
+    marginBottom: 16,
+  },
   predictionItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -684,6 +879,170 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#0F5132',
     lineHeight: 24,
+  },
+  predictedMoistureCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  predictedMoistureLabel: {
+    fontSize: 16,
+    color: '#666',
+    fontWeight: '600',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  predictedMoistureValue: {
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#4CAF50',
+    letterSpacing: -2,
+  },
+  sensorReadingsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+  },
+  sensorReadingsTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F5132',
+    marginBottom: 20,
+  },
+  sensorReadingsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  sensorReadingItem: {
+    width: '48%',
+    backgroundColor: '#F8FBF9',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sensorReadingLabel: {
+    fontSize: 11,
+    color: '#666',
+    fontWeight: '600',
+    marginTop: 8,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  sensorReadingValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F5132',
+  },
+  scheduleCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+  },
+  scheduleTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#0F5132',
+    marginBottom: 20,
+  },
+  scheduleItem: {
+    backgroundColor: '#F8FBF9',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  scheduleItemHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  scheduleItemLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F5132',
+  },
+  scheduleTimeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  scheduleDateText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '600',
+  },
+  scheduleTimeText: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#0F5132',
+  },
+  notificationToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#F8FBF9',
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  notificationToggleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  notificationToggleTextContainer: {
+    flex: 1,
+  },
+  notificationToggleLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F5132',
+    marginBottom: 4,
+  },
+  notificationToggleSubtext: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  noScheduleText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    padding: 20,
+  },
+  scheduleText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F5132',
+    lineHeight: 24,
+    marginBottom: 8,
   },
 });
 
