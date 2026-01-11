@@ -147,7 +147,9 @@ App.js (Root)
 
 1. **Authentication Flow**: User → LoginScreen → Firebase Auth → AuthContext → Navigation
 2. **IoT Data Flow**: ESP32 Devices → BLE → BLEService/ESP32Service → Screen → Firebase Storage
-3. **Seed Detection Flow**: Camera/Gallery → Image Capture → YOLOv8 Model → Object Detection → Seed Classification → Results → Screen
+3. **Seed Detection Flow**: 
+   - **Mobile App Process**: Camera/Gallery → Image Capture → YOLOv8 Model → Object Detection → Seed Classification → Results → Screen
+   - **Seed Sorter Machine Process** (Separate Software): Machine with Integrated Camera → Image Capture → Detection Processing → Machine Process → Wild Seed Removal
 4. **Seed Moisture Monitoring Flow**: 
    - ESP32 Moisture Device (BLE) → Sensor Data (cap_sensor_value, sample_temperature, ambient_temperature, ambient_humidity, sample_weight)
    - GPS Location → Location Service → Coordinates
@@ -309,10 +311,10 @@ App.js (Root)
 
 6. **Start Metro Bundler**
    ```bash
-   npm start
+npm start
    # or
-   yarn start
-   ```
+yarn start
+```
 
 7. **Run the application**
    ```bash
@@ -322,10 +324,10 @@ App.js (Root)
    yarn ios
 
    # Android
-   npm run android
+npm run android
    # or
-   yarn android
-   ```
+yarn android
+```
 
 ---
 
@@ -356,9 +358,11 @@ App.js (Root)
 #### Related Hardware:
 - **Seed Sorter Machine**: A separate physical seed sorting machine is available for automated wild seed removal
   - **Note**: The seed sorter machine is **NOT connected** to the mobile app
-  - The machine operates with its **own standalone software**
-  - Users can manually use the detection results from the app to operate the seed sorter machine separately
-  - The machine physically separates and removes wild seeds from seed batches based on detection results
+  - The machine operates with its **own separate software** (standalone software system)
+  - The machine has an **integrated camera** for seed detection
+  - The machine uses its own detection system and processing software with the integrated camera
+  - The machine physically separates and removes wild seeds from seed batches
+  - Users can use the mobile app for preliminary seed analysis, while the machine operates independently with its integrated camera and separate software
 
 ### 2. Seed Moisture Monitoring ⭐
 
@@ -751,21 +755,18 @@ This project is part of an academic/research initiative. For contribution guidel
 
 ---
 
-## 📄 License
-
-[Specify your license here]
-
----
-
 ## 👥 Team
 
-[Add team members and their roles]
+- <img src="https://github.com/santhuxx.png" width="25" height="25" alt="Santhu"> **Santhu** ([@santhuxx](https://github.com/santhuxx)) - Seed Quality Detection
+- <img src="https://github.com/sadeepaatigala.png" width="25" height="25" alt="Sadeepa Atigala"> **Sadeepa Atigala** ([@sadeepaatigala](https://github.com/sadeepaatigala)) - Seed Moisture Monitoring
+- <img src="https://github.com/Kushani-Mandira.png" width="25" height="25" alt="Mandira Jayasekara"> **Mandira Jayasekara** ([@Kushani-Mandira](https://github.com/Kushani-Mandira)) - Soil pH Testing 
+- <img src="https://github.com/aneeq-shaffy.png" width="25" height="25" alt="Aneeq Shaffy"> **Aneeq Shaffy** ([@aneeq-shaffy](https://github.com/aneeq-shaffy)) - Pest & Disease Detection 
 
 ---
 
 ## 📞 Support
 
-For issues, questions, or contributions, please contact the development team or open an issue in the repository.
+For issues, questions, or contributions, please contact the development team at **ipaddycare@gmail.com** or open an issue in the repository.
 
 ---
 
@@ -781,5 +782,5 @@ For issues, questions, or contributions, please contact the development team or 
 
 ---
 
-**Last Updated**: [Current Date]
+**Last Updated**: January 11, 2026
 **Version**: 0.0.1
