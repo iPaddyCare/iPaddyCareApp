@@ -16,6 +16,7 @@ import CoordinateInputScreen from './screens/CoordinateInputScreen';
 import MapPickerScreen from './screens/MapPickerScreen';
 import DrawerContent from './src/components/DrawerContent';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import DeviceConnectionScreenSeedDetection from './screens/DeviceConnectionScreenSeedDetection';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -52,6 +53,11 @@ function MainStack() {
       <Stack.Screen 
         name="DeviceConnection" 
         component={DeviceConnectionScreen} 
+        options={{ title: 'Connect Device' }}
+      />
+      <Stack.Screen 
+        name="DeviceConnectionSeedDetection" 
+        component={DeviceConnectionScreenSeedDetection} 
         options={{ title: 'Connect Device' }}
       />
       <Stack.Screen 

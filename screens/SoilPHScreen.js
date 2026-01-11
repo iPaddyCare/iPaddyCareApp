@@ -336,7 +336,7 @@ export default function SoilPHScreen({ navigation }) {
         return;
       }
     }
-    navigation?.navigate('DeviceConnection', { sensorType: 'pH' });
+    navigation?.navigate('DeviceConnectionSeedDetection', { sensorType: 'pH' }); //need to chnage to original page later
   };
 
   const handleDisconnect = () => {
