@@ -8,23 +8,52 @@ import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SeedDetectionScreen from './screens/SeedDetectionScreen';
+import SeedCameraScreen from './screens/SeedCameraScreen';
 import MoistureDetectorScreen from './screens/MoistureDetectorScreen';
+import ReadingResultsScreen from './screens/ReadingResultsScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
 import CoordinateInputScreen from './screens/CoordinateInputScreen';
 import MapPickerScreen from './screens/MapPickerScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import HelpScreen from './screens/HelpScreen';
+import AboutScreen from './screens/AboutScreen';
+import MarketplaceScreen from './screens/MarketplaceScreen';
+import AddProductScreen from './screens/AddProductScreen';
+import MyListingsScreen from './screens/MyListingsScreen';
+import HistoryScreen from './screens/HistoryScreen';
+import OfficersScreen from './screens/OfficersScreen';
+import MessageScreen from './screens/MessageScreen';
+import OfficerLoginScreen from './screens/OfficerLoginScreen';
+import OfficerInboxScreen from './screens/OfficerInboxScreen';
+import ProductApprovalScreen from './screens/ProductApprovalScreen';
 import DrawerContent from './src/components/DrawerContent';
+import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import DeviceConnectionScreenSeedDetection from './screens/DeviceConnectionScreenSeedDetection';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
+// Wrapper component that includes BottomNavigation
+function MainStackWithBottomNav({ navigation }) {
+  return (
+    <View style={{ flex: 1 }}>
+      <MainStack />
+      <BottomNavigation drawerNavigation={navigation} />
+    </View>
+  );
+}
+
 // Main Stack Navigator with Drawer
 function MainStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        animation: 'fade', // Simple fade animation instead of slide
+      }}
+    >
       <Stack.Screen 
         name="Home" 
         component={HomeScreen} 
@@ -33,12 +62,22 @@ function MainStack() {
       <Stack.Screen 
         name="SeedDetection" 
         component={SeedDetectionScreen} 
-        options={{ title: 'Seed Quality Detection' }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="SeedCamera" 
+        component={SeedCameraScreen} 
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="MoistureDetector" 
         component={MoistureDetectorScreen} 
-        options={{ title: 'Moisture Monitor' }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ReadingResults" 
+        component={ReadingResultsScreen} 
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="SoilPH" 
@@ -53,7 +92,62 @@ function MainStack() {
       <Stack.Screen 
         name="DeviceConnection" 
         component={DeviceConnectionScreen} 
-        options={{ title: 'Connect Device' }}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Settings" 
+        component={SettingsScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Help" 
+        component={HelpScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="About" 
+        component={AboutScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Marketplace" 
+        component={MarketplaceScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AddProduct" 
+        component={AddProductScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="MyListings" 
+        component={MyListingsScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="History" 
+        component={HistoryScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Officers" 
+        component={OfficersScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="Message" 
+        component={MessageScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="OfficerInbox" 
+        component={OfficerInboxScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="ProductApproval" 
+        component={ProductApprovalScreen} 
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="DeviceConnectionSeedDetection" 
@@ -79,20 +173,28 @@ function DrawerNavigator() {
   const { selectedLanguage } = useLanguage();
 
   return (
-    <Drawer.Navigator
-      drawerContent={(props) => (
-        <DrawerContent {...props} selectedLanguage={selectedLanguage} />
-      )}
-      screenOptions={{
-        headerShown: false,
-        drawerType: 'front',
-        drawerStyle: {
-          width: 280,
-        },
-      }}
-    >
-      <Drawer.Screen name="Main" component={MainStack} />
-    </Drawer.Navigator>
+    <View style={{ flex: 1 }}>
+      <Drawer.Navigator
+        drawerContent={(props) => (
+          <DrawerContent {...props} selectedLanguage={selectedLanguage} />
+        )}
+        screenOptions={{
+          headerShown: false,
+          drawerType: 'front',
+          drawerStyle: {
+            width: 280,
+          },
+        }}
+      >
+        <Drawer.Screen 
+          name="Main" 
+          component={MainStackWithBottomNav}
+          options={{
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+      </Drawer.Navigator>
+    </View>
   );
 }
 
@@ -162,6 +264,7 @@ function RootNavigator({ navigationRef }) {
           />
         )}
       </Stack.Screen>
+      <Stack.Screen name="OfficerLogin" component={OfficerLoginScreen} />
       <Stack.Screen name="Main" component={DrawerNavigator} />
     </Stack.Navigator>
   );

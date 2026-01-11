@@ -11,9 +11,10 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import WeatherService from '../src/utils/weatherService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,16 +25,18 @@ const translations = {
     appName: 'iPaddyCare',
     tagline: 'Smart Agricultural Toolkit',
     todaysOverview: "Today's Overview",
-    activeTests: 'Active Tests',
-    recommendations: 'Recommendations',
-    officersOnline: 'Officers Online',
+    activeTests: 'Tests',
+    recommendations: 'Predicts',
+    officersOnline: 'Officers',
+    products: 'Products',
+    inbox: 'Inbox',
     coreFeatures: 'Core Features',
     quickActions: 'Quick Actions',
     recentActivity: 'Recent Activity',
     seedQualityDetection: 'Seed Quality Detection',
     seedQualitySubtitle: 'AI-powered seed sorting',
-    seedQualityDesc: 'Detect and remove wild paddy seeds',
-    moistureMonitor: 'Moisture Monitor',
+    seedQualityDesc: 'Detect seed varieties and wild seeds',
+    moistureMonitor: 'Seed Moisture Monitor',
     moistureSubtitle: 'Portable field testing',
     moistureDesc: 'Real-time moisture measurement',
     soilPHTesting: 'Soil pH Testing',
@@ -54,20 +57,22 @@ const translations = {
     purityDesc: 'Purity: 95.2% - Excellent quality seeds detected.'
   },
   සිංහල: {
-    welcomeTo: 'ඔබට සාදරයෙන් පිළිගනිමු',
+    welcomeTo: 'සාදරයෙන් පිළිගනිමු',
     appName: 'අයිපැඩිකෙයා',
     tagline: 'ස්මාර්ට් කෘෂිකර්ම මෙවලම්',
     todaysOverview: 'අද දවසේ සාරාංශය',
-    activeTests: 'ක්‍රියාකාරී පරීක්ෂණ',
-    recommendations: 'නිර්දේශ',
-    officersOnline: 'සබැඳි නිලධාරීන්',
+    activeTests: 'පරීක්ෂණ',
+    recommendations: 'අනාවැකි',
+    officersOnline: 'නිලධාරීන්',
+    products: 'නිෂ්පාදන',
+    inbox: 'එන ලිපි',
     coreFeatures: 'ප්‍රධාන විශේෂාංග',
     quickActions: 'ඉක්මන් ක්‍රියාමාර්ග',
     recentActivity: 'මෑත ක්‍රියාකලාපය',
     seedQualityDetection: 'බීජ ගුණත්ව හඳුනාගැනීම',
     seedQualitySubtitle: 'AI බලයෙන් බීජ වර්ගීකරණය',
-    seedQualityDesc: 'වල් වී බීජ හඳුනාගෙන ඉවත් කරන්න',
-    moistureMonitor: 'තෙතමනය මුරකරු',
+    seedQualityDesc: 'බීජ වර්ග හඳුනාගෙන වල් බීජ හඳුනාගන්න',
+    moistureMonitor: 'බීජ තෙතමනය මුරකරු',
     moistureSubtitle: 'පහසුකම් ක්ෂේත්‍ර පරීක්ෂණය',
     moistureDesc: 'තත්‍ය කාලීන තෙතමනය මැනීම',
     soilPHTesting: 'පස් pH පරීක්ෂණය',
@@ -92,16 +97,18 @@ const translations = {
     appName: 'ஐபாட்டிகேர்',
     tagline: 'ஸ்மார்ட் விவசாய கருவித்தொகுப்பு',
     todaysOverview: 'இன்றைய மேலோட்டம்',
-    activeTests: 'செயலில் உள்ள சோதனைகள்',
-    recommendations: 'பரிந்துரைகள்',
-    officersOnline: 'ஆன்லைன் அதிகாரிகள்',
+    activeTests: 'சோதனைகள்',
+    recommendations: 'கணிப்புகள்',
+    officersOnline: 'அதிகாரிகள்',
+    products: 'தயாரிப்புகள்',
+    inbox: 'இன்பாக்ஸ்',
     coreFeatures: 'முக்கிய அம்சங்கள்',
     quickActions: 'விரைவு நடவடிக்கைகள்',
     recentActivity: 'சமீபத்திய செயல்பாடு',
     seedQualityDetection: 'விதை தர கண்டறிதல்',
     seedQualitySubtitle: 'AI சக்தியால் விதை வகைப்படுத்தல்',
-    seedQualityDesc: 'காட்டு நெல் விதைகளை கண்டறிந்து அகற்றவும்',
-    moistureMonitor: 'ஈரப்பத கண்காணிப்பு',
+    seedQualityDesc: 'விதை வகைகள் மற்றும் காட்டு விதைகளை கண்டறியவும்',
+    moistureMonitor: 'விதை ஈரப்பத கண்காணிப்பு',
     moistureSubtitle: 'கையடக்க வயல் சோதனை',
     moistureDesc: 'நிகழ்நேர ஈரப்பத அளவீடு',
     soilPHTesting: 'மண் pH சோதனை',
@@ -134,22 +141,6 @@ const navigateToRootRoute = (navigation, routeName) => {
 
 // FeatureCard component moved outside HomeScreen
 const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
-  const [cardScale] = useState(new Animated.Value(1));
-
-  const handlePressIn = () => {
-    Animated.spring(cardScale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(cardScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  };
-
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
       Alert.alert(
@@ -174,65 +165,66 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
       {
         opacity: fadeAnim,
         transform: [
-          { translateY: slideAnim },
-          { scale: cardScale }
-        ]
+          { translateY: slideAnim }
+        ],
       }
     ]}>
+      <View style={styles.featureCard}>
       <TouchableOpacity
-        style={styles.featureCard}
         onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
+        activeOpacity={0.9}
+          style={styles.cardTouchable}
       >
-        {/* Background Pattern */}
-        <View style={[styles.cardPattern, { backgroundColor: feature.accentColor }]} />
+          {/* Gradient Background Overlay */}
+          <View style={[styles.cardGradientOverlay, { 
+            backgroundColor: feature.accentColor,
+            opacity: 0.4 
+          }]} />
+          
+          {/* Decorative Pattern */}
+          <View style={[styles.cardPatternCircle, { 
+            backgroundColor: feature.primaryColor,
+            opacity: 0.08 
+          }]} />
 
-        {/* Main Content */}
         <View style={styles.cardContent}>
           <View style={styles.cardHeader}>
-            <View style={[styles.iconContainer, { backgroundColor: feature.primaryColor }]}>
+              <View style={[styles.iconContainer, { 
+                backgroundColor: feature.accentColor 
+              }]}>
+                <View style={[styles.iconBackground, { 
+                  backgroundColor: feature.primaryColor,
+                  opacity: 0.1
+                }]} />
               <Text style={styles.iconText}>{feature.icon}</Text>
-              <View style={[styles.iconGlow, { backgroundColor: feature.primaryColor }]} />
             </View>
             <View style={styles.cardTextContent}>
               <Text style={styles.cardTitle}>{feature.title}</Text>
-              <Text style={[styles.cardSubtitle, { color: feature.secondaryColor }]}>{feature.subtitle}</Text>
+                <Text style={[styles.cardSubtitle, { 
+                  color: feature.secondaryColor 
+                }]}>{feature.subtitle}</Text>
             </View>
           </View>
+            
           <Text style={styles.cardDescription}>{feature.description}</Text>
 
-          {/* Action Indicator */}
+            {/* Premium Action Indicator */}
           <View style={styles.cardFooter}>
-            <View style={[styles.actionIndicator, { backgroundColor: feature.primaryColor }]}>
-              <Text style={styles.actionText}>→</Text>
+              <View style={[styles.actionBadge, { 
+                backgroundColor: feature.primaryColor 
+              }]}>
+                <Text style={styles.actionArrow}>→</Text>
             </View>
           </View>
         </View>
       </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 };
 
 // QuickActionButton component moved outside HomeScreen
 const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
-  const [buttonScale] = useState(new Animated.Value(1));
-
-  const handlePressIn = () => {
-    Animated.spring(buttonScale, {
-      toValue: 0.9,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(buttonScale, {
-      toValue: 1,
-      useNativeDriver: true,
-    }).start();
-  };
-
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
       Alert.alert(
@@ -257,37 +249,59 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
       {
         opacity: fadeAnim,
         transform: [
-          { scale: buttonScale },
           { translateY: slideAnim }
-        ]
+        ],
       }
     ]}>
-      <TouchableOpacity
-        style={[styles.quickActionButton, { backgroundColor: action.lightColor }]}
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={1}
+      <View
+        style={[
+          styles.quickActionButton,
+          {
+            backgroundColor: action.lightColor,
+          }
+        ]}
       >
-        <View style={[styles.quickActionIconContainer, { backgroundColor: action.color }]}>
-          <Text style={styles.quickActionIcon}>{action.icon}</Text>
-          <View style={[styles.quickActionGlow, { backgroundColor: action.color }]} />
-        </View>
-        <Text style={styles.quickActionText}>{action.title}</Text>
+      <TouchableOpacity
+        onPress={handlePress}
+        activeOpacity={0.9}
+          style={styles.quickActionTouchable}
+        >
+          {/* Gradient Overlay */}
+          <View style={[styles.quickActionGradient, { 
+            backgroundColor: action.color,
+            opacity: 0.1 
+          }]} />
+          
+          {/* Decorative Pattern */}
+          <View style={[styles.quickActionPattern, { 
+            backgroundColor: action.color,
+            opacity: 0.06 
+          }]} />
 
-        {/* Subtle pattern */}
-        <View style={[styles.quickActionPattern, { borderColor: action.color }]} />
+          {/* Icon Container */}
+          <View style={[styles.quickActionIconContainer, { 
+            backgroundColor: action.color 
+          }]}>
+          <Text style={styles.quickActionIcon}>{action.icon}</Text>
+        </View>
+
+          {/* Title */}
+          <Text style={styles.quickActionText}>{action.title}</Text>
       </TouchableOpacity>
+      </View>
     </Animated.View>
   );
 };
 
 export default function HomeScreen({ navigation }) {
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const insets = useSafeAreaInsets();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isOfficer } = useAuth();
+  const [weatherData, setWeatherData] = useState(null);
+  const [location, setLocation] = useState(null);
 
   const languages = ['English', 'සිංහල', 'தமிழ்'];
   const t = translations[selectedLanguage];
@@ -311,6 +325,23 @@ export default function HomeScreen({ navigation }) {
       }),
     ]).start();
   }, [fadeAnim, scaleAnim, slideAnim]);
+
+  useEffect(() => {
+    // Fetch weather and location data
+    const fetchWeatherData = async () => {
+      try {
+        const result = await WeatherService.getCurrentWeather(true);
+        if (result.success && result.data) {
+          setWeatherData(result.data);
+          setLocation(result.data.location);
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
+      }
+    };
+
+    fetchWeatherData();
+  }, []);
 
   const mainFeatures = [
     {
@@ -359,12 +390,19 @@ export default function HomeScreen({ navigation }) {
     }
   ];
 
-  const quickActions = [
-    { title: t.connectOfficer, icon: '👥', color: '#9C27B0', lightColor: '#F3E5F5', route: 'Officers' },
-    { title: t.marketplace, icon: '🛒', color: '#FF5722', lightColor: '#FBE9E7', route: 'Marketplace' },
-    { title: t.testHistory, icon: '📊', color: '#607D8B', lightColor: '#ECEFF1', route: 'History' },
-    { title: t.settings, icon: '⚙️', color: '#795548', lightColor: '#EFEBE9', route: 'Settings' }
-  ];
+  const quickActions = isOfficer
+    ? [
+        { title: t.inbox, icon: '📬', color: '#E91E63', lightColor: '#FCE4EC', route: 'OfficerInbox' },
+        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+      ]
+    : [
+        { title: t.connectOfficer, icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
+        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+      ];
 
   const handleLanguageChange = () => {
     const currentIndex = languages.indexOf(selectedLanguage);
@@ -378,10 +416,10 @@ export default function HomeScreen({ navigation }) {
       <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
         <View style={styles.statusBarContainer} />
       </SafeAreaView>
-      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
         showsVerticalScrollIndicator={false}
       >
       {/* Hero Header */}
@@ -424,6 +462,33 @@ export default function HomeScreen({ navigation }) {
               ]}>{selectedLanguage}</Text>
             <View style={styles.languageBorder} />
           </TouchableOpacity>
+
+          {/* Location and Weather - Positioned absolutely in top right */}
+          {(location || weatherData) && (
+            <View style={styles.weatherLocationContainer}>
+              {location && (
+                <View style={styles.locationContainer}>
+                  <Text style={styles.locationIcon}>📍</Text>
+                  <Text style={styles.locationText} numberOfLines={1}>
+                    {location.city}
+                  </Text>
+                </View>
+              )}
+              {weatherData && (
+                <View style={styles.weatherContainer}>
+                  <Text style={styles.weatherIcon}>
+                    {weatherData.description === 'Partly cloudy' ? '⛅' : 
+                     weatherData.description === 'Clear' ? '☀️' : 
+                     weatherData.description === 'Cloudy' ? '☁️' : 
+                     weatherData.description === 'Rainy' ? '🌧️' : '🌤️'}
+                  </Text>
+                  <Text style={styles.weatherText}>
+                    {Math.round(weatherData.temperature)}°
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
         </Animated.View>
       </View>
 
@@ -438,30 +503,91 @@ export default function HomeScreen({ navigation }) {
         ]}>
           <Text style={styles.dashboardTitle}>{t.todaysOverview}</Text>
           <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
-                <Text style={styles.statEmoji}>🧪</Text>
-              </View>
-              <Text style={styles.statValue}>3</Text>
-              <Text style={styles.statLabel}>{t.activeTests}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
-                <Text style={styles.statEmoji}>💡</Text>
-              </View>
-              <Text style={styles.statValue}>2</Text>
-              <Text style={styles.statLabel}>{t.recommendations}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
-            </View>
-            <View style={styles.statItem}>
-              <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
-                <Text style={styles.statEmoji}>👥</Text>
-              </View>
-              <Text style={styles.statValue}>12</Text>
-              <Text style={styles.statLabel}>{t.officersOnline}</Text>
-              <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
-            </View>
+            {isOfficer ? (
+              <>
+                {/* Officer View: Tests, Products, Inbox */}
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('History')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
+                    <Text style={styles.statEmoji}>🧪</Text>
+                  </View>
+                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('ProductApproval')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E3F2FD' }]}>
+                    <Text style={styles.statEmoji}>📦</Text>
+                  </View>
+                  <Text style={styles.statValue}>5</Text>
+                  <Text style={styles.statLabel}>{t.products}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#2196F3' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('OfficerInbox')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#FCE4EC' }]}>
+                    <Text style={styles.statEmoji}>📬</Text>
+                  </View>
+                  <Text style={styles.statValue}>8</Text>
+                  <Text style={styles.statLabel}>{t.inbox}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#E91E63' }]} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                {/* Regular User View: Tests, Predicts, Officers */}
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('History')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
+                    <Text style={styles.statEmoji}>🧪</Text>
+                  </View>
+                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => {
+                    // Navigate to home or scroll to recommendations section
+                    // For now, just show an alert or navigate to History
+                    navigation.navigate('History');
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
+                    <Text style={styles.statEmoji}>💡</Text>
+                  </View>
+                  <Text style={styles.statValue}>2</Text>
+                  <Text style={styles.statLabel}>{t.recommendations}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.statItem}
+                  onPress={() => navigation.navigate('Officers')}
+                  activeOpacity={0.7}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
+                    <Text style={styles.statEmoji}>👥</Text>
+                  </View>
+                  <Text style={styles.statValue}>12</Text>
+                  <Text style={styles.statLabel}>{t.officersOnline}</Text>
+                  <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </Animated.View>
 
@@ -570,7 +696,6 @@ export default function HomeScreen({ navigation }) {
           </Animated.View>
         </View>
 
-        <View style={styles.bottomSpacing} />
         </View>
       </ScrollView>
       </SafeAreaView>
@@ -601,29 +726,31 @@ const styles = StyleSheet.create({
   },
   heroHeader: {
     backgroundColor: '#0F5132',
-    height: height * 0.25,
+    height: height * 0.28,
     position: 'relative',
     overflow: 'hidden',
-    marginBottom: 24,
+    marginBottom: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   headerPattern: {
     position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    top: -80,
+    right: -80,
+    width: 280,
+    height: 280,
+    borderRadius: 140,
+    backgroundColor: 'rgba(255,255,255,0.08)',
     transform: [{ rotate: '45deg' }],
   },
   headerPattern2: {
     position: 'absolute',
-    bottom: -30,
-    left: -30,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    bottom: -40,
+    left: -40,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.06)',
   },
   headerContent: {
     flex: 1,
@@ -631,21 +758,73 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 24,
     zIndex: 1,
+  },
+  weatherLocationContainer: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+    marginRight: 10,
+  },
+  locationIcon: {
+    fontSize: 12,
+    marginRight: 4,
+  },
+  locationText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
+    maxWidth: 80,
+  },
+  weatherContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  weatherIcon: {
+    fontSize: 14,
+    marginRight: 4,
+  },
+  weatherText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
   },
   menuButton: {
     position: 'absolute',
-    top: 20,
-    left: 11,
+    top: 24,
+    left: 16,
     zIndex: 10,
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 22,
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
@@ -680,13 +859,18 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   languageSelector: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 30,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: 24,
     position: 'relative',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.25)',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   languageText: {
     color: '#FFFFFF',
@@ -717,28 +901,29 @@ const styles = StyleSheet.create({
   },
   innerContent: {
     paddingHorizontal: 20,
-    paddingTop: 4,
+    paddingTop: 0,
   },
   dashboardCard: {
-    backgroundColor: '#F8FBF9',
-    marginTop: 20,
+    backgroundColor: '#FFFFFF',
+    marginTop: -32,
     marginHorizontal: 4,
-    padding: 24,
-    borderRadius: 24,
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    padding: 28,
+    borderRadius: 28,
+    elevation: 16,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.8)',
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   dashboardTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: '#1A1A1A',
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
+    letterSpacing: -0.3,
   },
   statsRow: {
     flexDirection: 'row',
@@ -747,35 +932,40 @@ const styles = StyleSheet.create({
   statItem: {
     alignItems: 'center',
     position: 'relative',
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 12,
   },
   statIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    elevation: 4,
+    marginBottom: 14,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
   },
   statEmoji: {
     fontSize: 24,
   },
   statValue: {
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: '900',
     color: '#1A1A1A',
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.5,
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
-    fontWeight: '500',
+    fontWeight: '600',
     textAlign: 'center',
-    maxWidth: 80,
+    maxWidth: 85,
+    letterSpacing: 0.2,
   },
   statIndicator: {
     position: 'absolute',
@@ -788,109 +978,134 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   section: {
-    marginTop: 40,
+    marginTop: 32,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '800',
     color: '#1A1A1A',
     marginBottom: 20,
     marginLeft: 4,
+    letterSpacing: -0.5,
   },
   featureCardContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   featureCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    elevation: 8,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    overflow: 'visible',
-    position: 'relative',
+    shadowRadius: 16,
+    elevation: 6,
   },
-  cardPattern: {
-    position: 'absolute',
-    top: -50,
-    right: -50,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    opacity: 0.3,
+  cardTouchable: {
+    flex: 1,
   },
-  cardContent: {
-    padding: 24,
-    zIndex: 1,
-    overflow: 'hidden',
-    borderRadius: 24,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  iconGlow: {
+  cardGradientOverlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.3,
-    borderRadius: 20,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  cardPatternCircle: {
+    position: 'absolute',
+    top: -30,
+    right: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  cardContent: {
+    padding: 24,
+    position: 'relative',
+    zIndex: 1,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  iconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    position: 'relative',
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+  },
+  iconBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.08,
   },
   iconText: {
     fontSize: 32,
+    zIndex: 1,
   },
   cardTextContent: {
     flex: 1,
+    paddingTop: 4,
   },
   cardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#1a1a1a',
-    marginBottom: 4,
+    marginBottom: 6,
+    letterSpacing: -0.3,
+    lineHeight: 26,
   },
   cardSubtitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   cardDescription: {
-    fontSize: 14,
-    color: '#777',
+    fontSize: 15,
+    color: '#555',
     lineHeight: 22,
+    fontWeight: '400',
     marginBottom: 16,
+    letterSpacing: 0.1,
   },
   cardFooter: {
     alignItems: 'flex-end',
+    marginTop: 4,
   },
-  actionIndicator: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  actionBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
-  actionText: {
+  actionArrow: {
     color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   quickActionsGrid: {
     flexDirection: 'row',
@@ -902,73 +1117,83 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   quickActionButton: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  quickActionTouchable: {
     padding: 20,
-    borderRadius: 18,
     alignItems: 'center',
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  quickActionIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+    minHeight: 140,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    position: 'relative',
-    overflow: 'hidden',
   },
-  quickActionGlow: {
+  quickActionGradient: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    opacity: 0.3,
-    borderRadius: 18,
-  },
-  quickActionIcon: {
-    fontSize: 24,
-    color: 'white',
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1a1a1a',
-    textAlign: 'center',
   },
   quickActionPattern: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderWidth: 1,
+    top: -20,
+    right: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  quickActionIconContainer: {
+    width: 64,
+    height: 64,
     borderRadius: 18,
-    opacity: 0.1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    position: 'relative',
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+  },
+  quickActionIcon: {
+    fontSize: 32,
+    textAlign: 'center',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+  quickActionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1a1a1a',
+    textAlign: 'center',
+    letterSpacing: -0.2,
+    lineHeight: 20,
   },
   activityCard: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 12,
-    elevation: 4,
+    backgroundColor: '#FFFFFF',
+    padding: 22,
+    borderRadius: 20,
+    marginBottom: 14,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    borderLeftWidth: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    borderLeftWidth: 5,
     borderLeftColor: '#4CAF50',
+    borderRightWidth: 1,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderRightColor: 'rgba(0,0,0,0.04)',
+    borderTopColor: 'rgba(0,0,0,0.04)',
+    borderBottomColor: 'rgba(0,0,0,0.04)',
   },
   activityHeader: {
     flexDirection: 'row',
@@ -976,12 +1201,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 44,
+    height: 44,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: 14,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   activityEmoji: {
     fontSize: 20,
@@ -990,15 +1220,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 16.5,
+    fontWeight: '700',
     color: '#1a1a1a',
-    marginBottom: 2,
+    marginBottom: 4,
+    letterSpacing: -0.2,
   },
   activityTime: {
-    fontSize: 12,
-    color: '#999',
-    fontWeight: '500',
+    fontSize: 12.5,
+    color: '#888',
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   activityStatus: {
     width: 10,
@@ -1008,9 +1240,10 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   activityDescription: {
-    fontSize: 14,
+    fontSize: 14.5,
     color: '#666',
-    lineHeight: 20,
+    lineHeight: 21,
+    fontWeight: '400',
   },
   bottomSpacing: {
     height: 40,

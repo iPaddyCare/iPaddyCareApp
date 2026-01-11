@@ -17,10 +17,14 @@ const translations = {
     login: 'Login',
     logout: 'Logout',
     home: 'Home',
+    marketplace: 'Marketplace',
+    myListings: 'My Listings',
     settings: 'Settings',
     testHistory: 'Test History',
     help: 'Help & Support',
     about: 'About',
+    inbox: 'Inbox',
+    approvals: 'Product Approvals',
     version: 'Version 1.0.0',
     logoutConfirm: 'Are you sure you want to logout?',
     yes: 'Yes',
@@ -32,10 +36,14 @@ const translations = {
     login: 'පිවිසෙන්න',
     logout: 'ඉවත් වන්න',
     home: 'මුල් පිටුව',
+    marketplace: 'වෙළඳපොළ',
+    myListings: 'මගේ ලැයිස්තු',
     settings: 'සැකසුම්',
     testHistory: 'පරීක්ෂණ ඉතිහාසය',
     help: 'උදව් සහ සහාය',
     about: 'මෙහි ගැන',
+    inbox: 'එන ලිපි',
+    approvals: 'නිෂ්පාදන අනුමත කිරීම්',
     version: 'අනුවාදය 1.0.0',
     logoutConfirm: 'ඔබට ඉවත් වීමට අවශ්‍යද?',
     yes: 'ඔව්',
@@ -47,10 +55,14 @@ const translations = {
     login: 'உள்நுழைக',
     logout: 'வெளியேற',
     home: 'முகப்பு',
+    marketplace: 'சந்தை',
+    myListings: 'எனது பட்டியல்கள்',
     settings: 'அமைப்புகள்',
     testHistory: 'சோதனை வரலாறு',
     help: 'உதவி மற்றும் ஆதரவு',
     about: 'பற்றி',
+    inbox: 'இன்பாக்ஸ்',
+    approvals: 'தயாரிப்பு அனுமதிகள்',
     version: 'பதிப்பு 1.0.0',
     logoutConfirm: 'நீங்கள் வெளியேற விரும்புகிறீர்களா?',
     yes: 'ஆம்',
@@ -62,7 +74,7 @@ export default function DrawerContent({
   navigation: drawerNavigation,
   selectedLanguage = 'English',
 }) {
-  const { user, isAuthenticated, signOut } = useAuth();
+  const { user, isAuthenticated, isOfficer, signOut } = useAuth();
   const t = translations[selectedLanguage];
 
   const getRootNavigation = () => {
@@ -105,6 +117,12 @@ export default function DrawerContent({
 
   const menuItems = [
     { id: 'home', label: t.home, icon: '🏠', route: 'Home' },
+    ...(isOfficer ? [
+      { id: 'inbox', label: t.inbox || 'Inbox', icon: '📬', route: 'OfficerInbox' },
+      { id: 'approvals', label: t.approvals || 'Approvals', icon: '✅', route: 'ProductApproval' },
+    ] : []),
+    { id: 'marketplace', label: t.marketplace, icon: '🛒', route: 'Marketplace' },
+    ...(!isOfficer ? [{ id: 'myListings', label: t.myListings, icon: '📦', route: 'MyListings', requireAuth: true }] : []),
     { id: 'history', label: t.testHistory, icon: '📊', route: 'History' },
     { id: 'settings', label: t.settings, icon: '⚙️', route: 'Settings' },
     { id: 'help', label: t.help, icon: '❓', route: 'Help' },
@@ -118,14 +136,23 @@ export default function DrawerContent({
         <View style={styles.accountSection}>
           <View style={styles.accountHeader}>
             <View style={styles.avatarContainer}>
-              {isAuthenticated && user ? (
+              {isAuthenticated && user && user.photoURL ? (
+                <Image
+                  source={{ uri: user.photoURL }}
+                  style={styles.avatarImage}
+                />
+              ) : isAuthenticated && user ? (
+                <View style={styles.avatarFallback}>
                 <Text style={styles.avatarText}>
                   {user.displayName
                     ? user.displayName.charAt(0).toUpperCase()
                     : user.email.charAt(0).toUpperCase()}
                 </Text>
+                </View>
               ) : (
+                <View style={styles.avatarFallback}>
                 <Text style={styles.avatarText}>👤</Text>
+                </View>
               )}
             </View>
             <View style={styles.accountInfo}>
@@ -170,25 +197,34 @@ export default function DrawerContent({
 
         {/* Menu Items */}
         <View style={styles.menuSection}>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={() => {
-                drawerNavigation.closeDrawer?.();
-                if (item.route === 'Home') {
-                  handleNavigateToStack('Home');
-                }
-              }}
-            >
-              <Text style={styles.menuIcon}>{item.icon}</Text>
-              <Text style={[
-                styles.menuLabel,
-                (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
-              ]}>{item.label}</Text>
-              <Text style={styles.menuArrow}>→</Text>
-            </TouchableOpacity>
-          ))}
+          {menuItems
+            .filter((item) => !item.requireAuth || isAuthenticated)
+            .map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.menuItem}
+                onPress={() => {
+                  drawerNavigation.closeDrawer?.();
+                  if (item.requireAuth && !isAuthenticated) {
+                    handleLogin();
+                  } else {
+                    handleNavigateToStack(item.route);
+                  }
+                }}
+              >
+                <Text style={styles.menuIcon}>{item.icon}</Text>
+                <Text style={[
+                  styles.menuLabel,
+                  (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
+                ]}>{item.label}</Text>
+                {item.id === 'approvals' && isOfficer && (
+                  <View style={styles.menuBadge}>
+                    <Text style={styles.menuBadgeText}>3</Text>
+                  </View>
+                )}
+                <Text style={styles.menuArrow}>→</Text>
+              </TouchableOpacity>
+            ))}
         </View>
       </ScrollView>
 
@@ -222,12 +258,17 @@ const styles = StyleSheet.create({
   },
   accountSection: {
     backgroundColor: '#0F5132',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 20,
+    paddingTop: 100,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+    marginBottom: 24,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
   },
   accountHeader: {
     flexDirection: 'row',
@@ -235,15 +276,33 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   avatarContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(255,255,255,0.22)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
+    marginRight: 18,
+    borderWidth: 2.5,
+    borderColor: 'rgba(255,255,255,0.35)',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 34,
+  },
+  avatarFallback: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   avatarText: {
     fontSize: 28,
@@ -254,14 +313,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   accountName: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 19,
+    fontWeight: '800',
     color: '#FFFFFF',
-    marginBottom: 4,
+    marginBottom: 5,
+    letterSpacing: -0.3,
   },
   accountEmail: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14.5,
+    color: 'rgba(255,255,255,0.85)',
+    fontWeight: '400',
   },
   loginLink: {
     fontSize: 14,
@@ -273,11 +334,13 @@ const styles = StyleSheet.create({
   accountBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 22,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   badgeDot: {
     width: 8,
@@ -298,55 +361,89 @@ const styles = StyleSheet.create({
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    backgroundColor: '#F5F5F5',
+    paddingVertical: 18,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    marginBottom: 10,
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.04)',
   },
   menuIcon: {
-    fontSize: 24,
-    marginRight: 16,
+    fontSize: 26,
+    marginRight: 18,
   },
   menuLabel: {
     flex: 1,
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 16.5,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    letterSpacing: -0.2,
   },
   menuArrow: {
-    fontSize: 18,
+    fontSize: 20,
     color: '#999',
+    fontWeight: '600',
+  },
+  menuBadge: {
+    backgroundColor: '#E91E63',
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    marginLeft: 8,
+  },
+  menuBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
   },
   footer: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
+    paddingVertical: 24,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    backgroundColor: '#FAFAFA',
+    borderTopColor: '#E8E8E8',
+    backgroundColor: '#FFFFFF',
   },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#FFF5F7',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+    borderWidth: 1.5,
+    borderColor: '#FFE5EA',
+    elevation: 2,
+    shadowColor: '#E91E63',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   logoutIcon: {
     fontSize: 20,
     marginRight: 8,
   },
   logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 16.5,
+    fontWeight: '700',
     color: '#E91E63',
+    letterSpacing: 0.2,
   },
   versionText: {
-    fontSize: 12,
-    color: '#999',
+    fontSize: 12.5,
+    color: '#888',
     textAlign: 'center',
+    fontWeight: '500',
+    letterSpacing: 0.3,
   },
   textNonLatin: {
     fontSize: 14,
