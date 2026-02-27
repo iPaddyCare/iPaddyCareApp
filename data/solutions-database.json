@@ -581,5 +581,232 @@
       "Apply insecticides only when monitoring thresholds are exceeded to protect natural enemies",
       "Avoid draining sprayed water into irrigation channels or neighboring plots"
     ]
+  },
+  {
+    "name": "Rice Leaf Roller",
+    "model_var": "Rice Leaf Roller",
+    "aliases": ["leaf roller", "rice leaf roller", "Cnaphalocrocis medinalis"],
+    "description": "Rice leaf roller (Cnaphalocrocis medinalis) larvae fold rice leaves longitudinally and feed inside, scraping the green tissue. Severe infestations reduce photosynthesis and yield.",
+    "severity": "medium",
+    "solutions": [
+      {"step": 1, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 150 ml/ha as foliar spray when leaf damage exceeds 15%. Spray interval: 10–14 days."},
+      {"step": 2, "title": "Fipronil 5% SC", "description": "Apply 1000–1500 ml/ha when infestation is moderate to severe. Spray in early morning or late afternoon."},
+      {"step": 3, "title": "Bacillus thuringiensis (Bt)", "description": "Apply Bt-based biopesticide at 1–2 kg/ha for early-stage larvae. Repeat every 7 days if needed."}
+    ],
+    "prevention": [
+      "Avoid excessive nitrogen fertilization",
+      "Maintain clean field borders and remove weeds",
+      "Encourage natural enemies (parasitoids, spiders)",
+      "Use light traps to monitor adult moth populations"
+    ]
+  },
+  {
+    "name": "Rice Leaf Caterpillar",
+    "model_var": "Rice Leaf Caterpillar",
+    "aliases": ["leaf caterpillar", "rice caterpillar", "Spodoptera"],
+    "description": "Rice leaf caterpillars (Spodoptera spp.) feed on leaves, causing defoliation. Severe infestations during vegetative stage can significantly reduce yield.",
+    "severity": "medium",
+    "solutions": [
+      {"step": 1, "title": "Emamectin Benzoate 5% SG", "description": "Dilute 5 g per 10 L water and spray when caterpillar damage is first observed. Spray interval: 10–14 days."},
+      {"step": 2, "title": "Chlorpyriphos 20% EC", "description": "Apply 500 ml/ha as foliar spray for severe infestations."},
+      {"step": 3, "title": "Hand Collection", "description": "For small infestations, manually collect and destroy egg masses and larvae."}
+    ],
+    "prevention": [
+      "Practice crop rotation",
+      "Maintain proper plant spacing",
+      "Encourage natural predators (birds, parasitoid wasps)",
+      "Use pheromone traps for monitoring"
+    ]
+  },
+  {
+    "name": "Rice Shell Pest",
+    "model_var": "Rice Shell Pest",
+    "aliases": ["shell pest", "rice shell insect", "case worm"],
+    "description": "Rice shell pests (case worms) cut leaf tips and roll them into tubular cases, feeding on leaf tissue while protected inside the case. Found in flooded fields.",
+    "severity": "medium",
+    "solutions": [
+      {"step": 1, "title": "Cartap Hydrochloride 50% SP", "description": "Apply 750 g/ha as foliar spray when infestation exceeds threshold levels."},
+      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules into standing water for larval control."},
+      {"step": 3, "title": "Drain and Dry Fields", "description": "Temporarily drain flooded fields to expose and kill larvae that depend on water."}
+    ],
+    "prevention": [
+      "Manage water levels to avoid continuous flooding",
+      "Remove weeds and algae from field surfaces",
+      "Encourage natural enemies (dragonflies, frogs)",
+      "Avoid excessive nitrogen application"
+    ]
+  },
+  {
+    "name": "Thrips",
+    "model_var": "Thrips",
+    "aliases": ["thrips", "rice thrips", "Stenchaetothrips biformis"],
+    "description": "Rice thrips (Stenchaetothrips biformis) are tiny insects that rasp and feed on young leaves, causing leaf curling, silvering, and tip drying. Most damaging in nurseries and early transplanting.",
+    "severity": "medium",
+    "solutions": [
+      {"step": 1, "title": "Thiamethoxam 25% WG", "description": "Apply 25–30 g per 15–20 L water per acre as foliar spray when thrips damage is observed."},
+      {"step": 2, "title": "Imidacloprid 17.8% SL", "description": "Apply 100–125 ml/ha as foliar spray. Effective for early infestations."},
+      {"step": 3, "title": "Neem Oil 3%", "description": "Spray neem oil at 3% concentration as an organic alternative for mild infestations."}
+    ],
+    "prevention": [
+      "Maintain adequate soil moisture in nurseries",
+      "Avoid water stress during early crop growth",
+      "Remove weeds that serve as alternate hosts",
+      "Use resistant varieties where available"
+    ]
+  },
+  {
+    "name": "Paddy Stem Maggot",
+    "model_var": "Paddy Stem Maggot",
+    "aliases": ["stem maggot", "rice stem maggot", "Chlorops oryzae"],
+    "description": "Paddy stem maggot (Chlorops oryzae) larvae bore into rice tillers causing central shoot death ('dead heart') in young plants and 'silver shoot' symptoms.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha at transplanting or when first damage is observed. Incorporate into soil."},
+      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha as soil treatment during early vegetative stage."},
+      {"step": 3, "title": "Remove Affected Tillers", "description": "Pull out and destroy damaged tillers showing dead heart or silver shoot symptoms."}
+    ],
+    "prevention": [
+      "Early transplanting to avoid peak fly activity",
+      "Avoid late planting",
+      "Maintain clean field borders",
+      "Practice synchronous planting in the area"
+    ]
+  },
+  {
+    "name": "Asiatic Rice Borer",
+    "model_var": "Asiatic Rice Borer",
+    "aliases": ["asiatic rice borer", "rice borer", "Chilo suppressalis"],
+    "description": "Asiatic rice borer (Chilo suppressalis) larvae bore into rice stems causing 'dead heart' in vegetative stage and 'white head' at reproductive stage.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering when borer activity begins."},
+      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules at transplanting for early protection."},
+      {"step": 3, "title": "Pheromone Traps", "description": "Deploy pheromone traps at 5 per hectare to monitor and mass-trap adult moths."}
+    ],
+    "prevention": [
+      "Destroy stubble and crop residues after harvest",
+      "Practice crop rotation",
+      "Maintain proper water management",
+      "Use resistant varieties where available",
+      "Encourage egg parasitoids (Trichogramma)"
+    ]
+  },
+  {
+    "name": "Yellow Rice Borer",
+    "model_var": "Yellow Rice Borer",
+    "aliases": ["yellow rice borer", "yellow stem borer", "Scirpophaga incertulas", "YSB"],
+    "description": "Yellow rice borer (Scirpophaga incertulas) is the most destructive stem borer species, causing 'dead heart' in vegetative stage and 'white head' in reproductive stage.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha at transplanting near base of plants. Controls early larval establishment."},
+      {"step": 2, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering stage."},
+      {"step": 3, "title": "Carbosulfan 200g/l SC", "description": "Dilute 250–300 ml per 100 L water and spray when larval activity is confirmed."},
+      {"step": 4, "title": "Egg Mass Collection", "description": "Manually collect and destroy egg masses found on leaf blades during field scouting."}
+    ],
+    "prevention": [
+      "Clip leaf tips at transplanting to remove egg masses",
+      "Practice synchronous planting",
+      "Destroy stubble and crop residues after harvest",
+      "Use light traps to monitor and mass-trap adults",
+      "Maintain proper water levels"
+    ]
+  },
+  {
+    "name": "Rice Gall Midge",
+    "model_var": "Rice Gall Midge",
+    "aliases": ["gall midge", "rice gall midge", "Orseolia oryzae"],
+    "description": "Rice gall midge (Orseolia oryzae) larvae feed inside the growing point of tillers, causing formation of a tubular gall ('silver shoot' or 'onion leaf'). Affected tillers do not produce panicles.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha in the root zone when gall midge damage first appears (before tillering)."},
+      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha at transplanting or when silver shoots are first observed."},
+      {"step": 3, "title": "Remove Silver Shoots", "description": "Pull out and destroy tillers showing silver shoot or onion leaf symptoms to reduce midge population."}
+    ],
+    "prevention": [
+      "Use resistant varieties (varieties with Gm genes)",
+      "Early planting to escape peak midge emergence",
+      "Avoid staggered planting in the same area",
+      "Remove wild rice and grassy weeds (alternate hosts)",
+      "Practice crop rotation"
+    ]
+  },
+  {
+    "name": "Brown Plant Hopper",
+    "model_var": "Brown Plant Hopper",
+    "aliases": ["brown planthopper", "BPH", "Nilaparvata lugens", "hopper burn"],
+    "description": "Brown planthopper (Nilaparvata lugens) sucks phloem sap from rice plants causing yellowing, wilting, and 'hopper burn' — complete drying of plants in circular patches.",
+    "severity": "critical",
+    "solutions": [
+      {"step": 1, "title": "Pymetrozine 50% WG", "description": "Apply 25–30 g per 20 L water per acre. Spray at the base of plants where hoppers congregate."},
+      {"step": 2, "title": "Buprofezin 250 g/l SC", "description": "Apply 60–80 ml per 15–20 L water per acre. Acts as insect growth regulator."},
+      {"step": 3, "title": "Dinotefuran 20% SG", "description": "Apply 50–60 g/ha as foliar spray directed at plant base for severe infestations."},
+      {"step": 4, "title": "Drain Fields", "description": "Temporarily drain standing water to discourage hopper colonies and allow natural enemies access."}
+    ],
+    "prevention": [
+      "Avoid excessive nitrogen application",
+      "Maintain proper plant spacing for airflow",
+      "Use resistant varieties (with BPH resistance genes)",
+      "Encourage natural enemies (spiders, Cyrtorhinus)",
+      "Avoid broad-spectrum insecticides that kill natural enemies",
+      "Use light traps for population monitoring"
+    ]
+  },
+  {
+    "name": "Rice Stem Fly",
+    "model_var": "Rice Stem Fly",
+    "aliases": ["stem fly", "rice stem fly", "Chlorops oryzae", "Atherigona oryzae"],
+    "description": "Rice stem fly larvae mine into rice stems causing dead hearts and reduced tillering. Most damaging during seedling and early tillering stages.",
+    "severity": "medium",
+    "solutions": [
+      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha at sowing or transplanting as preventive treatment."},
+      {"step": 2, "title": "Imidacloprid Seed Treatment", "description": "Treat seeds with Imidacloprid 600 FS at 5 ml/kg seed before sowing for systemic protection."},
+      {"step": 3, "title": "Remove Damaged Plants", "description": "Uproot and destroy plants showing dead heart symptoms to prevent fly multiplication."}
+    ],
+    "prevention": [
+      "Use healthy, vigorous seedlings",
+      "Avoid late sowing",
+      "Maintain optimal plant population",
+      "Remove volunteer rice and weedy hosts",
+      "Practice crop rotation"
+    ]
+  },
+  {
+    "name": "Rice Water Weevil",
+    "model_var": "Rice Water Weevil",
+    "aliases": ["water weevil", "rice water weevil", "Lissorhoptrus oryzophilus"],
+    "description": "Rice water weevil (Lissorhoptrus oryzophilus) adults feed on leaves creating longitudinal scars. Larvae feed on roots underwater, reducing root mass and plant vigor, leading to stunting and yield loss.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Chlorantraniliprole Seed Treatment", "description": "Apply seed treatment at recommended rate for systemic protection against larvae."},
+      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules into standing water 7–10 days after flooding for larval control."},
+      {"step": 3, "title": "Drain Fields Temporarily", "description": "Drain paddies for 5–7 days after transplanting to expose and kill eggs and early larvae on roots."}
+    ],
+    "prevention": [
+      "Delay permanent flooding to reduce adult colonization",
+      "Maintain shallow water after transplanting",
+      "Use seed treatments for early protection",
+      "Destroy crop residues and volunteer rice",
+      "Avoid early planting when adult populations are high"
+    ]
+  },
+  {
+    "name": "Rice Leaf Hopper",
+    "model_var": "Rice Leaf Hopper",
+    "aliases": ["leafhopper", "rice leafhopper", "green leafhopper", "Nephotettix virescens"],
+    "description": "Rice leafhoppers (Nephotettix spp.) suck plant sap causing yellowing and stunting. They are also the primary vectors of Tungro virus disease, making them doubly dangerous.",
+    "severity": "high",
+    "solutions": [
+      {"step": 1, "title": "Buprofezin 250 g/l SC", "description": "Apply 60–80 ml per 15–20 L water per acre when leafhopper numbers exceed 5–10 per 50 tillers."},
+      {"step": 2, "title": "Pymetrozine 50% WG", "description": "Apply 25–30 g per 20 L water per acre. Acts as feeding inhibitor and disrupts virus transmission."},
+      {"step": 3, "title": "Thiamethoxam 25% WG", "description": "Apply 25–30 g per 15–20 L water per acre. Effective for rapid knockdown of hopper populations."}
+    ],
+    "prevention": [
+      "Use Tungro-resistant varieties",
+      "Practice synchronized planting",
+      "Maintain clean bunds and remove weeds",
+      "Use light traps for population monitoring",
+      "Avoid excessive nitrogen application",
+      "Encourage natural enemies (spiders, dragonflies)"
+    ]
   }
 ]

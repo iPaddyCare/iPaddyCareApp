@@ -129,7 +129,7 @@ function processOutput(outputs, classNames) {
   predictions.sort((a, b) => b.probability - a.probability);
 
   return {
-    detectedClass: classNames[maxIdx],
+    disease: classNames[maxIdx],
     confidence: probabilities[maxIdx],
     predictions,
   };
@@ -169,13 +169,38 @@ export async function predictPest(imageUri) {
   };
 }
 
-// ---------------------- Backward-compatible predict ----------------------
+// ---------------------- Run both models, pick best ----------------------
 export async function predict(imageUri) {
-  return predictDisease(imageUri);
+  if (!initialized) throw new Error('Models not initialized');
+
+  // Preprocess once, reuse for both models
+  const tensor = await preprocessImage(imageUri);
+  const tensorArray = tensorToArray(tensor);
+
+  // Run both models in parallel
+  const [diseaseResult, pestResult] = await Promise.all([
+    PestDetectionModule.predict(tensorArray),
+    PestDetectionModule.predictPest(tensorArray),
+  ]);
+
+  const diseaseOutput = processOutput(diseaseResult.logits, DISEASE_CLASSES);
+  const pestOutput = processOutput(pestResult.logits, PEST_CLASSES);
+
+  console.log(`Disease model: ${diseaseOutput.disease} (${(diseaseOutput.confidence * 100).toFixed(1)}%)`);
+  console.log(`Pest model: ${pestOutput.disease} (${(pestOutput.confidence * 100).toFixed(1)}%)`);
+
+  // Pick the model with higher confidence
+  const winner = diseaseOutput.confidence >= pestOutput.confidence
+    ? { ...diseaseOutput, type: 'disease' }
+    : { ...pestOutput, type: 'pest' };
+
+  console.log(`Winner: ${winner.type} → ${winner.disease} (${(winner.confidence * 100).toFixed(1)}%)`);
+
+  return winner;
 }
 
 export async function predictQuick(imageUri) {
-  return predictDisease(imageUri);
+  return predict(imageUri);
 }
 
 export default {
