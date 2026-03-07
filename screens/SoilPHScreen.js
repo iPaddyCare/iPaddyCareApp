@@ -673,31 +673,26 @@ export default function SoilPHScreen({ navigation }) {
           <View style={styles.innerContent}>
             {/* Connection Status */}
             <View style={[styles.statusCard, connected ? styles.statusConnected : styles.statusDisconnected]}>
-              <View style={styles.statusRow}>
-                <View style={[styles.statusIconContainer, { backgroundColor: connected ? '#4CAF5020' : '#F4433620' }]}>
-                  {connected ? (
-                    <Icon name="bluetooth-connect" size={22} color="#4CAF50" />
-                  ) : (
-                    <Icon name="alert-circle" size={22} color="#F44336" />
-                  )}
-                </View>
-                <View style={styles.statusTextContainer}>
-                  <Text style={[styles.statusText, connected && styles.statusTextConnected]}>
-                    {connected ? t.connected : t.noDevice}
-                  </Text>
-                  {connectedDevice && (
-                    <Text style={styles.statusDeviceIp}>
-                      {connectedDevice.name || 'pH Sensor'}
-                    </Text>
-                  )}
-                </View>
-                {!connected ? (
-                  <TouchableOpacity style={styles.connectButton} onPress={handleConnectDevice}>
-                    <Icon name="link" size={18} color="white" />
-                    <Text style={styles.connectButtonText}>{t.connect}</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.connectedActions}>
+              {connected ? (
+                <>
+                  {/* Top row: connected device info only */}
+                  <View style={styles.statusRow}>
+                    <View style={[styles.statusIconContainer, { backgroundColor: '#4CAF5020' }]}>
+                      <Icon name="bluetooth-connect" size={22} color="#4CAF50" />
+                    </View>
+                    <View style={styles.statusTextContainer}>
+                      <Text style={[styles.statusText, styles.statusTextConnected]}>
+                        {t.connected}
+                      </Text>
+                      {connectedDevice && (
+                        <Text style={styles.statusDeviceIp}>
+                          {connectedDevice.name || 'pH Sensor'}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  {/* Second row: buttons below */}
+                  <View style={styles.connectedActionsRow}>
                     <TouchableOpacity
                       style={styles.readValuesButton}
                       onPress={fetchData}
@@ -717,8 +712,21 @@ export default function SoilPHScreen({ navigation }) {
                       <Text style={styles.disconnectButtonText}>{t.disconnect}</Text>
                     </TouchableOpacity>
                   </View>
-                )}
-              </View>
+                </>
+              ) : (
+                <View style={styles.statusRow}>
+                  <View style={[styles.statusIconContainer, { backgroundColor: '#F4433620' }]}>
+                    <Icon name="alert-circle" size={22} color="#F44336" />
+                  </View>
+                  <View style={styles.statusTextContainer}>
+                    <Text style={styles.statusText}>{t.noDevice}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.connectButton} onPress={handleConnectDevice}>
+                    <Icon name="link" size={18} color="white" />
+                    <Text style={styles.connectButtonText}>{t.connect}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
 
             {/* Location Status */}
@@ -1226,7 +1234,7 @@ const styles = StyleSheet.create({
   },
   innerContent: {
     paddingHorizontal: 20,
-    paddingTop: 4,
+    paddingTop: 8,
   },
   statusCard: {
     marginHorizontal: 4,
