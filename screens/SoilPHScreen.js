@@ -9,6 +9,7 @@ import {
   ScrollView,
   Alert,
   RefreshControl,
+  TextInput,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -40,6 +41,7 @@ export default function SoilPHScreen({ navigation }) {
     season: 'Maha',
     soil_zone: 'Intermediate',
     texture: 'loamy',
+    water_depth_cm: 0,
   });
 
   // Initialize location on mount
@@ -668,6 +670,28 @@ export default function SoilPHScreen({ navigation }) {
               </Text>
             </View>
 
+            {/* Manual Water Depth */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Water Depth (cm)</Text>
+              <View style={styles.textInputRow}>
+                <TextInput
+                  style={styles.textInput}
+                  value={String(formData.water_depth_cm ?? '')}
+                  placeholder="Enter water depth"
+                  keyboardType="numeric"
+                  onChangeText={(value) =>
+                    setFormData({ ...formData, water_depth_cm: value })
+                  }
+                />
+              </View>
+              <Text style={styles.selectedValue}>
+                Entered:{' '}
+                {formData.water_depth_cm
+                  ? `${formData.water_depth_cm} cm`
+                  : 'Not set'}
+              </Text>
+            </View>
+
             {/* Texture */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Soil Texture</Text>
@@ -704,6 +728,12 @@ export default function SoilPHScreen({ navigation }) {
                 <Text style={styles.formSummaryLabel}>Soil Zone:</Text>
                 <Text style={styles.formSummaryValue}>{formData.soil_zone}</Text>
               </View>
+            <View style={styles.formSummaryRow}>
+              <Text style={styles.formSummaryLabel}>Water Depth (cm):</Text>
+              <Text style={styles.formSummaryValue}>
+                {formData.water_depth_cm ? `${formData.water_depth_cm}` : '-'}
+              </Text>
+            </View>
               <View style={styles.formSummaryRow}>
                 <Text style={styles.formSummaryLabel}>Texture:</Text>
                 <Text style={styles.formSummaryValue}>
@@ -1206,6 +1236,19 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+  },
+  textInputRow: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  textInput: {
+    height: 40,
+    fontSize: 14,
+    color: '#333',
   },
   formSummaryCard: {
     backgroundColor: '#F5F5F5',
