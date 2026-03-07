@@ -222,13 +222,12 @@ export default function ReadingResultsScreen({ route, navigation }) {
   };
 
   // Calculate bulk density (g/cm³) from weight and estimated volume
-  // Assuming a standard sample container volume or calculate from dimensions
+  // Uses real average sample weight from readings when available
   const calculateBulkDensity = () => {
-    // Using hardcoded sample weight of 5g
-    const sampleWeight = 5; // grams
+    const sampleWeight = readingData?.averageSampleWeight ?? null; // grams from HX711
+    if (sampleWeight == null || sampleWeight <= 0) return null;
     // Standard sample container volume (adjust based on actual container)
-    // For now, using a typical value - this should be calibrated based on actual device
-    const sampleVolume = 50; // cm³ (adjust based on actual container)
+    const sampleVolume = 50; // cm³ (calibrate based on actual device)
     return sampleWeight / sampleVolume;
   };
 
@@ -369,7 +368,9 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   <Icon name="thermometer" size={20} color="#FF9800" />
                   <Text style={styles.sensorReadingLabel}>{t.sampleTemperature}</Text>
                   <Text style={styles.sensorReadingValue}>
-                    28{t.celsius}
+                    {readingData.averageSampleTemp !== undefined && readingData.averageSampleTemp !== null
+                      ? `${readingData.averageSampleTemp.toFixed(1)}${t.celsius}`
+                      : `--${t.celsius}`}
                   </Text>
                 </View>
 
@@ -400,18 +401,21 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   <Icon name="scale-balance" size={20} color="#4CAF50" />
                   <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
                   <Text style={styles.sensorReadingValue}>
-                    5{t.grams}
+                    {readingData.averageSampleWeight !== undefined && readingData.averageSampleWeight !== null
+                      ? `${readingData.averageSampleWeight.toFixed(1)}${t.grams}`
+                      : `--${t.grams}`}
                   </Text>
                 </View>
 
-                {/* Bulk Density */}
+                {/* Bulk Density (derived from sample weight / container volume) */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="cube-outline" size={20} color="#607D8B" />
                   <Text style={styles.sensorReadingLabel}>{t.bulkDensity}</Text>
                   <Text style={styles.sensorReadingValue}>
-                    {calculateBulkDensity() !== null
-                      ? `${calculateBulkDensity().toFixed(2)}${t.gPerCm3}`
-                      : `--${t.gPerCm3}`}
+                    {(() => {
+                      const density = calculateBulkDensity();
+                      return density != null ? `${density.toFixed(2)}${t.gPerCm3}` : `--${t.gPerCm3}`;
+                    })()}
                   </Text>
                 </View>
               </View>
