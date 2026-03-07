@@ -39,6 +39,8 @@ const translations = {
     enterEmail: 'Enter your email to reset password',
     sendResetLink: 'Send Reset Link',
     backToLogin: 'Back to Login',
+    officerLogin: 'Login as Officer',
+    officerLoginDesc: 'Are you an agricultural officer?',
   },
   සිංහල: {
     welcomeBack: 'ආපසු සාදරයෙන් පිළිගනිමු',
@@ -60,6 +62,8 @@ const translations = {
     enterEmail: 'මුරපදය නැවත සැකසීමට ඔබේ විද්‍යුත් තැපෑල ඇතුළත් කරන්න',
     sendResetLink: 'නැවත සැකසීමේ සබැඳිය යවන්න',
     backToLogin: 'පිවිසීමට ආපසු යන්න',
+    officerLogin: 'නිලධාරියෙකු ලෙස පිවිසෙන්න',
+    officerLoginDesc: 'ඔබ කෘෂිකර්ම නිලධාරියෙක්ද?',
   },
   தமிழ்: {
     welcomeBack: 'மீண்டும் வரவேற்கிறோம்',
@@ -81,6 +85,8 @@ const translations = {
     enterEmail: 'கடவுச்சொல்லை மீட்டமைக்க உங்கள் மின்னஞ்சலை உள்ளிடவும்',
     sendResetLink: 'மீட்டமைப்பு இணைப்பை அனுப்ப',
     backToLogin: 'உள்நுழைக்கு திரும்ப',
+    officerLogin: 'அதிகாரியாக உள்நுழைக',
+    officerLoginDesc: 'நீங்கள் விவசாய அதிகாரியா?',
   },
 };
 
@@ -474,6 +480,25 @@ export default function LoginScreen({ navigation, onSkip }) {
             )}
           </Animated.View>
 
+          {/* Officer Login Link */}
+          <Animated.View
+            style={[
+              styles.officerLoginContainer,
+              {
+                opacity: fadeAnim,
+              },
+            ]}
+          >
+            <View style={styles.officerLoginDivider} />
+            <Text style={styles.officerLoginText}>{t.officerLoginDesc}</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('OfficerLogin')}
+              style={styles.officerLoginButton}
+            >
+              <Text style={styles.officerLoginButtonText}>{t.officerLogin}</Text>
+            </TouchableOpacity>
+          </Animated.View>
+
           {/* Skip Button */}
           <Animated.View
             style={[
@@ -760,6 +785,38 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
+  },
+  officerLoginContainer: {
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  officerLoginDivider: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginBottom: 16,
+  },
+  officerLoginText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  officerLoginButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#0F5132',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    minWidth: 200,
+    alignItems: 'center',
+  },
+  officerLoginButtonText: {
+    color: '#0F5132',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
 

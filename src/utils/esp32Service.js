@@ -243,9 +243,19 @@ class ESP32Service {
       return {
         success: true,
         data: {
-          moisture: data.moisture || data.moistureLevel || data.value || 0,
-          temperature: data.temperature || data.temp || null,
-          humidity: data.humidity || data.hum || null,
+          // Main moisture value (capacitive sensor)
+          moisture: data.cap_sensor_value || data.moisture || data.moistureLevel || data.value || 0,
+          // Sample temperature (DS18B20)
+          sampleTemperature: data.sample_temperature || data.sampleTemperature || null,
+          // Ambient temperature (DHT22)
+          ambientTemperature: data.ambient_temperature || data.ambientTemperature || data.temperature || data.temp || null,
+          // Ambient humidity (DHT22)
+          ambientHumidity: data.ambient_humidity || data.ambientHumidity || data.humidity || data.hum || null,
+          // Sample weight (Load cell + HX711)
+          sampleWeight: data.sample_weight || data.sampleWeight || null,
+          // Legacy fields for backward compatibility
+          temperature: data.ambient_temperature || data.ambientTemperature || data.temperature || data.temp || null,
+          humidity: data.ambient_humidity || data.ambientHumidity || data.humidity || data.hum || null,
           timestamp: data.timestamp || new Date().toISOString(),
           raw: data, // Keep raw data for debugging
         },
