@@ -19,6 +19,7 @@ class BLEService {
     this.connectedDevice = null;
     this.isScanning = false;
     this.bleModuleAvailable = false;
+    this.monitorSubscription = null; // BLE characteristic notification subscription
   }
 
   /**
@@ -214,9 +215,10 @@ class BLEService {
           }
 
           if (device) {
-            // Filter for ESP32 devices (check name or service UUIDs)
+            // Filter for ESP32 / Seed Moisture devices (name or service UUIDs)
             const deviceName = device.name || '';
             const isESP32 = 
+              deviceName.toLowerCase().includes('seed-moisture-device') ||
               deviceName.toLowerCase().includes('esp32') ||
               deviceName.toLowerCase().includes('moisture') ||
               device.serviceUUIDs?.some(uuid => uuid.toLowerCase().includes('ff00')) ||
@@ -314,6 +316,7 @@ class BLEService {
    * Disconnect from current device
    */
   async disconnect() {
+    await this.stopMonitoring();
     if (this.connectedDevice?.device) {
       try {
         await this.connectedDevice.device.cancelConnection();
@@ -383,23 +386,7 @@ class BLEService {
       
       return {
         success: true,
-        data: {
-          // Main moisture value (capacitive sensor)
-          moisture: decodedData.cap_sensor_value || decodedData.moisture || decodedData.moistureLevel || decodedData.value || 0,
-          // Sample temperature (DS18B20)
-          sampleTemperature: decodedData.sample_temperature || decodedData.sampleTemperature || null,
-          // Ambient temperature (DHT22)
-          ambientTemperature: decodedData.ambient_temperature || decodedData.ambientTemperature || decodedData.temperature || decodedData.temp || null,
-          // Ambient humidity (DHT22)
-          ambientHumidity: decodedData.ambient_humidity || decodedData.ambientHumidity || decodedData.humidity || decodedData.hum || null,
-          // Sample weight (Load cell + HX711)
-          sampleWeight: decodedData.sample_weight || decodedData.sampleWeight || null,
-          // Legacy fields for backward compatibility
-          temperature: decodedData.ambient_temperature || decodedData.ambientTemperature || decodedData.temperature || decodedData.temp || null,
-          humidity: decodedData.ambient_humidity || decodedData.ambientHumidity || decodedData.humidity || decodedData.hum || null,
-          timestamp: decodedData.timestamp || new Date().toISOString(),
-          raw: decodedData,
-        },
+        data: this.normalizeSensorData(decodedData),
       };
     } catch (error) {
       console.error('BLE read error:', error);
@@ -408,6 +395,38 @@ class BLEService {
         error: error.message || 'Failed to read data from device',
       };
     }
+  }
+
+  /**
+   * Normalize sensor data from ESP32 JSON to app format.
+   * ESP32 sends: { cap, sample_temp, ambient_temp, humidity, weight }
+   */
+  normalizeSensorData(decodedData) {
+    if (!decodedData || typeof decodedData !== 'object') {
+      return {
+        moisture: 0,
+        sampleTemperature: null,
+        ambientTemperature: null,
+        ambientHumidity: null,
+        sampleWeight: null,
+        temperature: null,
+        humidity: null,
+        timestamp: new Date().toISOString(),
+        raw: decodedData,
+      };
+    }
+    return {
+      // Capacitive sensor: ESP32 sends "cap" as voltage (0–3.3V)
+      moisture: decodedData.cap ?? decodedData.cap_sensor_value ?? decodedData.moisture ?? decodedData.moistureLevel ?? decodedData.value ?? 0,
+      sampleTemperature: decodedData.sample_temp ?? decodedData.sample_temperature ?? decodedData.sampleTemperature ?? null,
+      ambientTemperature: decodedData.ambient_temp ?? decodedData.ambient_temperature ?? decodedData.ambientTemperature ?? decodedData.temperature ?? decodedData.temp ?? null,
+      ambientHumidity: decodedData.humidity ?? decodedData.ambient_humidity ?? decodedData.ambientHumidity ?? decodedData.hum ?? null,
+      sampleWeight: decodedData.weight ?? decodedData.sample_weight ?? decodedData.sampleWeight ?? null,
+      temperature: decodedData.ambient_temp ?? decodedData.ambient_temperature ?? decodedData.ambientTemperature ?? decodedData.temperature ?? decodedData.temp ?? null,
+      humidity: decodedData.humidity ?? decodedData.ambient_humidity ?? decodedData.ambientHumidity ?? decodedData.hum ?? null,
+      timestamp: decodedData.timestamp ?? new Date().toISOString(),
+      raw: decodedData,
+    };
   }
 
   /**
@@ -472,6 +491,58 @@ class BLEService {
   }
 
   /**
+   * Start monitoring BLE characteristic for real-time notifications (ESP32 sends every 2s).
+   * @param {Function} onData - Callback receiving normalized sensor data { moisture, sampleTemperature, ... }
+   * @returns {Promise<{ success: boolean, error?: string }>}
+   */
+  async startMonitoring(onData) {
+    if (!this.connectedDevice?.device || typeof onData !== 'function') {
+      return { success: false, error: 'No device connected or invalid callback' };
+    }
+    await this.stopMonitoring();
+    try {
+      const device = this.connectedDevice.device;
+      const subscription = device.monitorCharacteristicForService(
+        ESP32_SERVICE_UUID,
+        MOISTURE_CHARACTERISTIC_UUID,
+        (error, characteristic) => {
+          if (error) {
+            console.warn('BLE monitor error:', error);
+            return;
+          }
+          if (characteristic?.value) {
+            const decoded = this.decodeBLEData(characteristic.value);
+            const normalized = this.normalizeSensorData(decoded);
+            onData(normalized);
+          }
+        },
+        'moistureMonitor'
+      );
+      this.monitorSubscription = subscription;
+      return { success: true };
+    } catch (error) {
+      console.error('BLE startMonitoring error:', error);
+      return { success: false, error: error.message || 'Failed to start monitoring' };
+    }
+  }
+
+  /**
+   * Stop monitoring BLE characteristic notifications.
+   */
+  async stopMonitoring() {
+    try {
+      if (this.monitorSubscription && typeof this.monitorSubscription.remove === 'function') {
+        this.monitorSubscription.remove();
+      } else if (this.connectedDevice?.device) {
+        this.connectedDevice.device.cancelTransaction('moistureMonitor');
+      }
+    } catch (e) {
+      // ignore
+    }
+    this.monitorSubscription = null;
+  }
+
+  /**
    * Get connected device info
    */
   getConnectedDevice() {
@@ -482,6 +553,7 @@ class BLEService {
    * Cleanup
    */
   async destroy() {
+    await this.stopMonitoring();
     await this.stopScan();
     if (this.connectedDevice) {
       await this.disconnect();

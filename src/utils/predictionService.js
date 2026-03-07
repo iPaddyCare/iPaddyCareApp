@@ -59,13 +59,17 @@ class PredictionService {
       //   "averageTomorrow": 43.5,
       // }
 
+      // Expose moisture for "Predicted Moisture" card: API may send moisture, averageToday, or we use first prediction
+      const apiMoisture = data.moisture ?? data.averageToday ?? (data.today?.[0]?.moisture) ?? null;
+
       return {
         success: true,
         data: {
           today: data.today || [],
           tomorrow: data.tomorrow || [],
-          averageToday: data.averageToday || null,
-          averageTomorrow: data.averageTomorrow || null,
+          averageToday: data.averageToday ?? null,
+          averageTomorrow: data.averageTomorrow ?? null,
+          moisture: apiMoisture,
           raw: data,
         },
         error: null,
