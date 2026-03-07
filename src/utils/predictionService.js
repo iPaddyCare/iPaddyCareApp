@@ -85,12 +85,16 @@ class PredictionService {
 
   /**
    * Generate mock prediction data for development
-   * Format: { hours: 2, time: "11:00", status: "dry" }
+   * Format: { hours: 2, time: "11:00", status: "dry", predictedMoisture: 14.03 }
    * @param {Object} readingData 
    * @returns {Object} Mock prediction data
    */
   getMockPrediction(readingData) {
     const baseMoisture = readingData.averageMoisture || 15;
+    
+    // Calculate predicted moisture (simulate prediction model)
+    // In real implementation, this would come from the ML model
+    const predictedMoisture = baseMoisture * 0.935; // Example: slight reduction
     
     // Generate predictions in format: "Dry X hours from Y time"
     // If moisture > 14, needs to dry
@@ -100,20 +104,28 @@ class PredictionService {
     let todayPrediction = null;
     let tomorrowPrediction = null;
     
-    if (baseMoisture > 14) {
+    // Use predicted moisture for schedule calculation
+    const moistureForSchedule = predictedMoisture;
+    
+    if (moistureForSchedule > 14) {
       // Needs to dry - calculate hours needed
-      const hoursNeeded = Math.ceil((baseMoisture - 14) / 2); // Rough calculation
+      const hoursNeeded = Math.ceil((moistureForSchedule - 14) / 2); // Rough calculation
+      // Get current time and add 1 hour for start time
+      const now = new Date();
+      const startHour = now.getHours() + 1;
+      const startTime = `${startHour.toString().padStart(2, '0')}:00`;
+      
       todayPrediction = {
         hours: hoursNeeded,
-        time: "11:00",
+        time: startTime,
         status: "dry",
       };
       tomorrowPrediction = {
         hours: Math.max(1, hoursNeeded - 1),
-        time: "12:00",
+        time: "09:00",
         status: "dry",
       };
-    } else if (baseMoisture < 12) {
+    } else if (moistureForSchedule < 12) {
       // Over dried - no dry time needed
       todayPrediction = {
         hours: 0,
@@ -142,7 +154,7 @@ class PredictionService {
     return {
       today: todayPrediction,
       tomorrow: tomorrowPrediction,
-      moisture: baseMoisture,
+      moisture: predictedMoisture,
     };
   }
 }

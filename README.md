@@ -6,10 +6,10 @@
 
 ### Key Features
 
-- **🌾 Seed Quality Detection**: AI-powered seed sorting and wild seed detection using camera-based image analysis
-- **💧 Moisture Monitoring**: Real-time seed moisture measurement via ESP32 IoT devices (BLE/WiFi connectivity)
-- **🧪 Soil pH Testing**: Smart soil analysis with instant pH testing and recommendations
-- **🐛 Pest & Disease Detection**: Early detection system using camera-based pest identification
+- **🌾 Seed Quality Detection**: AI-powered seed sorting and wild seed detection using YOLOv8 object detection model for image analysis
+- **💧 Seed Moisture Monitoring**: Real-time seed moisture measurement via ESP32 IoT device (BLE) with Linear Regression model for pH prediction and weather-based seed drying schedule recommendations
+- **🧪 Soil pH Testing**: Comprehensive multi-parameter soil analysis with ESP32 pH sensor device (BLE), GPS integration, and AI-powered rice variety prediction API
+- **🐛 Pest & Disease Detection**: Advanced AI-powered pest and disease detection system using CNN models, RAG (Retrieval-Augmented Generation), and LLM-based chat assistance
 - **🛒 Marketplace**: Agricultural product marketplace for buying and selling farming supplies
 - **👥 Officer Connection**: Direct communication with agricultural officers for expert advice
 - **📊 Test History**: Comprehensive tracking and history of all agricultural tests
@@ -24,57 +24,80 @@
 ### System Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        Mobile Application                        │
-│                         (React Native)                           │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
+┌────────────────────────────────────────────────────────────────┐
+│                        Mobile Application                      │
+│                         (React Native)                         │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    Presentation Layer                      │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │  │
-│  │  │  Home    │  │  Seed    │  │ Moisture │  │   Soil   │ │  │
-│  │  │  Screen  │  │Detection │  │ Detector │  │   pH     │ │  │
-│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘ │  │
-│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐ │  │
+│  │                    Presentation Layer                    │  │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  │  │
+│  │  │  Home    │  │  Seed    │  │ Moisture │  │   Soil   │  │  │
+│  │  │  Screen  │  │Detection │  │ Detector │  │   pH     │  │  │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  │  │
+│  │  ┌──────────┐  ┌───────────┐  ┌──────────┐  ┌──────────┐ │  │
 │  │  │   Pest   │  │Marketplace│  │ Officers │  │  History │ │  │
-│  │  │Detection │  │  Screen   │  │  Screen  │  │  Screen  │ │  │
-│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘ │  │
+│  │  │Detection │  │   Screen  │  │  Screen  │  │  Screen  │ │  │
+│  │  └──────────┘  └───────────┘  └──────────┘  └──────────┘ │  │
 │  └──────────────────────────────────────────────────────────┘  │
-│                                                                   │
+│                                                                │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    Context Layer                          │  │
-│  │  ┌──────────────┐          ┌──────────────┐             │  │
+│  │                    Context Layer                         │  │
+│  │  ┌──────────────┐          ┌───────────────┐             │  │
 │  │  │  AuthContext │          │LanguageContext│             │  │
-│  │  │  (Firebase)  │          │  (i18next)    │             │  │
-│  │  └──────────────┘          └──────────────┘             │  │
+│  │  │  (Firebase)  │          │   (i18next)   │             │  │
+│  │  └──────────────┘          └───────────────┘             │  │
 │  └──────────────────────────────────────────────────────────┘  │
-│                                                                   │
+│                                                                │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    Service Layer                          │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │  │
-│  │  │  Firebase    │  │   ESP32      │  │    BLE       │  │  │
-│  │  │   Service    │  │   Service    │  │   Service    │  │  │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘  │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │  │
-│  │  │  Prediction  │  │   Weather    │  │   Camera     │  │  │
-│  │  │   Service    │  │   Service    │  │   Service    │  │  │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘  │  │
+│  │                    Service Layer                         │  │
+│  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │   │  Firebase    │  │   ESP32      │  │    BLE       │   │  │
+│  │   │   Service    │  │   Service    │  │   Service    │   │  │
+│  │   └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │   │  Prediction  │  │   Weather    │  │   Camera     │   │  │
+│  │   │   Service    │  │   Service    │  │   Service    │   │  │
+│  │   └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │   │   Pest       │  │     RAG      │  │     LLM      │   │  │
+│  │   │ Detection    │  │   Service    │  │   Service    │   │  │
+│  │   │  Service     │  │  (Offline)   │  │  (OpenAI)    │   │  │
+│  │   └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
+│  │   │  pH Sensor   │  │   Location   │  │   Rice       │   │  │
+│  │   │   Service    │  │   Service    │  │   Variety    │   │  │
+│  │   │   (BLE)      │  │   (GPS)      │  │   API        │   │  │
+│  │   └──────────────┘  └──────────────┘  └──────────────┘   │  │
 │  └──────────────────────────────────────────────────────────┘  │
-│                                                                   │
-└─────────────────────────────────────────────────────────────────┘
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
                               │
                               │
         ┌─────────────────────┼─────────────────────┐
         │                     │                     │
         ▼                     ▼                     ▼
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│   Firebase   │    │   ESP32      │    │   External   │
-│   Backend    │    │   IoT Device │    │   APIs       │
+│   Firebase   │    │   ESP32 IoT  │    │   External   │
+│   Backend    │    │   Devices    │    │   APIs       │
 │              │    │              │    │              │
 │ • Auth       │    │ • Moisture   │    │ • Weather    │
-│ • Database   │    │   Sensor     │    │ • Prediction │
-│ • Storage    │    │ • BLE/WiFi   │    │   Models     │
-│ • Messaging  │    │   Interface  │    │              │
+│ • Database   │    │   Sensor     │    │ • OpenAI     │
+│ • Storage    │    │   (ESP32)    │    │   (LLM)      │
+│ • Messaging  │    │ • pH Sensor  │    │ • Rice       │
+└──────────────┘    │   (ESP32)    │    │   Variety    │
+                    │ • BLE        │    │   API        │
+                    │   Connection │    │              │
+                    └──────────────┘    └──────────────┘
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+        ▼                     ▼                     ▼
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  TensorFlow  │    │   ESP32      │    │   ESP32      │
+│    Lite      │    │  Moisture    │    │  pH Sensor   │
+│  (CNN Model) │    │   Sensor     │    │   (BLE)      │
+│   (Native)   │    │   (BLE)      │    │              │
 └──────────────┘    └──────────────┘    └──────────────┘
 ```
 
@@ -92,12 +115,22 @@ App.js (Root)
 │                   └── MainStack
 │                       ├── HomeScreen
 │                       ├── SeedDetectionScreen
-│                       │   └── SeedCameraScreen
-│                       ├── MoistureDetectorScreen
-│                       │   └── DeviceConnectionScreen
-│                       │   └── ReadingResultsScreen
+│                       │   ├── SeedCameraScreen
+│                       │   └── YOLOv8 Model (Seed Detection)
+│                       ├── MoistureDetectorScreen (Seed Moisture)
+│                       │   ├── DeviceConnectionScreen
+│                       │   ├── ReadingResultsScreen
+│                       │   ├── Linear Regression Model (pH Prediction)
+│                       │   └── Seed Drying Schedule (Weather-based Time Slots)
 │                       ├── SoilPHScreen
+│                       │   ├── pH Sensor (BLE)
+│                       │   ├── Location Service
+│                       │   └── Rice Variety API
 │                       ├── PestDetectionScreen
+│                       │   ├── Camera Integration
+│                       │   ├── CNN Model (TFLite)
+│                       │   ├── RAG Service (Solutions)
+│                       │   └── LLM Chat (Questions)
 │                       ├── MarketplaceScreen
 │                       │   ├── AddProductScreen
 │                       │   └── MyListingsScreen
@@ -113,9 +146,27 @@ App.js (Root)
 ### Data Flow
 
 1. **Authentication Flow**: User → LoginScreen → Firebase Auth → AuthContext → Navigation
-2. **IoT Data Flow**: ESP32 Device → BLE/WiFi → BLEService/ESP32Service → Screen → Firebase Storage
-3. **Image Processing Flow**: Camera → Image Capture → Prediction Service → Results → Screen
-4. **Marketplace Flow**: User Input → Firebase Database → Marketplace Screen → Real-time Updates
+2. **IoT Data Flow**: ESP32 Devices → BLE → BLEService/ESP32Service → Screen → Firebase Storage
+3. **Seed Detection Flow**: 
+   - **Mobile App Process**: Camera/Gallery → Image Capture → YOLOv8 Model → Object Detection → Seed Classification → Results → Screen
+   - **Seed Sorter Machine Process** (Separate Software): Machine with Integrated Camera → Image Capture → Detection Processing → Machine Process → Wild Seed Removal
+4. **Seed Moisture Monitoring Flow**: 
+   - ESP32 Moisture Device (BLE) → Sensor Data (cap_sensor_value, sample_temperature, ambient_temperature, ambient_humidity, sample_weight)
+   - GPS Location → Location Service → Coordinates
+   - Weather API → Weather Data & Forecasts
+   - Combined Data (Sensor + GPS + Weather) → Linear Regression Model → pH Prediction + Weather Analysis
+   - Weather Forecast Analysis → Seed Drying Schedule Generation → Optimal Time Slots Identification
+   - Results (pH Prediction + Drying Schedule + Time Slots) → Screen
+5. **Pest Detection Flow**: 
+   - Camera/Gallery → Image Capture → TFLite CNN Model → Disease Classification
+   - Disease Classification → RAG Service → Solution Retrieval (Offline)
+   - User Questions → LLM Service (OpenAI) → Chat Responses
+6. **Soil pH Testing Flow**:
+   - ESP32 pH Device (BLE) → Sensor Data (pH, moisture, EC, temp, water depth)
+   - GPS Location → Location Service → Coordinates
+   - User Input (crop, season, soil zone, texture) → Form Data
+   - Combined Data → Rice Variety API → Recommended Rice Varieties (Top 3)
+7. **Marketplace Flow**: User Input → Firebase Database → Marketplace Screen → Real-time Updates
 
 ---
 
@@ -137,12 +188,34 @@ App.js (Root)
 - `@invertase/react-native-apple-authentication`: ^2.5.0
 
 #### IoT & Device Communication
-- `react-native-ble-plx`: ^3.5.0 (Bluetooth Low Energy for ESP32)
+- `react-native-ble-plx`: ^3.5.0 (Bluetooth Low Energy for ESP32 devices)
 - Custom ESP32 Service (WiFi/HTTP communication)
+- **ESP32 Moisture Sensor Device** (BLE connection for seed moisture monitoring)
+- **ESP32 pH Sensor Device** (BLE connection for soil pH testing)
+- BLE Scan Service (ESP32 device scanning)
 
 #### Camera & Image Processing
 - `react-native-vision-camera`: ^4.0.0
 - `react-native-image-picker`: ^7.1.2
+- `react-native-image-resizer`: (For image preprocessing)
+- `jpeg-js`: (Image processing for TFLite)
+- `react-native-fs`: (File system operations)
+- **YOLOv8 Model** (for seed detection - object detection model)
+
+#### AI & Machine Learning
+- **TensorFlow Lite** (Native Module - Custom implementation for pest detection)
+- CNN model for disease classification (10 classes: bacterial leaf blight, blast, brown spot, etc.)
+- **YOLOv8** (for seed quality detection - object detection model)
+- **Linear Regression Model** (for moisture prediction)
+
+#### LLM & AI Services
+- OpenAI API (for LLM chat functionality)
+- RAG (Retrieval-Augmented Generation) service (offline solution database)
+
+#### Location & API Services
+- Location Service (GPS integration for soil pH analysis and moisture monitoring)
+- Weather Service (Real-time weather data and forecasting for moisture prediction)
+- Rice Variety API Service (AI-powered rice variety recommendations)
 
 #### UI & Styling
 - `react-native-paper`: ^5.14.5
@@ -187,6 +260,7 @@ App.js (Root)
 - Android SDK 33+
 - Java 17+
 - Android Studio
+- TensorFlow Lite library (for pest detection)
 
 ---
 
@@ -200,6 +274,7 @@ App.js (Root)
 - Xcode (for iOS development)
 - Android Studio (for Android development)
 - CocoaPods (for iOS)
+- OpenAI API Key (optional, for LLM chat feature in pest detection)
 
 ### Installation
 
@@ -229,14 +304,19 @@ App.js (Root)
    - Place `google-services.json` in `android/app/`
    - Update Firebase configuration in `src/utils/firebaseConfig.js`
 
-5. **Start Metro Bundler**
-   ```bash
-   npm start
-   # or
-   yarn start
-   ```
+5. **Configure Environment Variables (Optional - for LLM chat)**
+   - Create a `.env` file in the root directory
+   - Add your OpenAI API key: `OPENAI_API_KEY=your_api_key_here`
+   - Note: LLM chat feature works with API key, but core pest detection works offline
 
-6. **Run the application**
+6. **Start Metro Bundler**
+   ```bash
+npm start
+   # or
+yarn start
+```
+
+7. **Run the application**
    ```bash
    # iOS
    npm run ios
@@ -244,39 +324,186 @@ App.js (Root)
    yarn ios
 
    # Android
-   npm run android
+npm run android
    # or
-   yarn android
-   ```
+yarn android
+```
 
 ---
 
 ## 📱 Features in Detail
 
-### 1. Seed Quality Detection
-- Camera-based seed analysis
-- AI-powered wild seed detection
-- Seed variety identification
-- Quality scoring and recommendations
+### 1. Seed Quality Detection ⭐
 
-### 2. Moisture Monitoring
-- Real-time moisture readings via ESP32
-- Bluetooth Low Energy (BLE) connectivity
-- WiFi-based HTTP communication
-- Historical data tracking
-- Predictive analytics integration
+**AI-powered seed analysis using YOLOv8 object detection model** with the following capabilities:
 
-### 3. Soil pH Testing
-- Instant pH level measurement
-- Soil condition analysis
-- Fertilizer recommendations
-- Historical pH tracking
+#### Core Features:
+- **YOLOv8 Object Detection**: Uses YOLOv8 (You Only Look Once version 8) model for real-time seed detection and classification
+- **Wild Seed Detection**: Identifies and distinguishes wild seeds from cultivated paddy seeds
+- **Seed Variety Identification**: Classifies different paddy seed varieties
+- **Quality Assessment**: Provides quality scoring and recommendations based on detected seeds
 
-### 4. Pest & Disease Detection
-- Camera-based pest identification
-- Disease pattern recognition
-- Treatment recommendations
-- Early warning system
+#### Technical Implementation:
+- **YOLOv8 Model**: State-of-the-art object detection model for accurate seed detection and classification
+- **Image Processing**: Camera-based image capture or gallery selection
+- **Real-time Detection**: Fast inference for instant seed analysis
+- **Visual Feedback**: Displays detected seeds with bounding boxes and classifications
+
+#### Workflow:
+1. User captures/selects image of paddy seeds
+2. Image is preprocessed and fed to YOLOv8 model
+3. Model detects and classifies seeds (varieties and wild seeds)
+4. Results are displayed with quality scores and recommendations
+
+#### Related Hardware:
+- **Seed Sorter Machine**: A separate physical seed sorting machine is available for automated wild seed removal
+  - **Note**: The seed sorter machine is **NOT connected** to the mobile app
+  - The machine operates with its **own separate software** (standalone software system)
+  - The machine has an **integrated camera** for seed detection
+  - The machine uses its own detection system and processing software with the integrated camera
+  - The machine physically separates and removes wild seeds from seed batches
+  - Users can use the mobile app for preliminary seed analysis, while the machine operates independently with its integrated camera and separate software
+
+### 2. Seed Moisture Monitoring ⭐
+
+**Real-time seed moisture measurement with pH prediction and weather-based seed drying schedule** with the following capabilities:
+
+#### Core Features:
+- **Real-time Sensor Readings**: Continuous seed moisture measurement via dedicated ESP32 moisture sensor device
+- **pH Prediction**: Linear Regression model predicts pH levels based on seed moisture sensor data
+- **Bluetooth Low Energy (BLE) Connectivity**: Connects to ESP32 moisture sensor device via BLE
+- **GPS Integration**: Location-based analysis using GPS coordinates
+- **Weather Forecasting**: Real-time weather data and forecasting integration for optimal drying conditions
+- **Seed Drying Schedule**: Intelligent time schedule generation for seed drying based on weather forecasts
+- **Optimal Time Slots**: Recommends special time slots for seed drying when weather conditions are favorable
+- **Historical Data Tracking**: Stores and analyzes historical seed moisture readings
+- **Predictive Analytics**: Uses Linear Regression model to predict pH and future moisture levels based on sensor data, location, and weather conditions
+
+#### Technical Implementation:
+- **ESP32 Moisture Sensor Device**: Dedicated ESP32 IoT device for moisture monitoring (separate from pH sensor)
+- **BLE Integration**: Connects to ESP32 moisture sensor device via Bluetooth Low Energy
+- **IoT Sensor Parameters**: Reads multiple parameters from the ESP32 device:
+  - **cap_sensor_value**: Capacitive sensor value for moisture measurement
+  - **sample_temperature**: Temperature of the seed sample (°C)
+  - **ambient_temperature**: Ambient air temperature (°C)
+  - **ambient_humidity**: Ambient air humidity (%)
+  - **sample_weight**: Weight of the seed sample (grams)
+- **GPS Integration**: Location services for location-based weather and analysis
+- **Weather Service**: Real-time weather data and forecasting API integration
+- **Linear Regression Model**: Trained model for pH prediction and moisture analysis based on:
+  - Sensor readings (cap_sensor_value, temperatures, humidity, weight)
+  - GPS location coordinates
+  - Weather data and forecasts
+- **Weather-based Drying Schedule**: Analyzes weather forecasts to generate optimal seed drying schedules
+- **Time Slot Recommendations**: Identifies special time slots when weather conditions are ideal for seed drying
+- **Data Processing**: Model processes sensor readings, location, and weather data to provide pH predictions and drying recommendations
+- **Historical Analysis**: Tracks trends and patterns in seed moisture data
+
+#### Workflow:
+1. User connects ESP32 moisture sensor device via Bluetooth (BLE)
+2. GPS location is automatically detected or manually selected
+3. Real-time weather data and forecasts are fetched based on location
+4. Sensor readings are captured in real-time from the ESP32 moisture device:
+   - Capacitive sensor value (moisture)
+   - Sample temperature
+   - Ambient temperature
+   - Ambient humidity
+   - Sample weight
+5. Data (sensor readings + GPS + weather) is processed through Linear Regression model
+6. Model predicts pH levels and analyzes current seed moisture conditions
+7. System analyzes weather forecasts to identify optimal drying conditions
+8. Intelligent seed drying schedule is generated with recommended time slots
+9. Results are displayed with:
+   - Predicted pH levels
+   - Weather-based drying schedule
+   - Recommended time slots for seed drying
+   - Historical trends and recommendations
+
+### 3. Soil pH Testing ⭐
+
+**Comprehensive soil analysis and rice variety prediction system** with the following capabilities:
+
+#### Core Features:
+- **Multi-parameter Soil Sensing**: Real-time measurement of multiple soil parameters via dedicated ESP32 pH sensor device:
+  - **pH Level**: Soil acidity/alkalinity measurement (0-14 scale)
+  - **Soil Moisture**: Percentage moisture content
+  - **Electrical Conductivity (EC)**: Soil salinity measurement (dS/m)
+  - **Soil Temperature**: Temperature monitoring (°C)
+  - **Water Depth**: Water level measurement (cm)
+
+#### Technical Implementation:
+- **ESP32 pH Sensor Device**: Dedicated ESP32 IoT device for soil pH testing (separate from moisture sensor)
+- **Bluetooth Low Energy (BLE) Integration**: Connects to ESP32 pH sensor device via BLE
+- **Real-time Data Updates**: Continuous monitoring with automatic data refresh
+- **Location Services**: GPS integration for location-based analysis and map picker
+- **Form-based Input**: Additional agricultural context fields:
+  - Previous Crop (Rice, Maize, Fallow, Legume)
+  - Season (Maha, Yala)
+  - Soil Zone (Intermediate, Low Country, Up Country)
+  - Texture (Loamy, Clay, Sandy)
+- **Rice Variety Prediction API**: AI-powered recommendation system that suggests optimal rice varieties based on:
+  - Soil pH and EC values
+  - Soil moisture and temperature
+  - Water depth
+  - Location coordinates
+  - Agricultural context (previous crop, season, soil zone, texture)
+- **Sensor Data Validation**: Intelligent zero-value filtering and data validation
+- **Connection Management**: Robust BLE connection handling with auto-reconnect capabilities
+
+#### Workflow:
+1. User connects ESP32 pH sensor device via Bluetooth (BLE)
+2. Sensor readings are captured from the ESP32 pH device (pH, moisture, EC, temperature, water depth)
+3. Location is automatically detected or manually selected via map
+4. User fills additional form fields (crop, season, soil zone, texture)
+5. Data is sent to Rice Variety Prediction API
+6. API returns top 3 recommended rice varieties with suitability scores
+7. Results are displayed with recommendations for optimal crop selection
+
+#### Sensor Specifications:
+- **pH Range**: 0-14 (typically 6.0-8.0 for paddy fields)
+- **Moisture Range**: 0-100%
+- **EC Range**: 0-10 dS/m
+- **Temperature Range**: 0-50°C
+- **Water Depth Range**: 0-50 cm
+
+### 4. Pest & Disease Detection ⭐
+
+**Advanced AI-powered pest and disease detection system** with the following capabilities:
+
+#### Core Features:
+- **CNN-based Disease Classification**: Uses TensorFlow Lite (TFLite) native module for real-time disease prediction
+- **10 Disease Classes**: Detects common paddy diseases including:
+  - Bacterial Leaf Blight
+  - Bacterial Leaf Streak
+  - Bacterial Panicle Blight
+  - Blast
+  - Brown Spot
+  - Dead Heart
+  - Downy Mildew
+  - Hispa
+  - Normal (healthy)
+  - Tungro
+
+#### Technical Implementation:
+- **Image Capture**: Camera integration using React Native Vision Camera or gallery selection
+- **Image Preprocessing**: Efficient image resizing and preprocessing for TFLite model input (224x224)
+- **Model Inference**: Native TensorFlow Lite module for fast, on-device inference
+- **Offline RAG Service**: Retrieval-Augmented Generation system that provides instant solutions based on detected diseases
+  - Loads disease solution database from JSON
+  - Provides treatment recommendations, prevention methods, and management strategies
+  - Works completely offline
+- **LLM Chat Assistant**: OpenAI-powered chat interface for asking questions about detected diseases
+  - Requires OpenAI API key (optional feature)
+  - Provides additional context and answers user questions
+  - Can be enabled/disabled based on API key availability
+
+#### Workflow:
+1. User captures/selects image of affected paddy plant
+2. Image is preprocessed and fed to CNN model
+3. Model predicts disease class with confidence score
+4. RAG service retrieves comprehensive solution from offline database
+5. User can ask questions via LLM chat (if API key is configured)
+6. Results are displayed with recommendations and treatment options
 
 ### 5. Marketplace
 - Product listing and browsing
@@ -307,15 +534,73 @@ App.js (Root)
 4. Enable Cloud Storage
 5. Download configuration files for iOS and Android
 
-### ESP32 Configuration
-- See `ESP32_SETUP.md` for detailed ESP32 device setup
-- Configure WiFi credentials on ESP32
-- Set up BLE service UUIDs if using Bluetooth
-- Configure HTTP endpoints for WiFi communication
+### ESP32 IoT Devices Configuration
+
+The application uses **two separate ESP32 devices**:
+
+#### ESP32 Moisture Sensor Device
+- Dedicated ESP32 device for seed moisture monitoring
+- Connection: Bluetooth Low Energy (BLE)
+- See `ESP32_SETUP.md` for detailed device setup
+- Set up BLE service UUIDs for Bluetooth connection
+- Sensor Parameters Read:
+  - `cap_sensor_value`: Capacitive sensor value for moisture measurement
+  - `sample_temperature`: Temperature of the seed sample (°C)
+  - `ambient_temperature`: Ambient air temperature (°C)
+  - `ambient_humidity`: Ambient air humidity (%)
+  - `sample_weight`: Weight of the seed sample (grams)
+- GPS Integration: Location services enabled for weather-based analysis
+- Weather API: Configure weather service for forecasting integration
+
+#### ESP32 pH Sensor Device
+- Dedicated ESP32 device for soil pH testing
+- Connection: Bluetooth Low Energy (BLE)
+- See `ESP32_SETUP.md` for detailed device setup
+- Set up BLE service UUIDs for Bluetooth connection
+- Configure sensor parameters for pH, EC, temperature, moisture, and water depth measurement
+
+**Note**: Both ESP32 devices are separate hardware units that connect to the mobile app independently via Bluetooth.
 
 ### API Configuration
-- Update prediction API endpoint in `src/utils/predictionService.js`
+
+#### Weather API
 - Configure weather API keys in `src/utils/weatherService.js`
+
+#### Rice Variety API (for Soil pH Testing)
+- Configure API endpoint in `src/utils/riceVarietyApiService.js`
+- API endpoint: `/rice-variety/predict`
+- Required data: pH, EC, moisture, temperature, water depth, location, agricultural context
+- Returns: Top 3 recommended rice varieties with suitability scores
+
+#### OpenAI API (Optional - for Pest Detection Chat)
+- Create `.env` file in root directory
+- Add: `OPENAI_API_KEY=your_api_key_here`
+- Get API key from [OpenAI Platform](https://platform.openai.com/api-keys)
+- Note: Pest detection core functionality works offline; API key only enables chat feature
+
+### Machine Learning Model Configuration
+
+#### YOLOv8 Model (Seed Detection)
+- YOLOv8 model files should be included in the project
+- Model handles object detection for seed classification and wild seed identification
+- Configure model path and input/output parameters in seed detection service
+- Input: Images (typically resized to model input dimensions)
+- Output: Detected seeds with bounding boxes, classes, and confidence scores
+
+#### Linear Regression Model (Seed Moisture - pH Prediction)
+- Linear Regression model for pH prediction based on seed moisture sensor data
+- Model trained on sensor data (cap_sensor_value, sample_temperature, ambient_temperature, ambient_humidity, sample_weight)
+- Weather-based seed drying schedule generation
+- Configure model parameters (coefficients, intercept) in seed moisture detection service
+- Input: Sensor readings (cap_sensor_value, temperatures, humidity, weight), GPS location, weather forecasts
+- Output: Predicted pH levels, seed drying schedule, optimal time slots for drying
+
+### TensorFlow Lite Model Setup
+- The CNN model for pest detection is integrated as a native module
+- Model files should be included in the native project structure
+- For Android: Model typically in `android/app/src/main/assets/`
+- For iOS: Model typically in Xcode project bundle
+- See native module implementation for model loading details
 
 ---
 
@@ -324,7 +609,11 @@ App.js (Root)
 ```
 iPaddyCare/
 ├── android/                 # Android native code
+│   └── app/
+│       └── src/main/
+│           └── assets/      # TFLite model files
 ├── ios/                     # iOS native code
+│   └── iPaddyCare/          # TFLite model files
 ├── assets/                  # Static assets (images, etc.)
 ├── screens/                 # Screen components
 │   ├── HomeScreen.js
@@ -332,7 +621,7 @@ iPaddyCare/
 │   ├── SeedDetectionScreen.js
 │   ├── MoistureDetectorScreen.js
 │   ├── SoilPHScreen.js
-│   ├── PestDetectionScreen.js
+│   ├── PestDetectionScreen.js  # Pest detection UI
 │   ├── MarketplaceScreen.js
 │   ├── OfficersScreen.js
 │   └── ...
@@ -343,12 +632,23 @@ iPaddyCare/
 │   ├── context/             # React Context providers
 │   │   ├── AuthContext.js
 │   │   └── LanguageContext.js
+│   ├── services/            # AI/ML Services
+│   │   ├── pestDetectionService.js  # TFLite CNN model
+│   │   ├── ragService.js            # RAG solution retrieval
+│   │   └── LLMService.js            # OpenAI chat service
 │   └── utils/               # Utility services
 │       ├── firebaseConfig.js
 │       ├── bleService.js
 │       ├── esp32Service.js
+│       ├── phSensorService.js        # pH sensor BLE service
+│       ├── BleScanServiceEsp32.js    # ESP32 BLE scanning
+│       ├── locationService.js        # GPS location service
+│       ├── riceVarietyApiService.js  # Rice variety prediction API
+│       ├── bluetoothPermissionService.js
 │       ├── predictionService.js
 │       └── weatherService.js
+├── rag-data/                # RAG database
+│   └── pest-disease-solutions.json  # Disease solutions database
 ├── App.js                   # Root component
 ├── package.json             # Dependencies
 └── README.md               # This file
@@ -374,10 +674,34 @@ yarn test
 - Core navigation structure with Drawer and Stack navigators
 - Firebase authentication integration
 - Multi-language support (English, Sinhala, Tamil)
-- Seed quality detection feature
-- Moisture monitoring with ESP32 integration
-- Soil pH testing functionality
-- Pest & disease detection
+- **Seed Quality Detection with YOLOv8**:
+  - YOLOv8 object detection model integration
+  - Wild seed detection and classification
+  - Seed variety identification
+  - Camera-based image analysis
+  - Note: Seed sorter machine (separate hardware with standalone software) available for physical wild seed removal
+- **Seed Moisture Monitoring with Linear Regression**:
+  - Linear Regression model for pH prediction
+  - ESP32 moisture sensor device integration (BLE connection)
+  - GPS integration for location-based analysis
+  - Weather forecasting integration for seed drying schedule
+  - Intelligent seed drying schedule generation with optimal time slots
+  - IoT sensor parameters: cap_sensor_value, sample_temperature, ambient_temperature, ambient_humidity, sample_weight
+  - Real-time data collection and analysis
+  - Historical data tracking and trend analysis
+- **Soil pH Testing with Rice Variety Prediction**:
+  - Multi-parameter soil sensing (pH, moisture, EC, temperature, water depth)
+  - ESP32 pH sensor device integration via BLE (separate from moisture device)
+  - Location-based analysis with GPS integration
+  - Rice variety prediction API integration
+  - Real-time sensor data monitoring
+  - Agricultural context form (crop, season, soil zone, texture)
+- **Pest & Disease Detection with AI/ML integration**:
+  - TensorFlow Lite CNN model for disease classification
+  - RAG (Retrieval-Augmented Generation) service for offline solutions
+  - LLM chat integration (OpenAI) for interactive assistance
+  - Camera integration for image capture
+  - Support for 10 disease classes
 - Marketplace implementation
 - Officer connection and messaging system
 - Test history tracking
@@ -391,11 +715,37 @@ yarn test
 - ✅ Navigation architecture
 - ✅ Core agricultural features
 - ✅ IoT device integration (ESP32)
+- ✅ **Seed Detection with YOLOv8**:
+  - ✅ YOLOv8 model integration
+  - ✅ Object detection implementation
+  - ✅ Seed classification system
+  - ✅ Camera integration
+- ✅ **Seed Moisture Monitoring with Linear Regression**:
+  - ✅ Linear Regression model integration for pH prediction
+  - ✅ ESP32 moisture sensor device connectivity (BLE)
+  - ✅ GPS integration for location-based analysis
+  - ✅ Weather forecasting integration
+  - ✅ Seed drying schedule generation with optimal time slots
+  - ✅ IoT sensor parameter collection (cap_sensor_value, temperatures, humidity, weight)
+  - ✅ Real-time data processing
+  - ✅ pH prediction and drying recommendations system
+- ✅ **Soil pH Testing System**:
+  - ✅ ESP32 pH sensor device BLE integration (separate device)
+  - ✅ Multi-parameter soil sensing
+  - ✅ Location services integration
+  - ✅ Rice variety prediction API
+  - ✅ Real-time data monitoring
 - ✅ Multi-language support
 - ✅ Marketplace functionality
 - ✅ Officer communication system
-- 🔄 AI model integration (in progress)
+- ✅ **Pest Detection AI/ML Integration**:
+  - ✅ TensorFlow Lite native module
+  - ✅ CNN model integration
+  - ✅ RAG service implementation
+  - ✅ LLM chat integration
+  - ✅ Camera integration
 - 🔄 Advanced analytics (in progress)
+- 🔄 Model optimization (in progress)
 
 ---
 
@@ -405,21 +755,18 @@ This project is part of an academic/research initiative. For contribution guidel
 
 ---
 
-## 📄 License
-
-[Specify your license here]
-
----
-
 ## 👥 Team
 
-[Add team members and their roles]
+- <img src="https://github.com/santhuxx.png" width="25" height="25" alt="Santhu"> **Santhu** ([@santhuxx](https://github.com/santhuxx)) - Seed Quality Detection
+- <img src="https://github.com/sadeepaatigala.png" width="25" height="25" alt="Sadeepa Atigala"> **Sadeepa Atigala** ([@sadeepaatigala](https://github.com/sadeepaatigala)) - Seed Moisture Monitoring
+- <img src="https://github.com/Kushani-Mandira.png" width="25" height="25" alt="Mandira Jayasekara"> **Mandira Jayasekara** ([@Kushani-Mandira](https://github.com/Kushani-Mandira)) - Soil pH Testing 
+- <img src="https://github.com/aneeq-shaffy.png" width="25" height="25" alt="Aneeq Shaffy"> **Aneeq Shaffy** ([@aneeq-shaffy](https://github.com/aneeq-shaffy)) - Pest & Disease Detection 
 
 ---
 
 ## 📞 Support
 
-For issues, questions, or contributions, please contact the development team or open an issue in the repository.
+For issues, questions, or contributions, please contact the development team at **ipaddycare@gmail.com** or open an issue in the repository.
 
 ---
 
@@ -430,8 +777,10 @@ For issues, questions, or contributions, please contact the development team or 
 - [Reading Session Setup](./READING_SESSION_SETUP.md)
 - [React Native Documentation](https://reactnative.dev/docs/getting-started)
 - [Firebase Documentation](https://firebase.google.com/docs)
+- [TensorFlow Lite Documentation](https://www.tensorflow.org/lite)
+- [OpenAI API Documentation](https://platform.openai.com/docs)
 
 ---
 
-**Last Updated**: [Current Date]
+**Last Updated**: January 11, 2026
 **Version**: 0.0.1

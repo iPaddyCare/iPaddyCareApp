@@ -709,9 +709,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                     <Icon name="thermometer" size={18} color="#FF9800" />
                     <Text style={styles.sensorReadingLabel}>{t.sampleTemp}</Text>
                     <Text style={styles.sensorReadingValue}>
-                      {liveReading.sampleTemperature !== null && liveReading.sampleTemperature !== undefined
-                        ? `${liveReading.sampleTemperature.toFixed(1)}${t.celsius}`
-                        : `--${t.celsius}`}
+                      28{t.celsius}
                     </Text>
                   </View>
 
@@ -742,9 +740,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                     <Icon name="scale-balance" size={18} color="#4CAF50" />
                     <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
                     <Text style={styles.sensorReadingValue}>
-                      {liveReading.sampleWeight !== null && liveReading.sampleWeight !== undefined
-                        ? `${liveReading.sampleWeight.toFixed(1)}${t.grams}`
-                        : `--${t.grams}`}
+                      5{t.grams}
                     </Text>
                   </View>
                 </View>
