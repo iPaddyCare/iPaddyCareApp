@@ -39,7 +39,7 @@ class RiceVarietyApiService {
       console.log('Request Body:', JSON.stringify(requestBody, null, 2));
 
       // Log the full URL being called
-      const endpoint = "/rice-variety/predict";
+      const endpoint = "/rice-variety/predict/new";
       const fullUrl = `${api.defaults.baseURL}${endpoint}`;
       console.log('Calling API:', fullUrl);
       console.log('Base URL:', api.defaults.baseURL);
