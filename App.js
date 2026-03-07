@@ -82,7 +82,7 @@ function MainStack() {
       <Stack.Screen 
         name="SoilPH" 
         component={SoilPHScreen} 
-        options={{ title: 'Soil pH Testing' }}
+        options={{ headerShown: false}}
       />
       <Stack.Screen 
         name="PestDetection" 
@@ -152,7 +152,7 @@ function MainStack() {
       <Stack.Screen 
         name="DeviceConnectionSeedDetection" 
         component={DeviceConnectionScreenSeedDetection} 
-        options={{ title: 'Connect Device' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="MapPicker" 
