@@ -18,7 +18,7 @@ try {
 // For physical devices, use your computer's IP address
 // You can set API_URL in .env file to override this behavior
 const getBaseURL = () => {
-  const baseUrl = 'http://10.212.134.191:8000/api/v1';
+  const baseUrl = 'http://localhost:8000/api/v1';
   console.log('API_URL from env:', API_URL);
   console.log('Platform:', Platform.OS);
   console.log('Using base URL:', baseUrl);
