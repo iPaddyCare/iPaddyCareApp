@@ -139,7 +139,7 @@ class RiceVarietyApiService {
       errors.push(`Texture must be one of: ${validTextures.join(', ')}`);
     }
 
-    const validPrevCrops = ['rice', 'maize', 'fallow', 'legume'];
+    const validPrevCrops = ['rice', 'vegetable', 'fallow', 'legume'];
     if (!validPrevCrops.includes(data.prev_crop)) {
       errors.push(`Previous crop must be one of: ${validPrevCrops.join(', ')}`);
     }
