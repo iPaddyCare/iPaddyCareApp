@@ -198,6 +198,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
     setPredictionError(null);
     
     try {
+      console.log('Reading Data:', readingData);
       const result = await PredictionService.getPrediction(readingData);
       
       if (result.success || result.data) {
