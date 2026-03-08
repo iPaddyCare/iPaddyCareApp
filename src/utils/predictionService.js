@@ -52,7 +52,9 @@ class PredictionService {
       const requestBody = {
         ambient_humidity: parseFloat(Number(ambientHumidity).toFixed(2)),
         ambient_temperature: parseFloat(Number(ambientTemperature).toFixed(2)),
-        bulk_density: parseFloat(bulkDensity.toFixed(2)),
+        // bulk_density: parseFloat(bulkDensity.toFixed(2)),
+        bulk_density: 0.75,
+
         cap_sensor_value: parseFloat(Number(capSensorValue).toFixed(2)),
         sample_temperature: parseFloat(Number(sampleTemperature).toFixed(2)),
         sample_weight: parseFloat(Number(sampleWeight).toFixed(2)),
