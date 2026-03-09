@@ -25,6 +25,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
+import PokedexResultCard from '../src/components/PokedexResultCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -151,9 +152,15 @@ export default function PestDetectionScreen({ navigation }) {
     };
 
     Voice.onSpeechError = (e) => {
-      console.error('Speech recognition error:', e);
+      const errorCode = e?.error?.code || e?.error?.message?.split('/')[0];
+      // Code 11 = "Didn't understand" (no speech detected) — not a real error
+      // Code 7 = "No match" — also non-fatal
+      if (errorCode === '11' || errorCode === '7') {
+        console.log('Speech not detected, ready to try again');
+      } else {
+        console.error('Speech recognition error:', e);
+      }
       setIsRecording(false);
-      Alert.alert('Error', 'Speech recognition failed. Please try again.');
     };
 
     Voice.onSpeechResults = (e) => {
@@ -202,11 +209,18 @@ export default function PestDetectionScreen({ navigation }) {
         return;
       }
 
+      // Fully destroy previous session, wait for cleanup, then re-register listeners
+      try {
+        await Voice.destroy();
+      } catch (_) {}
+      await new Promise(resolve => setTimeout(resolve, 300));
+      setupVoiceRecognition();
+
       await Voice.start('en-US');
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting voice recognition:', error);
-      Alert.alert('Error', 'Failed to start voice recognition. Please try again.');
+      // Don't alert for transient errors — just reset state silently
       setIsRecording(false);
     }
   };
@@ -214,11 +228,10 @@ export default function PestDetectionScreen({ navigation }) {
   const stopVoiceRecording = async () => {
     try {
       await Voice.stop();
-      setIsRecording(false);
     } catch (error) {
       console.error('Error stopping voice recognition:', error);
-      setIsRecording(false);
     }
+    setIsRecording(false);
   };
 
   const toggleVoiceRecording = () => {
@@ -502,7 +515,7 @@ export default function PestDetectionScreen({ navigation }) {
                       onPress={detectDisease}
                       disabled={!servicesReady}
                     >
-                      <Text style={styles.processButtonText}>Detect Disease</Text>
+                      <Text style={styles.processButtonText}>Analyze Image</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.changeImageButton}
@@ -523,114 +536,14 @@ export default function PestDetectionScreen({ navigation }) {
               </Animated.View>
             )}
 
-            {/* Results */}
+            {/* Results - Pokédex Card */}
             {result && (
-              <Animated.View
-                style={[
-                  styles.resultCard,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ scale: scaleAnim }],
-                  },
-                ]}
-              >
-            <View style={styles.resultHeader}>
-              {result.solution.found ? (
-                <CheckCircle size={24} color="#4CAF50" />
-              ) : (
-                <AlertCircle size={24} color="#FF9800" />
-              )}
-              <Text style={styles.resultTitle}>
-                {result.solution.found ? 'Disease Detected' : 'Disease Not Found'}
-              </Text>
-            </View>
-
-            {result.solution.found && (
-              <>
-                {/* Only show disease details if confidence >= 60% (or if it's "normal" - healthy crop) */}
-                {result.prediction.confidence >= 0.6 || result.solution.diseaseName === 'Healthy Crop' ? (
-                  <>
-                    <View style={styles.diseaseInfo}>
-                      <Text style={styles.diseaseName}>{result.solution.diseaseName}</Text>
-                      {result.solution.aliases && result.solution.aliases.length > 0 && (
-                        <View style={styles.aliasesContainer}>
-                          <Text style={styles.aliasesLabel}>Also known as: </Text>
-                          <Text style={styles.aliasesText}>
-                            {result.solution.aliases.join(', ')}
-                          </Text>
-                        </View>
-                      )}
-                      <Text style={styles.confidence}>
-                        Confidence: {(result.prediction.confidence * 100).toFixed(1)}%
-                      </Text>
-                      {result.prediction.isLowConfidence && (
-                        <View style={styles.lowConfidenceWarning}>
-                          <AlertCircle size={16} color="#FF9800" />
-                          <Text style={styles.lowConfidenceText}>
-                            ⚠️ Low confidence prediction. The image may not be a paddy crop, or the prediction is uncertain. Please verify with an expert.
-                          </Text>
-                        </View>
-                      )}
-                      {result.solution.description && (
-                        <Text style={styles.description}>{result.solution.description}</Text>
-                      )}
-                    </View>
-
-                    {/* Solutions - only show if not "normal" */}
-                    {result.solution.diseaseName !== 'Healthy Crop' && result.solution.solutions.length > 0 && (
-                      <View style={styles.solutionsSection}>
-                        <Text style={styles.solutionsTitle}>Treatment Solutions</Text>
-                        {result.solution.solutions.map((solution, index) => (
-                          <View key={index} style={styles.solutionCard}>
-                            <View style={styles.solutionStep}>
-                              <Text style={styles.stepNumber}>{solution.step}</Text>
-                            </View>
-                            <View style={styles.solutionContent}>
-                              <Text style={styles.solutionTitle}>{solution.title}</Text>
-                              <Text style={styles.solutionDescription}>{solution.description}</Text>
-                            </View>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Prevention - only show if not "normal" */}
-                    {result.solution.diseaseName !== 'Healthy Crop' && result.solution.prevention && result.solution.prevention.length > 0 && (
-                      <View style={styles.preventionSection}>
-                        <Text style={styles.preventionTitle}>Prevention Tips</Text>
-                        {result.solution.prevention.map((tip, index) => (
-                          <View key={index} style={styles.preventionItem}>
-                            <Text style={styles.preventionBullet}>•</Text>
-                            <Text style={styles.preventionText}>{tip}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    )}
-                  </>
-                ) : (
-                  <View style={styles.notFoundContainer}>
-                    <Text style={styles.notFoundText}>
-                      Prediction confidence is too low ({(result.prediction.confidence * 100).toFixed(1)}%).
-                    </Text>
-                    <Text style={styles.notFoundSubtext}>
-                      The model is not confident enough to provide a reliable diagnosis. Please try with a clearer image of a paddy crop leaf, or consult with an agricultural expert.
-                    </Text>
-                  </View>
-                )}
-              </>
-            )}
-
-            {!result.solution.found && (
-              <View style={styles.notFoundContainer}>
-                <Text style={styles.notFoundText}>
-                  The detected disease "{result.prediction.disease}" is not in our database.
-                </Text>
-                <Text style={styles.notFoundSubtext}>
-                  Please consult with an agricultural expert for proper diagnosis and treatment.
-                </Text>
-              </View>
-            )}
-              </Animated.View>
+              <PokedexResultCard
+                imageUri={imageUri}
+                prediction={result.prediction}
+                solution={result.solution}
+                navigation={navigation}
+              />
             )}
 
             {/* Chat Section */}
@@ -707,7 +620,7 @@ export default function PestDetectionScreen({ navigation }) {
                     style={[
                       styles.micButton,
                       isRecording && styles.micButtonRecording,
-                      (sendingMessage || isRecording) && styles.micButtonDisabled
+                      sendingMessage && styles.micButtonDisabled,
                     ]}
                     onPress={toggleVoiceRecording}
                     disabled={sendingMessage}

@@ -74,13 +74,13 @@ async function preprocessImage(imageUri) {
 
   const tensor = new Float32Array(INPUT_SIZE * INPUT_SIZE * 3);
 
-  // EfficientNet preprocessing: (pixels / 127.5) - 1 → range [-1, 1]
+  // Pass raw [0, 255] pixels — EfficientNetB0 has built-in Rescaling/Normalization layers
   for (let i = 0; i < INPUT_SIZE * INPUT_SIZE; i++) {
     const dataIdx = i * 4;
     const tensorIdx = i * 3;
-    tensor[tensorIdx] = (raw.data[dataIdx] / 127.5) - 1.0;       // R
-    tensor[tensorIdx + 1] = (raw.data[dataIdx + 1] / 127.5) - 1.0; // G
-    tensor[tensorIdx + 2] = (raw.data[dataIdx + 2] / 127.5) - 1.0; // B
+    tensor[tensorIdx] = raw.data[dataIdx];           // R
+    tensor[tensorIdx + 1] = raw.data[dataIdx + 1];   // G
+    tensor[tensorIdx + 2] = raw.data[dataIdx + 2];   // B
   }
 
   return tensor;

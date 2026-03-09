@@ -15,6 +15,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
 import WeatherService from '../src/utils/weatherService';
+import { getConversations, getOfficers } from '../src/services/messagingService';
+import { getPendingProducts } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -299,9 +301,14 @@ export default function HomeScreen({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
   const [scaleAnim] = useState(new Animated.Value(0.9));
-  const { isAuthenticated, isOfficer } = useAuth();
+  const { isAuthenticated, isOfficer, user } = useAuth();
   const [weatherData, setWeatherData] = useState(null);
   const [location, setLocation] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState({
+    pendingProducts: 0,
+    inboxCount: 0,
+    officersOnline: 0,
+  });
 
   const languages = ['English', 'සිංහල', 'தமிழ்'];
   const t = translations[selectedLanguage];
@@ -342,6 +349,38 @@ export default function HomeScreen({ navigation }) {
 
     fetchWeatherData();
   }, []);
+
+  // Fetch dashboard stats from Firestore
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const fetchStats = async () => {
+      try {
+        if (isOfficer) {
+          const [pending, conversations] = await Promise.all([
+            getPendingProducts(),
+            getConversations(user.uid, 'officer'),
+          ]);
+          setDashboardStats(prev => ({
+            ...prev,
+            pendingProducts: pending.length,
+            inboxCount: conversations.length,
+          }));
+        } else {
+          const officers = await getOfficers();
+          const onlineCount = officers.filter(o => o.status === 'online').length;
+          setDashboardStats(prev => ({
+            ...prev,
+            officersOnline: onlineCount,
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [isAuthenticated, isOfficer, user]);
 
   const mainFeatures = [
     {
@@ -506,7 +545,7 @@ export default function HomeScreen({ navigation }) {
             {isOfficer ? (
               <>
                 {/* Officer View: Tests, Products, Inbox */}
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => navigation.navigate('History')}
                   activeOpacity={0.7}
@@ -514,11 +553,10 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
                     <Text style={styles.statEmoji}>🧪</Text>
                   </View>
-                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statValue}>0</Text>
                   <Text style={styles.statLabel}>{t.activeTests}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => navigation.navigate('ProductApproval')}
                   activeOpacity={0.7}
@@ -526,11 +564,11 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#E3F2FD' }]}>
                     <Text style={styles.statEmoji}>📦</Text>
                   </View>
-                  <Text style={styles.statValue}>5</Text>
+                  <Text style={styles.statValue}>{dashboardStats.pendingProducts}</Text>
                   <Text style={styles.statLabel}>{t.products}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#2196F3' }]} />
+                  {dashboardStats.pendingProducts > 0 && <View style={[styles.statIndicator, { backgroundColor: '#2196F3' }]} />}
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => navigation.navigate('OfficerInbox')}
                   activeOpacity={0.7}
@@ -538,15 +576,15 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#FCE4EC' }]}>
                     <Text style={styles.statEmoji}>📬</Text>
                   </View>
-                  <Text style={styles.statValue}>8</Text>
+                  <Text style={styles.statValue}>{dashboardStats.inboxCount}</Text>
                   <Text style={styles.statLabel}>{t.inbox}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#E91E63' }]} />
+                  {dashboardStats.inboxCount > 0 && <View style={[styles.statIndicator, { backgroundColor: '#E91E63' }]} />}
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 {/* Regular User View: Tests, Predicts, Officers */}
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => navigation.navigate('History')}
                   activeOpacity={0.7}
@@ -554,15 +592,12 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#E8F5E8' }]}>
                     <Text style={styles.statEmoji}>🧪</Text>
                   </View>
-                  <Text style={styles.statValue}>3</Text>
+                  <Text style={styles.statValue}>0</Text>
                   <Text style={styles.statLabel}>{t.activeTests}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#00C851' }]} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => {
-                    // Navigate to home or scroll to recommendations section
-                    // For now, just show an alert or navigate to History
                     navigation.navigate('History');
                   }}
                   activeOpacity={0.7}
@@ -570,11 +605,10 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#FFF3E0' }]}>
                     <Text style={styles.statEmoji}>💡</Text>
                   </View>
-                  <Text style={styles.statValue}>2</Text>
+                  <Text style={styles.statValue}>0</Text>
                   <Text style={styles.statLabel}>{t.recommendations}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#FF6D00' }]} />
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.statItem}
                   onPress={() => navigation.navigate('Officers')}
                   activeOpacity={0.7}
@@ -582,9 +616,9 @@ export default function HomeScreen({ navigation }) {
                   <View style={[styles.statIcon, { backgroundColor: '#F3E5F5' }]}>
                     <Text style={styles.statEmoji}>👥</Text>
                   </View>
-                  <Text style={styles.statValue}>12</Text>
+                  <Text style={styles.statValue}>{dashboardStats.officersOnline}</Text>
                   <Text style={styles.statLabel}>{t.officersOnline}</Text>
-                  <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />
+                  {dashboardStats.officersOnline > 0 && <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />}
                 </TouchableOpacity>
               </>
             )}
