@@ -100,6 +100,10 @@ const translations = {
     of: 'of',
     readings: 'readings',
     gatheringProgress: 'Gathering sensor readings...',
+    step: 'Step',
+    moveSensorToOtherPlace: 'Move the sensor to another place, then tap "Read Values" for the next step.',
+    stepAverage: 'Step average',
+    finalAverage: 'Final average (40 readings)',
   },
   සිංහල: {
     title: 'මිරිදිය pH පරීක්ෂණය',
@@ -176,6 +180,10 @@ const translations = {
     of: 'යි',
     readings: 'කියවීම්',
     gatheringProgress: 'සංවේදක කියවීම් එකතු කරමින්...',
+    step: 'පියවර',
+    moveSensorToOtherPlace: 'සංවේදකය වෙනත් ස්ථානයකට ගෙන යන්න, ඊළඟ පියවර සඳහා "අගයන් කියවන්න" ඔබන්න.',
+    stepAverage: 'පියවර සාමාන්‍යය',
+    finalAverage: 'අවසාන සාමාන්‍යය (කියවීම් 40)',
   },
   தமிழ்: {
     title: 'மண் pH சோதனை',
@@ -252,6 +260,10 @@ const translations = {
     of: 'இல்',
     readings: 'வாசிப்புகள்',
     gatheringProgress: 'சென்சார் வாசிப்புகளை சேகரிக்கிறது...',
+    step: 'படி',
+    moveSensorToOtherPlace: 'சென்சாரை மற்றொரு இடத்திற்கு நகர்த்தி, அடுத்த படிக்கு "மதிப்புகளைப் படிக்கவும்" என்பதை தட்டவும்.',
+    stepAverage: 'படி சராசரி',
+    finalAverage: 'இறுதி சராசரி (40 வாசிப்புகள்)',
   },
 };
 
@@ -274,16 +286,21 @@ export default function SoilPHScreen({ navigation }) {
   const pollingActive = useRef(false);
   const [zeroValueCount, setZeroValueCount] = useState(0); // Track consecutive zero-value attempts
 
-  // Gather 10 readings from BLE then average (only update UI on "Read Values" click)
-  const GATHER_COUNT = 10;
+  // BLE: 4 steps, each step gathers 10 readings; final average = 40 readings. User taps "Read Values" per step.
+  const GATHER_COUNT = 10; // readings per step
+  const NUM_STEPS = 4;
   const [isGathering, setIsGathering] = useState(false);
   const [gatheringCount, setGatheringCount] = useState(0);
-  const [liveGatheringData, setLiveGatheringData] = useState(null); // Current reading during gather (for progress UI)
+  const [liveGatheringData, setLiveGatheringData] = useState(null);
+  const [currentStep, setCurrentStep] = useState(0); // 0 = not in flow, 1..4 = current step
+  const [stepAverages, setStepAverages] = useState([]); // length 0..4, one averaged reading per completed step
   const lastGatheringAddTime = useRef(0);
   const gatheringIntervalRef = useRef(null);
   const gatheringReadingsRef = useRef([]);
   const gatheringStartTimeRef = useRef(0);
-  const GATHER_TIMEOUT_MS = 120000; // 2 min max to collect 10 readings
+  const allGatheredReadingsRef = useRef([]); // all 40 readings across 4 steps for final average
+  const currentStepRef = useRef(0);
+  const GATHER_TIMEOUT_MS = 120000; // 2 min max per step to collect 10 readings
 
   // Form fields
   const [formData, setFormData] = useState({
@@ -397,9 +414,30 @@ export default function SoilPHScreen({ navigation }) {
     setLoading(true);
     setError(null);
 
-    // BLE: gather 10 readings then average; UI updates only when done (no real-time updates)
+    // BLE: 4 steps; each step gathers 10 readings. User taps "Read Values" to start/advance each step. Final = average of 40.
     if (bleDevice) {
-      // Clear any previous gathering interval
+      const step = currentStepRef.current;
+      const readyForNext = step >= 1 && stepAverages.length === step && !isGathering;
+
+      if (step === 0) {
+        // Start step 1
+        setCurrentStep(1);
+        currentStepRef.current = 1;
+        setStepAverages([]);
+        allGatheredReadingsRef.current = [];
+      } else if (readyForNext && step < NUM_STEPS) {
+        // Start next step (2, 3, or 4)
+        setCurrentStep(step + 1);
+        currentStepRef.current = step + 1;
+      } else if (readyForNext && step === NUM_STEPS) {
+        // Should not happen: after step 4 we reset to 0
+        setCurrentStep(0);
+        currentStepRef.current = 0;
+        setLoading(false);
+        return;
+      }
+      // Else: step >= 1 && stepAverages.length < step (e.g. timeout) → retry current step by falling through to start interval
+
       if (gatheringIntervalRef.current) {
         clearInterval(gatheringIntervalRef.current);
         gatheringIntervalRef.current = null;
@@ -410,6 +448,7 @@ export default function SoilPHScreen({ navigation }) {
       setIsGathering(true);
       setGatheringCount(0);
       setLiveGatheringData(null);
+      setError(null);
 
       gatheringIntervalRef.current = setInterval(() => {
         const elapsed = Date.now() - gatheringStartTimeRef.current;
@@ -420,13 +459,7 @@ export default function SoilPHScreen({ navigation }) {
           setLoading(false);
           setGatheringCount(0);
           setLiveGatheringData(null);
-          const arr = gatheringReadingsRef.current;
-          if (arr.length >= 1) {
-            setSensorData(averageReadings(arr));
-            setConnected(true);
-            setError(null);
-            setZeroValueCount(0);
-          } else {
+          if (gatheringReadingsRef.current.length < 1) {
             setError(t.waitingForData);
           }
           return;
@@ -455,11 +488,21 @@ export default function SoilPHScreen({ navigation }) {
         if (gatheringReadingsRef.current.length >= GATHER_COUNT) {
           clearInterval(gatheringIntervalRef.current);
           gatheringIntervalRef.current = null;
-          const averaged = averageReadings(gatheringReadingsRef.current);
-          setSensorData(averaged);
-          setConnected(true);
-          setError(null);
-          setZeroValueCount(0);
+          const stepAvg = averageReadings(gatheringReadingsRef.current);
+          allGatheredReadingsRef.current = allGatheredReadingsRef.current.concat(gatheringReadingsRef.current);
+          setStepAverages((prev) => [...prev, stepAvg]);
+          const completedStep = currentStepRef.current;
+          if (completedStep === NUM_STEPS) {
+            const finalAvg = averageReadings(allGatheredReadingsRef.current);
+            setSensorData(finalAvg);
+            setConnected(true);
+            setError(null);
+            setZeroValueCount(0);
+            setCurrentStep(0);
+            currentStepRef.current = 0;
+            setStepAverages([]);
+            allGatheredReadingsRef.current = [];
+          }
           setIsGathering(false);
           setLoading(false);
           setGatheringCount(0);
@@ -594,7 +637,11 @@ export default function SoilPHScreen({ navigation }) {
     setConnectedDevice(null);
     setSensorData(null);
     setPredictionResult(null);
-    setZeroValueCount(0); // Reset counter on disconnect
+    setZeroValueCount(0);
+    setCurrentStep(0);
+    setStepAverages([]);
+    currentStepRef.current = 0;
+    allGatheredReadingsRef.current = [];
   };
 
   const handlePredict = async () => {
@@ -772,12 +819,14 @@ export default function SoilPHScreen({ navigation }) {
               </View>
             </View>
 
-            {/* Gathering progress: collect 10 readings then average */}
+            {/* 4-step gathering: Step N of 4, 10 readings per step; then "move sensor" and next step */}
             {isGathering && (
               <View style={styles.gatheringCard}>
                 <View style={styles.gatheringHeader}>
                   <Icon name="chart-line" size={24} color="#0F5132" />
-                  <Text style={styles.gatheringTitle}>{t.gatheringData}</Text>
+                  <Text style={styles.gatheringTitle}>
+                    {t.gatheringData} — {t.step} {currentStep} {t.of} {NUM_STEPS}
+                  </Text>
                 </View>
                 <Text style={styles.gatheringProgressText}>{t.gatheringProgress}</Text>
                 <View style={styles.gatheringProgressBarContainer}>
@@ -822,6 +871,29 @@ export default function SoilPHScreen({ navigation }) {
                     </View>
                   </View>
                 )}
+              </View>
+            )}
+
+            {/* Between steps: show completed step averages and "move sensor" */}
+            {!isGathering && currentStep >= 1 && stepAverages.length >= 1 && currentStep <= NUM_STEPS && (
+              <View style={styles.gatheringCard}>
+                <View style={styles.gatheringHeader}>
+                  <Icon name="map-marker-radius" size={24} color="#0F5132" />
+                  <Text style={styles.gatheringTitle}>
+                    {t.step} {currentStep} {t.of} {NUM_STEPS} — {t.stepAverage}
+                  </Text>
+                </View>
+                <Text style={styles.gatheringProgressText}>{t.moveSensorToOtherPlace}</Text>
+                {stepAverages.map((avg, idx) => (
+                  <View key={idx} style={styles.stepAverageRow}>
+                    <Text style={styles.stepAverageLabel}>
+                      {t.step} {idx + 1}:
+                    </Text>
+                    <Text style={styles.stepAverageValue}>
+                      pH {avg.pH.toFixed(1)} · {t.moisture} {avg.soil_moisture_pct.toFixed(1)}% · EC {avg.EC_dS_m.toFixed(2)}
+                    </Text>
+                  </View>
+                ))}
               </View>
             )}
 
@@ -871,9 +943,13 @@ export default function SoilPHScreen({ navigation }) {
               </View>
             )}
 
-            {/* Sensor Data Display */}
+            {/* Sensor Data Display (final average of 40 readings after 4 steps) */}
             {sensorData && (
               <>
+                <View style={styles.finalAverageBadge}>
+                  <Icon name="chart-areaspline" size={18} color="#0F5132" />
+                  <Text style={styles.finalAverageBadgeText}>{t.finalAverage}</Text>
+                </View>
                 <View style={styles.phCard}>
                   <View style={styles.phHeader}>
                     <Icon name="test-tube" size={32} color="#FF9800" />
@@ -1109,7 +1185,7 @@ export default function SoilPHScreen({ navigation }) {
             )}
 
             {/* Connected but No Data Yet */}
-            {connected && connectedDevice && !sensorData && !loading && !error && (
+            {connected && connectedDevice && !sensorData && !loading && !error && currentStep === 0 && (
               <View style={styles.emptyState}>
                 <Icon name="bluetooth-connect" size={64} color="#4CAF50" />
                 <Text style={styles.emptyStateTitle}>{t.deviceConnected}</Text>
@@ -1482,6 +1558,44 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  stepAverageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: '#F8FBF9',
+    borderRadius: 12,
+  },
+  stepAverageLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F5132',
+    marginRight: 10,
+    minWidth: 48,
+  },
+  stepAverageValue: {
+    fontSize: 13,
+    color: '#555',
+    fontWeight: '600',
+    flex: 1,
+  },
+  finalAverageBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  finalAverageBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F5132',
   },
   gatheringLiveGrid: {
     flexDirection: 'row',
