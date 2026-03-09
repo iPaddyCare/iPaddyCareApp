@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
+import RNFS from 'react-native-fs';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import SeedDetectionService from '../src/utils/seedDetectionService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,6 +37,8 @@ const translations = {
     tryAgain: 'Try Again',
     yes: 'Yes',
     no: 'No',
+    captureAndAnalyze: 'Capture & Analyze',
+    captureHint: 'Tap button below to capture & analyze',
   },
   සිංහල: {
     title: 'සජීවී බීජ හඳුනාගැනීම',
@@ -51,6 +55,8 @@ const translations = {
     tryAgain: 'නැවත උත්සාහ කරන්න',
     yes: 'ඔව්',
     no: 'නැත',
+    captureAndAnalyze: 'ග්‍රහණය කර විශ්ලේෂණය කරන්න',
+    captureHint: 'ග්‍රහණය කර විශ්ලේෂණය කිරීමට පහත බොත්තම තට්ටු කරන්න',
   },
   தமிழ்: {
     title: 'நேரடி விதை கண்டறிதல்',
@@ -67,39 +73,9 @@ const translations = {
     tryAgain: 'மீண்டும் முயற்சிக்கவும்',
     yes: 'ஆம்',
     no: 'இல்லை',
+    captureAndAnalyze: 'பிடித்து பகுப்பாய்வு செய்',
+    captureHint: 'பிடித்து பகுப்பாய்வு செய்ய கீழ் பொத்தானை தட்டவும்',
   },
-};
-
-// Mock detection function - replace with your actual ML model
-const detectSeeds = (frame) => {
-  // TODO: Replace with actual ML model inference
-  // This is a placeholder that simulates detection
-  // In real implementation, process frame with your model
-  
-  // Simulate detection with some randomness
-  const shouldDetect = Math.random() > 0.3; // 70% chance of detection
-  
-  if (!shouldDetect) {
-    return null;
-  }
-
-  // Simulate bounding boxes and detection results
-  const detections = [];
-  const numDetections = Math.floor(Math.random() * 3) + 1; // 1-3 detections
-  
-  for (let i = 0; i < numDetections; i++) {
-    detections.push({
-      x: Math.random() * (width - 100) + 50,
-      y: Math.random() * (height - 200) + 100,
-      width: 80 + Math.random() * 60,
-      height: 80 + Math.random() * 60,
-      variety: ['Basmati', 'Jasmine', 'Sona Masuri'][Math.floor(Math.random() * 3)],
-      confidence: 0.7 + Math.random() * 0.25,
-      isWild: Math.random() > 0.6,
-    });
-  }
-  
-  return detections;
 };
 
 export default function SeedCameraScreen({ navigation }) {
@@ -110,45 +86,57 @@ export default function SeedCameraScreen({ navigation }) {
   const camera = useRef(null);
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
-  const detectionInterval = useRef(null);
 
   const t = translations[selectedLanguage];
 
   useEffect(() => {
-    // Request camera permission on mount
     if (!hasPermission) {
       requestPermission();
     }
-
-    return () => {
-      // Cleanup interval
-      if (detectionInterval.current) {
-        clearInterval(detectionInterval.current);
-      }
-    };
   }, [hasPermission, requestPermission]);
 
-  // Simulate real-time detection
-  useEffect(() => {
-    if (hasPermission && device) {
-      // Simulate detection every 500ms
-      detectionInterval.current = setInterval(() => {
-        setIsProcessing(true);
-        // Simulate detection delay
-        setTimeout(() => {
-          const mockDetections = detectSeeds(null);
-          setDetections(mockDetections || []);
-          setIsProcessing(false);
-        }, 100);
-      }, 500);
+  const handleCaptureAndAnalyze = async () => {
+    if (!camera.current || isProcessing) return;
 
-      return () => {
-        if (detectionInterval.current) {
-          clearInterval(detectionInterval.current);
-        }
-      };
+    setIsProcessing(true);
+    setDetections([]);
+
+    try {
+      const photo = await camera.current.takePhoto({ flash: 'off' });
+      const filePath = photo.path.startsWith('file://') ? photo.path.replace('file://', '') : photo.path;
+
+      if (!filePath || !(await RNFS.exists(filePath))) {
+        throw new Error('Photo file not found. Please try again.');
+      }
+
+      const base64 = await RNFS.readFile(filePath, 'base64');
+      const imageBase64 = `data:image/jpeg;base64,${base64}`;
+
+      const result = await SeedDetectionService.predictLive(imageBase64);
+      
+
+      if (result.success && result.data && result.data.predictions && result.data.predictions.length > 0) {
+        const list = result.data.predictions.map((p) => {
+          const predictedClass = p.predicted_class || '';
+          const isWild = /wild/i.test(predictedClass);
+          return {
+            variety: predictedClass || 'Unknown',
+            confidence: p.confidence,
+            isWild,
+          };
+        });
+        setDetections(list);
+      } else {
+        Alert.alert(t.error, result.error || t.noDetection);
+      }
+    } catch (err) {
+      console.error('Capture & analyze error:', err);
+      const message = err.message || 'Failed to analyze photo';
+      Alert.alert(t.error, message);
+    } finally {
+      setIsProcessing(false);
     }
-  }, [hasPermission, device]);
+  };
 
   if (!hasPermission) {
     return (
@@ -222,44 +210,12 @@ export default function SeedCameraScreen({ navigation }) {
           style={StyleSheet.absoluteFill}
           device={device}
           isActive={true}
+          photo={true}
           orientation="portrait"
         />
 
         {/* Detection Overlay */}
-        <View style={styles.overlay}>
-          {detections.map((detection, index) => (
-            <View
-              key={index}
-              style={[
-                styles.boundingBox,
-                {
-                  left: detection.x,
-                  top: detection.y,
-                  width: detection.width,
-                  height: detection.height,
-                  borderColor: detection.isWild ? '#F44336' : '#4CAF50',
-                },
-              ]}
-            >
-              {/* Label */}
-              <View
-                style={[
-                  styles.labelContainer,
-                  {
-                    backgroundColor: detection.isWild ? '#F44336' : '#4CAF50',
-                  },
-                ]}
-              >
-                <Text style={styles.labelText}>{detection.variety}</Text>
-                {detection.isWild && (
-                  <View style={styles.wildBadge}>
-                    <Text style={styles.wildBadgeText}>{t.wildSeeds}</Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          ))}
-
+        <View style={styles.overlay} pointerEvents="box-none">
           {/* Processing Indicator */}
           {isProcessing && (
             <View style={styles.processingIndicator}>
@@ -268,47 +224,69 @@ export default function SeedCameraScreen({ navigation }) {
             </View>
           )}
 
-          {/* No Detection Message */}
+          {/* No Detection Message + Capture Button (visible in empty state) */}
           {!isProcessing && detections.length === 0 && (
             <View style={styles.noDetectionContainer}>
               <Icon name="seed-off" size={48} color="rgba(255,255,255,0.7)" />
               <Text style={styles.noDetectionText}>{t.noDetection}</Text>
+              <Text style={styles.captureHint}>{t.captureHint}</Text>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCaptureAndAnalyze}
+                activeOpacity={0.8}
+              >
+                <Icon name="camera" size={28} color="#FFFFFF" />
+                <Text style={styles.captureButtonText}>{t.captureAndAnalyze}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Detection Result - Top Right Corner */}
+          {detections.length > 0 && (
+            <View style={styles.resultTopRight}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.resultTopRightContent}
+              >
+                {detections.map((detection, index) => (
+                  <View key={index} style={styles.resultCard}>
+                    <View
+                      style={[
+                        styles.resultCardIcon,
+                        { backgroundColor: detection.isWild ? '#F44336' + '30' : '#4CAF50' + '30' },
+                      ]}
+                    >
+                      <Icon
+                        name={detection.isWild ? 'alert-circle' : 'check-circle'}
+                        size={16}
+                        color={detection.isWild ? '#F44336' : '#4CAF50'}
+                      />
+                    </View>
+                    <Text style={styles.resultCardVariety} numberOfLines={1}>{detection.variety}</Text>
+                    <Text style={styles.resultCardQuality}>
+                      {Math.round(detection.confidence * 100)}%
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Capture & Analyze Button when we have results (so user can capture again) */}
+          {!isProcessing && detections.length > 0 && (
+            <View style={[styles.captureButtonContainer, { bottom: 88 + insets.bottom }]}>
+              <TouchableOpacity
+                style={styles.captureButton}
+                onPress={handleCaptureAndAnalyze}
+                activeOpacity={0.8}
+              >
+                <Icon name="camera" size={28} color="#FFFFFF" />
+                <Text style={styles.captureButtonText}>{t.captureAndAnalyze}</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
       </View>
-
-      {/* Detection Summary */}
-      {detections.length > 0 && (
-        <View style={styles.summaryContainer}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.summaryContent}
-          >
-            {detections.map((detection, index) => (
-              <View key={index} style={styles.summaryCard}>
-                <View
-                  style={[
-                    styles.summaryIcon,
-                    { backgroundColor: detection.isWild ? '#F44336' + '20' : '#4CAF50' + '20' },
-                  ]}
-                >
-                  <Icon
-                    name={detection.isWild ? 'alert-circle' : 'check-circle'}
-                    size={20}
-                    color={detection.isWild ? '#F44336' : '#4CAF50'}
-                  />
-                </View>
-                <Text style={styles.summaryVariety}>{detection.variety}</Text>
-                <Text style={styles.summaryQuality}>
-                  {Math.round(detection.confidence * 100)}%
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      )}
     </View>
   );
 }
@@ -411,14 +389,94 @@ const styles = StyleSheet.create({
   noDetectionContainer: {
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    padding: 20,
+    padding: 24,
     borderRadius: 16,
+    maxWidth: width * 0.85,
   },
   noDetectionText: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 16,
     marginTop: 12,
     fontWeight: '500',
+  },
+  captureHint: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 14,
+    marginTop: 8,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  captureButtonContainer: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+  },
+  captureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0F5132',
+    paddingHorizontal: 28,
+    paddingVertical: 16,
+    borderRadius: 28,
+    gap: 10,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+  },
+  captureButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  resultTopRight: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    maxHeight: '55%',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    borderRadius: 12,
+    padding: 12,
+    minWidth: 180,
+    maxWidth: 260,
+    width: width * 0.7,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
+  },
+  resultTopRightContent: {
+    paddingVertical: 4,
+  },
+  resultCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 6,
+  },
+  resultCardIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  resultCardVariety: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  resultCardQuality: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '600',
+    marginLeft: 4,
   },
   summaryContainer: {
     backgroundColor: 'rgba(0, 0, 0, 0.8)',

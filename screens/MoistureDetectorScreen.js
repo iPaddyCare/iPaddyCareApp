@@ -266,51 +266,56 @@ export default function MoistureDetectorScreen({ navigation }) {
     setLoading(false);
   };
 
-  // Start/Stop polling
+  // Real-time data: BLE notifications (every 2s from ESP32) or WiFi polling
   useEffect(() => {
-    if (connected && !pollingActive.current) {
+    if (!connected) {
+      pollingActive.current = false;
+      return;
+    }
+    const bleDevice = BLEService.getConnectedDevice();
+    let fallbackPollInterval = null;
+
+    if (bleDevice) {
+      // BLE: subscribe to notifications for real-time updates (ESP32 sends every 2s)
       pollingActive.current = true;
-      const bleDevice = BLEService.getConnectedDevice();
-      
-      if (bleDevice) {
-        // BLE polling - use interval since BLE doesn't have built-in polling
-        const pollInterval = setInterval(async () => {
-          const result = await BLEService.readMoistureData();
-          if (result.success) {
-            setMoistureData(result.data);
-            setConnected(true);
-            setError(null);
-          } else {
-            setConnected(false);
-            setError(result.error);
-          }
-        }, 5000);
-        
-        return () => {
-          clearInterval(pollInterval);
-          pollingActive.current = false;
-        };
-      } else {
-        // WiFi polling
-        ESP32Service.startPolling((result) => {
-          if (result.success) {
-            setMoistureData(result.data);
-            setConnected(true);
-            setError(null);
-          } else {
-            setConnected(false);
-            setError(result.error);
-          }
-        }, 5000);
-        
-        return () => {
-          ESP32Service.stopPolling();
-          pollingActive.current = false;
-        };
-      }
+      BLEService.startMonitoring((data) => {
+        setMoistureData(data);
+        setConnected(true);
+        setError(null);
+      }).then((result) => {
+        if (!result.success) {
+          // Fallback to polling every 2s if notification monitoring fails
+          fallbackPollInterval = setInterval(async () => {
+            const res = await BLEService.readMoistureData();
+            if (res.success) {
+              setMoistureData(res.data);
+              setError(null);
+            }
+          }, 2000);
+        }
+      });
+      return () => {
+        if (fallbackPollInterval) clearInterval(fallbackPollInterval);
+        BLEService.stopMonitoring();
+        pollingActive.current = false;
+      };
     }
 
+    // WiFi: polling every 5s
+    pollingActive.current = true;
+    ESP32Service.startPolling((result) => {
+      if (result.success) {
+        setMoistureData(result.data);
+        setConnected(true);
+        setError(null);
+      } else {
+        setConnected(false);
+        setError(result.error);
+      }
+    }, 5000);
+
     return () => {
+      ESP32Service.stopPolling();
       pollingActive.current = false;
     };
   }, [connected]);
@@ -709,7 +714,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                     <Icon name="thermometer" size={18} color="#FF9800" />
                     <Text style={styles.sensorReadingLabel}>{t.sampleTemp}</Text>
                     <Text style={styles.sensorReadingValue}>
-                      {liveReading.sampleTemperature !== null && liveReading.sampleTemperature !== undefined
+                      {liveReading.sampleTemperature != null
                         ? `${liveReading.sampleTemperature.toFixed(1)}${t.celsius}`
                         : `--${t.celsius}`}
                     </Text>
@@ -742,7 +747,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                     <Icon name="scale-balance" size={18} color="#4CAF50" />
                     <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
                     <Text style={styles.sensorReadingValue}>
-                      {liveReading.sampleWeight !== null && liveReading.sampleWeight !== undefined
+                      {liveReading.sampleWeight != null
                         ? `${liveReading.sampleWeight.toFixed(1)}${t.grams}`
                         : `--${t.grams}`}
                     </Text>

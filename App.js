@@ -15,6 +15,8 @@ import ReadingResultsScreen from './screens/ReadingResultsScreen';
 import SoilPHScreen from './screens/SoilPHScreen';
 import PestDetectionScreen from './screens/PestDetectionScreen';
 import DeviceConnectionScreen from './screens/DeviceConnectionScreen';
+import CoordinateInputScreen from './screens/CoordinateInputScreen';
+import MapPickerScreen from './screens/MapPickerScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import HelpScreen from './screens/HelpScreen';
 import AboutScreen from './screens/AboutScreen';
@@ -27,11 +29,10 @@ import MessageScreen from './screens/MessageScreen';
 import OfficerLoginScreen from './screens/OfficerLoginScreen';
 import OfficerInboxScreen from './screens/OfficerInboxScreen';
 import ProductApprovalScreen from './screens/ProductApprovalScreen';
-import CoordinateInputScreen from './screens/CoordinateInputScreen';
-import MapPickerScreen from './screens/MapPickerScreen';
 import DrawerContent from './src/components/DrawerContent';
 import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import DeviceConnectionScreenSeedDetection from './screens/DeviceConnectionScreenSeedDetection';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -82,7 +83,7 @@ function MainStack() {
       <Stack.Screen 
         name="SoilPH" 
         component={SoilPHScreen} 
-        options={{ title: 'Soil pH Testing' }}
+        options={{ headerShown: false}}
       />
       <Stack.Screen 
         name="PestDetection" 
@@ -147,6 +148,11 @@ function MainStack() {
       <Stack.Screen 
         name="ProductApproval" 
         component={ProductApprovalScreen} 
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="DeviceConnectionSeedDetection" 
+        component={DeviceConnectionScreenSeedDetection} 
         options={{ headerShown: false }}
       />
       <Stack.Screen 
