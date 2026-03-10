@@ -93,7 +93,7 @@ class LocationService {
         },
         (error) => {
           clearTimeout(timeoutId);
-          console.error('Location error:', error);
+          console.warn('Location error:', error);
           
           let errorMessage = 'Failed to get location';
           if (error.code === 1) {

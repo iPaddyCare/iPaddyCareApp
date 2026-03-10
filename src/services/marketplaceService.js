@@ -6,6 +6,15 @@ import firestore from '@react-native-firebase/firestore';
 const productsCollection = firestore().collection('products');
 
 /**
+ * Derive stock status from quantity
+ */
+function getStockStatus(quantity) {
+  if (quantity <= 0) return 'out_of_stock';
+  if (quantity <= 5) return 'low_stock';
+  return 'in_stock';
+}
+
+/**
  * Add a new product listing (status: pending)
  */
 export async function addProduct(productData, user) {
@@ -17,6 +26,11 @@ export async function addProduct(productData, user) {
     location: productData.location,
     phone: productData.phone,
     imageUrl: productData.imageUrl || null,
+    activeIngredient: productData.activeIngredient || '',
+    targetDiseases: productData.targetDiseases || [],
+    targetDiseasesLower: (productData.targetDiseases || []).map(d => d.toLowerCase().trim()),
+    quantity: Number(productData.quantity) || 0,
+    stockStatus: getStockStatus(Number(productData.quantity) || 0),
     status: 'pending',
     userId: user.uid,
     seller: user.displayName || user.email?.split('@')[0] || 'Unknown',
@@ -102,6 +116,36 @@ export async function updateProduct(productId, data) {
 }
 
 /**
+ * Get approved products that target a specific disease/pest
+ */
+export async function getProductsByDisease(diseaseName) {
+  const normalized = diseaseName.toLowerCase().trim();
+
+  // Fetch all approved products and filter client-side for robust matching
+  // (avoids needing composite Firestore indexes for every field combo)
+  const snapshot = await productsCollection
+    .where('status', '==', 'approved')
+    .orderBy('createdAt', 'desc')
+    .get();
+
+  const results = snapshot.docs
+    .map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt?.toDate?.() || new Date(),
+    }))
+    .filter(product => {
+      const diseases = product.targetDiseases || [];
+      const diseasesLower = product.targetDiseasesLower || [];
+      // Match on lowercase array, or case-insensitive check on original array
+      return diseasesLower.includes(normalized)
+        || diseases.some(d => d.toLowerCase().trim() === normalized);
+    });
+
+  return results;
+}
+
+/**
  * Delete a product
  */
 export async function deleteProduct(productId) {
@@ -111,6 +155,7 @@ export async function deleteProduct(productId) {
 export default {
   addProduct,
   getApprovedProducts,
+  getProductsByDisease,
   getUserListings,
   getPendingProducts,
   updateProductStatus,

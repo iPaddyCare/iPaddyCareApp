@@ -15,6 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -182,14 +183,17 @@ export default function MarketplaceScreen({ navigation, route }) {
     }
   };
 
-  React.useEffect(() => {
-    fetchProducts(selectedCategory === 'all' ? null : selectedCategory);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, [selectedCategory]);
+  // Refetch products every time the screen comes into focus or category changes
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchProducts(selectedCategory === 'all' ? null : selectedCategory);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, [selectedCategory])
+  );
 
   const categories = [
     { id: 'all', label: t.allProducts, icon: '📦' },
@@ -386,6 +390,11 @@ export default function MarketplaceScreen({ navigation, route }) {
         {/* Product Detail Modal */}
         <Modal visible={detailModalVisible} animationType="slide" transparent>
           <View style={styles.modalOverlay}>
+            <TouchableOpacity
+              style={styles.modalDismissArea}
+              activeOpacity={1}
+              onPress={() => setDetailModalVisible(false)}
+            />
             <View style={styles.modalContent}>
               {selectedProduct && (
                 <>
@@ -409,7 +418,11 @@ export default function MarketplaceScreen({ navigation, route }) {
                   </View>
 
                   {/* Product Info */}
-                  <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                  <ScrollView
+                    style={styles.modalBody}
+                    contentContainerStyle={{ paddingBottom: 8 }}
+                    showsVerticalScrollIndicator={false}
+                  >
                     <Text style={styles.modalProductName}>
                       {selectedProduct.productName || selectedProduct.title}
                     </Text>
@@ -420,6 +433,32 @@ export default function MarketplaceScreen({ navigation, route }) {
                         {selectedProduct.price?.toLocaleString()}
                       </Text>
                     </View>
+
+                    {selectedProduct.quantity != null && (
+                      <View style={styles.modalStockRow}>
+                        <Icon
+                          name={selectedProduct.quantity > 5 ? 'check-circle' : selectedProduct.quantity > 0 ? 'alert-circle' : 'close-circle'}
+                          size={16}
+                          color={selectedProduct.quantity > 5 ? '#10B981' : selectedProduct.quantity > 0 ? '#F59E0B' : '#EF4444'}
+                        />
+                        <Text style={[
+                          styles.modalStockText,
+                          { color: selectedProduct.quantity > 5 ? '#10B981' : selectedProduct.quantity > 0 ? '#F59E0B' : '#EF4444' },
+                        ]}>
+                          {selectedProduct.quantity > 5 ? 'In Stock' : selectedProduct.quantity > 0 ? 'Low Stock' : 'Out of Stock'}
+                          {selectedProduct.quantity > 0 ? ` (${selectedProduct.quantity} available)` : ''}
+                        </Text>
+                      </View>
+                    )}
+
+                    {selectedProduct.activeIngredient ? (
+                      <View style={styles.modalIngredientRow}>
+                        <Icon name="flask" size={16} color="#0F5132" />
+                        <Text style={styles.modalIngredientText}>
+                          {selectedProduct.activeIngredient}
+                        </Text>
+                      </View>
+                    ) : null}
 
                     <Text style={styles.modalDescription}>
                       {selectedProduct.description}
@@ -831,11 +870,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'flex-end',
   },
+  modalDismissArea: {
+    flex: 1,
+  },
   modalContent: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    maxHeight: '80%',
+    maxHeight: '82%',
     paddingBottom: Platform.OS === 'ios' ? 34 : 20,
   },
   modalHeader: {
@@ -980,6 +1022,35 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  modalIngredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.1)',
+  },
+  modalIngredientText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F5132',
+  },
+  modalStockRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 12,
+  },
+  modalStockText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
 

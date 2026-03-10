@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,8 +10,11 @@ import {
   Image,
   Alert,
   RefreshControl,
+  Modal,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -152,11 +155,14 @@ export default function ProductApprovalScreen({ navigation }) {
     }
   };
 
-  useEffect(() => {
-    if (isOfficer) {
-      fetchPending();
-    }
-  }, [isOfficer]);
+  // Refetch pending products every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (isOfficer) {
+        fetchPending();
+      }
+    }, [isOfficer])
+  );
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -338,78 +344,131 @@ export default function ProductApprovalScreen({ navigation }) {
           </ScrollView>
         ) : (
           <View style={styles.emptyState}>
-            <Icon name="check-circle-outline" size={64} color="#CCC" />
+            <View style={styles.emptyStateIconCircle}>
+              <Icon name="check-circle-outline" size={56} color="#0F5132" />
+            </View>
             <Text style={styles.emptyStateTitle}>{t.noPending}</Text>
             <Text style={styles.emptyStateText}>{t.noPendingDesc}</Text>
           </View>
         )}
 
         {/* Details Modal */}
-        {showDetails && selectedProduct && (
+        <Modal
+          visible={showDetails && !!selectedProduct}
+          transparent
+          animationType="slide"
+          onRequestClose={() => {
+            setShowDetails(false);
+            setSelectedProduct(null);
+          }}
+        >
           <View style={styles.modalOverlay}>
+            <TouchableOpacity
+              style={styles.modalDismissArea}
+              activeOpacity={1}
+              onPress={() => {
+                setShowDetails(false);
+                setSelectedProduct(null);
+              }}
+            />
             <View style={styles.modalContent}>
+              <View style={styles.modalDragHandle} />
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t.viewDetails}</Text>
+                <View style={styles.modalHeaderLeft}>
+                  <View style={styles.modalIconCircle}>
+                    <Text style={{ fontSize: 24 }}>
+                      {categoryEmojis[selectedProduct?.category] || '📦'}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.modalTitle}>{selectedProduct?.productName}</Text>
+                    <View style={styles.modalStatusBadge}>
+                      <Icon name="clock-outline" size={12} color="#FF9800" />
+                      <Text style={styles.modalStatusText}>{t.pending}</Text>
+                    </View>
+                  </View>
+                </View>
                 <TouchableOpacity
+                  style={styles.modalCloseBtn}
                   onPress={() => {
                     setShowDetails(false);
                     setSelectedProduct(null);
                   }}
                 >
-                  <Icon name="close" size={24} color="#666" />
+                  <Icon name="close" size={20} color="#666" />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={styles.modalBody}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.productName}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.productName}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.category}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.category}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.price}:</Text>
-                  <Text style={styles.detailValue}>Rs. {selectedProduct.price.toLocaleString()}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.location}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.location}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.seller}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.seller}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Email:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.sellerEmail}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.description}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.description}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.status}:</Text>
-                  <Text style={[styles.detailValue, styles.pendingStatus]}>
-                    {t.pending}
+              {selectedProduct && (
+                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Icon name="tag-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{t.category}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.category}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="cash" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{t.price}</Text>
+                        <Text style={[styles.detailValue, { color: '#0F5132', fontWeight: '700' }]}>
+                          Rs. {selectedProduct.price.toLocaleString()}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="map-marker-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{t.location}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.location}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="account-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{t.seller}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.seller}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="email-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>Email</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.sellerEmail}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.descriptionCard}>
+                    <Text style={styles.descriptionLabel}>{t.description}</Text>
+                    <Text style={styles.descriptionValue}>{selectedProduct.description}</Text>
+                  </View>
+                  {selectedProduct.activeIngredient ? (
+                    <View style={styles.ingredientCard}>
+                      <Icon name="flask-outline" size={16} color="#0F5132" />
+                      <Text style={styles.ingredientText}>{selectedProduct.activeIngredient}</Text>
+                    </View>
+                  ) : null}
+                  <Text style={styles.submittedDate}>
+                    {t.submitted}: {selectedProduct.createdAt instanceof Date ? selectedProduct.createdAt.toLocaleDateString() : ''}
                   </Text>
-                </View>
-              </ScrollView>
+                </ScrollView>
+              )}
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.modalDeclineButton}
-                  onPress={() => {
-                    handleDecline(selectedProduct);
-                  }}
+                  onPress={() => handleDecline(selectedProduct)}
                 >
-                  <Icon name="close-circle" size={20} color="#FFFFFF" />
+                  <Icon name="close-circle" size={20} color="#E91E63" />
                   <Text style={styles.modalDeclineButtonText}>{t.decline}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalApproveButton}
-                  onPress={() => {
-                    handleApprove(selectedProduct);
-                  }}
+                  onPress={() => handleApprove(selectedProduct)}
                 >
                   <Icon name="check-circle" size={20} color="#FFFFFF" />
                   <Text style={styles.modalApproveButtonText}>{t.approve}</Text>
@@ -417,7 +476,7 @@ export default function ProductApprovalScreen({ navigation }) {
               </View>
             </View>
           </View>
-        )}
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -623,10 +682,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
   },
+  emptyStateIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E8F5E8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#666',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -636,56 +704,163 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
+    justifyContent: 'flex-end',
+  },
+  modalDismissArea: {
+    flex: 1,
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    width: width * 0.9,
-    maxHeight: '80%',
-    elevation: 8,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '85%',
+    elevation: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#DDD',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F0F0F0',
+  },
+  modalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  modalIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1A1A1A',
   },
+  modalStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  modalStatusText: {
+    fontSize: 12,
+    color: '#FF9800',
+    fontWeight: '600',
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modalBody: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
     maxHeight: 400,
   },
+  detailCard: {
+    backgroundColor: '#F9FBF9',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8F0E8',
+  },
   detailRow: {
-    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  detailTextGroup: {
+    flex: 1,
+  },
+  detailDivider: {
+    height: 1,
+    backgroundColor: '#E8F0E8',
+    marginLeft: 30,
   },
   detailLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#666',
-    marginBottom: 4,
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
     fontSize: 15,
     color: '#1A1A1A',
+    marginTop: 1,
+  },
+  descriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8F0E8',
+  },
+  descriptionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  descriptionValue: {
+    fontSize: 14,
+    color: '#444',
+    lineHeight: 22,
+  },
+  ingredientCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  ingredientText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0F5132',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  submittedDate: {
+    fontSize: 11,
+    color: '#AAA',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   pendingStatus: {
     color: '#FF9800',
@@ -693,9 +868,11 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#F0F0F0',
     gap: 12,
   },
   modalDeclineButton: {
@@ -703,24 +880,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E91E63',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E91E63',
   },
   modalDeclineButtonText: {
-    color: '#FFFFFF',
+    color: '#E91E63',
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 6,
   },
   modalApproveButton: {
-    flex: 1,
+    flex: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0F5132',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    elevation: 4,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   modalApproveButtonText: {
     color: '#FFFFFF',

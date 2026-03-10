@@ -10,6 +10,7 @@ import {
   RefreshControl,
   TextInput,
   Dimensions,
+  Modal,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
@@ -279,6 +280,7 @@ export default function SoilPHScreen({ navigation }) {
   const [location, setLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [predicting, setPredicting] = useState(false);
   const [predictionResult, setPredictionResult] = useState(null);
   const [error, setError] = useState(null);
@@ -335,13 +337,15 @@ export default function SoilPHScreen({ navigation }) {
       // Show error message if there's one (even if we have default coordinates)
       if (result.error) {
         setLocationError(result.error);
+        setShowLocationModal(true);
       } else {
         setLocationError(null);
       }
     } catch (error) {
-      console.error('Location fetch error:', error);
+      console.warn('Location fetch error:', error);
       setLocationError('Failed to get location - using default coordinates');
       setLocation({ lat: 7.5, lon: 80.5 });
+      setShowLocationModal(true);
     } finally {
       // Always clear loading state
       setLoadingLocation(false);
@@ -1207,6 +1211,57 @@ export default function SoilPHScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* Location Error Modal */}
+      <Modal
+        visible={showLocationModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <View style={styles.locationModalOverlay}>
+          <View style={styles.locationModalContent}>
+            <View style={styles.locationModalIconCircle}>
+              <Icon name="map-marker-off" size={36} color="#F44336" />
+            </View>
+            <Text style={styles.locationModalTitle}>Location Unavailable</Text>
+            <Text style={styles.locationModalMessage}>
+              Your GPS or location service is turned off. For accurate soil analysis, please enable location services in your device settings.
+            </Text>
+            <Text style={styles.locationModalHint}>
+              Default coordinates (Sri Lanka) are being used in the meantime.
+            </Text>
+            <View style={styles.locationModalButtons}>
+              <TouchableOpacity
+                style={styles.locationModalRetryBtn}
+                onPress={() => {
+                  setShowLocationModal(false);
+                  loadLocation();
+                }}
+              >
+                <Icon name="refresh" size={18} color="#fff" />
+                <Text style={styles.locationModalRetryText}>Retry</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.locationModalPickBtn}
+                onPress={() => {
+                  setShowLocationModal(false);
+                  handleOpenMapPicker();
+                }}
+              >
+                <Icon name="map" size={18} color="#0F5132" />
+                <Text style={styles.locationModalPickText}>Pick on Map</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={styles.locationModalDismiss}
+              onPress={() => setShowLocationModal(false)}
+            >
+              <Text style={styles.locationModalDismissText}>Continue with Default</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -2102,6 +2157,98 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '700',
+  },
+  locationModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  locationModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    padding: 28,
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: 360,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+  },
+  locationModalIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  locationModalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 10,
+  },
+  locationModalMessage: {
+    fontSize: 14,
+    color: '#555',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 8,
+  },
+  locationModalHint: {
+    fontSize: 12,
+    color: '#8BA89A',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginBottom: 20,
+  },
+  locationModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 14,
+  },
+  locationModalRetryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0F5132',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+  },
+  locationModalRetryText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  locationModalPickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#0F5132',
+  },
+  locationModalPickText: {
+    color: '#0F5132',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  locationModalDismiss: {
+    paddingVertical: 8,
+  },
+  locationModalDismissText: {
+    color: '#8BA89A',
+    fontSize: 13,
+    fontWeight: '600',
   },
 });
 

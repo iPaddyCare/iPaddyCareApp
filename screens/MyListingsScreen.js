@@ -15,6 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -228,16 +229,19 @@ export default function MyListingsScreen({ navigation }) {
     }
   };
 
-  React.useEffect(() => {
-    if (isAuthenticated && user?.uid) {
-      fetchListings();
-    }
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, [isAuthenticated, user?.uid]);
+  // Refetch listings every time the screen comes into focus
+  useFocusEffect(
+    React.useCallback(() => {
+      if (isAuthenticated && user?.uid) {
+        fetchListings();
+      }
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    }, [isAuthenticated, user?.uid])
+  );
 
   const activeListingsCount = listings.filter(l => l.status === 'approved').length;
   const soldListingsCount = listings.filter(l => l.status === 'sold').length;
@@ -489,76 +493,90 @@ export default function MyListingsScreen({ navigation }) {
 
         {/* Edit Modal */}
         <Modal visible={editModalVisible} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={styles.modalKeyboard}
-            >
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{t.edit}</Text>
-                  <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                    <Icon name="close" size={24} color="#666" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.modalBody} keyboardShouldPersistTaps="handled">
-                  {editData && (
-                    <>
-                      <Text style={styles.modalLabel}>Product Name</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.productName}
-                        onChangeText={(text) => setEditData({ ...editData, productName: text })}
-                      />
-                      <Text style={styles.modalLabel}>Price (Rs.)</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.price}
-                        onChangeText={(text) => setEditData({ ...editData, price: text.replace(/[^0-9.]/g, '') })}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.modalLabel}>Description</Text>
-                      <TextInput
-                        style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
-                        value={editData.description}
-                        onChangeText={(text) => setEditData({ ...editData, description: text })}
-                        multiline
-                      />
-                      <Text style={styles.modalLabel}>Location</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.location}
-                        onChangeText={(text) => setEditData({ ...editData, location: text })}
-                      />
-                      <Text style={styles.modalLabel}>Phone</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.phone}
-                        onChangeText={(text) => setEditData({ ...editData, phone: text.replace(/[^0-9]/g, '') })}
-                        keyboardType="phone-pad"
-                        maxLength={10}
-                      />
-                    </>
-                  )}
-                </ScrollView>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={styles.modalCancelBtn}
-                    onPress={() => setEditModalVisible(false)}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalSaveBtn, editSaving && { opacity: 0.6 }]}
-                    onPress={handleSaveEdit}
-                    disabled={editSaving}
-                  >
-                    <Text style={styles.modalSaveText}>{editSaving ? 'Saving...' : 'Save'}</Text>
-                  </TouchableOpacity>
-                </View>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          >
+            <TouchableOpacity
+              style={styles.modalDismissArea}
+              activeOpacity={1}
+              onPress={() => setEditModalVisible(false)}
+            />
+            <View style={styles.modalContent}>
+              <View style={styles.modalDragHandle} />
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>{t.edit}</Text>
+                <TouchableOpacity
+                  style={styles.modalCloseBtn}
+                  onPress={() => setEditModalVisible(false)}
+                >
+                  <Icon name="close" size={20} color="#666" />
+                </TouchableOpacity>
               </View>
-            </KeyboardAvoidingView>
-          </View>
+              <ScrollView
+                style={styles.modalBody}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {editData && (
+                  <>
+                    <Text style={styles.modalLabel}>Product Name</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editData.productName}
+                      onChangeText={(text) => setEditData({ ...editData, productName: text })}
+                    />
+                    <Text style={styles.modalLabel}>Price (Rs.)</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editData.price}
+                      onChangeText={(text) => setEditData({ ...editData, price: text.replace(/[^0-9.]/g, '') })}
+                      keyboardType="numeric"
+                    />
+                    <Text style={styles.modalLabel}>Description</Text>
+                    <TextInput
+                      style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
+                      value={editData.description}
+                      onChangeText={(text) => setEditData({ ...editData, description: text })}
+                      multiline
+                    />
+                    <Text style={styles.modalLabel}>Location</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editData.location}
+                      onChangeText={(text) => setEditData({ ...editData, location: text })}
+                    />
+                    <Text style={styles.modalLabel}>Phone</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={editData.phone}
+                      onChangeText={(text) => setEditData({ ...editData, phone: text.replace(/[^0-9]/g, '') })}
+                      keyboardType="phone-pad"
+                      maxLength={10}
+                    />
+                  </>
+                )}
+              </ScrollView>
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.modalCancelActionBtn}
+                  onPress={() => setEditModalVisible(false)}
+                >
+                  <Text style={styles.modalCancelText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalSaveBtn, editSaving && { opacity: 0.6 }]}
+                  onPress={handleSaveEdit}
+                  disabled={editSaving}
+                >
+                  <Icon name={editSaving ? 'loading' : 'check'} size={18} color="#FFFFFF" />
+                  <Text style={styles.modalSaveText}>{editSaving ? 'Saving...' : 'Save Changes'}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
     </View>
@@ -905,68 +923,88 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.55)',
     justifyContent: 'flex-end',
   },
-  modalKeyboard: {
+  modalDismissArea: {
     flex: 1,
-    justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     maxHeight: '85%',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#DDD',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 4,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: 'rgba(0,0,0,0.06)',
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     color: '#1A1A1A',
+    letterSpacing: -0.3,
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalBody: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 24,
+    paddingTop: 8,
   },
   modalLabel: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: '700',
+    color: '#0F5132',
     marginBottom: 6,
-    marginTop: 12,
+    marginTop: 14,
+    marginLeft: 2,
   },
   modalInput: {
-    backgroundColor: '#F5F7F5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 13,
     fontSize: 15,
     color: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderWidth: 1.5,
+    borderColor: 'rgba(15,81,50,0.12)',
   },
   modalActions: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
     paddingVertical: 16,
     gap: 12,
     borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    borderTopColor: 'rgba(0,0,0,0.06)',
   },
-  modalCancelBtn: {
+  modalCancelActionBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     backgroundColor: '#F5F5F5',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   modalCancelText: {
     fontSize: 15,
@@ -974,11 +1012,19 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   modalSaveBtn: {
-    flex: 1,
+    flex: 2,
+    flexDirection: 'row',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 14,
     backgroundColor: '#0F5132',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    elevation: 3,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
   },
   modalSaveText: {
     fontSize: 15,

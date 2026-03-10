@@ -15,7 +15,7 @@ import Animated, {
   withSpring,
 } from 'react-native-reanimated';
 import { AlertCircle, ShoppingCart, Phone, ChevronRight } from 'lucide-react-native';
-import { getApprovedProducts } from '../services/marketplaceService';
+import { getApprovedProducts, getProductsByDisease } from '../services/marketplaceService';
 
 const SEVERITY_COLORS = {
   high: { bg: '#C62828', text: '#fff' },
@@ -54,33 +54,38 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
     cardOpacity.value = withSpring(1, { damping: 15, stiffness: 100 });
   }, []);
 
-  // Fetch related marketplace products
+  // Fetch marketplace products that target the detected disease/pest
   useEffect(() => {
     if (!showDetails || isHealthy) return;
 
     const fetchProducts = async () => {
       setProductsLoading(true);
       try {
-        // Fetch pesticides and herbicides — most relevant for treatments
-        const [pesticides, herbicides] = await Promise.all([
-          getApprovedProducts('pesticides'),
-          getApprovedProducts('herbicides'),
-        ]);
-        const all = [...pesticides, ...herbicides];
+        const diseaseName = solution.diseaseName || prediction.disease || '';
+        const modelVar = prediction.disease || '';
 
-        // Try to match by disease/pest name in product name or description
-        const diseaseName = (solution.diseaseName || prediction.disease || '').toLowerCase();
-        const matched = all.filter(p => {
-          const name = (p.productName || '').toLowerCase();
-          const desc = (p.description || '').toLowerCase();
-          return name.includes(diseaseName) || desc.includes(diseaseName);
-        });
+        // Try to find products tagged for this disease using multiple name variants
+        let products = [];
+        if (diseaseName) {
+          products = await getProductsByDisease(diseaseName);
+        }
+        // Also try the raw model variable name (e.g. "downy_mildew") if different
+        if (products.length === 0 && modelVar && modelVar !== diseaseName) {
+          products = await getProductsByDisease(modelVar);
+        }
 
-        // Show matched products first, then fill with general products (max 3)
-        const result = matched.length > 0
-          ? matched.slice(0, 3)
-          : all.slice(0, 3);
-        setRelatedProducts(result);
+        // If no tagged products found, fall back to category-based listing
+        if (products.length === 0) {
+          const categories = isPest
+            ? ['pesticides']
+            : ['pesticides', 'herbicides'];
+          const results = await Promise.all(
+            categories.map(cat => getApprovedProducts(cat)),
+          );
+          products = results.flat();
+        }
+
+        setRelatedProducts(products.slice(0, 3));
       } catch (err) {
         console.log('Failed to fetch related products:', err);
       } finally {
@@ -89,10 +94,11 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
     };
 
     fetchProducts();
-  }, [showDetails, isHealthy]);
+  }, [showDetails, isHealthy, isPest, solution, prediction]);
 
-  // Type color theming (like Pokémon type colors)
-  const typeColor = isHealthy ? '#2E7D32' : isPest ? '#E65100' : '#C62828';
+  // Type color theming — app brand palette
+  const typeColor = isHealthy ? '#0F5132' : isPest ? '#0F5132' : '#0F5132';
+  const typeAccent = isHealthy ? '#2E7D32' : isPest ? '#E65100' : '#C62828';
 
   // Not found case
   if (!solution.found) {
@@ -120,7 +126,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
       <View style={styles.cardInner}>
 
         {/* Top section — ID + Type */}
-        <View style={[styles.topStrip, { backgroundColor: typeColor }]}>
+        <View style={[styles.topStrip, { backgroundColor: '#0F5132' }]}>
           <Text style={styles.dexId}>
             #{String(prediction.classIndex ?? 0).padStart(3, '0')}
           </Text>
@@ -170,7 +176,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
                 styles.statBarFill,
                 {
                   width: `${Math.min(prediction.confidence * 100, 100)}%`,
-                  backgroundColor: prediction.confidence >= 0.6 ? '#4CAF50' : '#FF9800',
+                  backgroundColor: prediction.confidence >= 0.6 ? '#0F5132' : '#FF9800',
                 },
               ]} />
             </View>
@@ -208,7 +214,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
                 <View style={styles.divider} />
                 {solution.solutions.map((sol, i) => (
                   <View key={i} style={styles.solutionRow}>
-                    <View style={[styles.stepBadge, { backgroundColor: typeColor }]}>
+                    <View style={[styles.stepBadge, { backgroundColor: '#0F5132' }]}>
                       <Text style={styles.stepText}>{sol.step}</Text>
                     </View>
                     <View style={styles.solutionContent}>
@@ -238,13 +244,13 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
         {/* Marketplace Products */}
         {showDetails && !isHealthy && (
           <View style={styles.productsSection}>
-            <Text style={styles.sectionTitle}>MARKETPLACE</Text>
+            <Text style={styles.sectionTitle}>AVAILABLE TREATMENTS</Text>
             <View style={styles.divider} />
 
             {productsLoading && (
               <View style={styles.productsLoading}>
-                <ActivityIndicator size="small" color={typeColor} />
-                <Text style={styles.productsLoadingText}>Finding treatments...</Text>
+                <ActivityIndicator size="small" color="#0F5132" />
+                <Text style={styles.productsLoadingText}>Loading marketplace...</Text>
               </View>
             )}
 
@@ -268,9 +274,15 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
                       <Text style={styles.productName} numberOfLines={1}>
                         {product.productName}
                       </Text>
-                      <Text style={styles.productDesc} numberOfLines={1}>
-                        {product.description}
-                      </Text>
+                      {product.activeIngredient ? (
+                        <Text style={styles.productIngredient} numberOfLines={1}>
+                          {product.activeIngredient}
+                        </Text>
+                      ) : (
+                        <Text style={styles.productDesc} numberOfLines={1}>
+                          {product.description}
+                        </Text>
+                      )}
                       <View style={styles.productMeta}>
                         <Text style={styles.productPrice}>
                           Rs. {product.price?.toLocaleString()}
@@ -281,7 +293,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
                       </View>
                     </View>
                     {product.phone && (
-                      <View style={[styles.phoneBtn, { backgroundColor: typeColor }]}>
+                      <View style={[styles.phoneBtn, { backgroundColor: '#0F5132' }]}>
                         <Phone size={12} color="#fff" />
                       </View>
                     )}
@@ -298,26 +310,26 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
 
             {navigation && (
               <TouchableOpacity
-                style={[styles.browseAllBtn, { borderColor: typeColor }]}
+                style={[styles.browseAllBtn, { borderColor: '#0F5132' }]}
                 onPress={() => navigation.navigate('Marketplace', { searchQuery: solution.diseaseName })}
                 activeOpacity={0.7}
               >
-                <ShoppingCart size={14} color={typeColor} />
-                <Text style={[styles.browseAllText, { color: typeColor }]}>
+                <ShoppingCart size={14} color="#0F5132" />
+                <Text style={[styles.browseAllText, { color: '#0F5132' }]}>
                   Browse All Treatments
                 </Text>
-                <ChevronRight size={14} color={typeColor} />
+                <ChevronRight size={14} color="#0F5132" />
               </TouchableOpacity>
             )}
           </View>
         )}
 
-        {/* Bottom strip — Pokédex footer */}
+        {/* Bottom strip */}
         <View style={styles.bottomStrip}>
           <View style={styles.indicatorRow}>
-            <View style={[styles.indicator, { backgroundColor: '#4CAF50' }]} />
-            <View style={[styles.indicator, { backgroundColor: '#FF9800' }]} />
-            <View style={[styles.indicator, { backgroundColor: '#C62828' }]} />
+            <View style={[styles.indicator, { backgroundColor: '#0F5132' }]} />
+            <View style={[styles.indicator, { backgroundColor: '#2E7D32' }]} />
+            <View style={[styles.indicator, { backgroundColor: '#81C784' }]} />
           </View>
           <Text style={styles.footerText}>iPaddyCare</Text>
         </View>
@@ -332,24 +344,24 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   cardInner: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 16,
-    borderWidth: 3,
-    borderColor: '#333',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.1)',
     overflow: 'hidden',
     elevation: 6,
-    shadowColor: '#000',
+    shadowColor: '#0F5132',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
   },
   // Top strip
   topStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   dexId: {
     color: '#fff',
@@ -381,12 +393,12 @@ const styles = StyleSheet.create({
   },
   // Image frame
   imageFrame: {
-    margin: 12,
+    margin: 14,
     marginBottom: 8,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#bbb',
-    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.12)',
+    backgroundColor: '#F0F7F3',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -400,9 +412,9 @@ const styles = StyleSheet.create({
   },
   imageInnerShadow: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: 10,
+    borderRadius: 15,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.15)',
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   // Name plate
   namePlate: {
@@ -412,21 +424,23 @@ const styles = StyleSheet.create({
   diseaseName: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#222',
+    color: '#0F5132',
   },
   aliases: {
     fontSize: 12,
-    color: '#888',
+    color: '#6B8F7B',
     fontStyle: 'italic',
     marginTop: 2,
   },
   // Stats
   statsBox: {
     marginHorizontal: 16,
-    backgroundColor: '#e8e8e8',
-    borderRadius: 8,
-    padding: 10,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   statRow: {
     flexDirection: 'row',
@@ -435,7 +449,7 @@ const styles = StyleSheet.create({
   statLabel: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#666',
+    color: '#0F5132',
     width: 45,
     letterSpacing: 1,
   },
@@ -443,7 +457,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#ccc',
+    backgroundColor: 'rgba(15,81,50,0.12)',
     overflow: 'hidden',
   },
   statBarFill: {
@@ -453,7 +467,7 @@ const styles = StyleSheet.create({
   statValue: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#333',
+    color: '#0F5132',
     width: 50,
     textAlign: 'right',
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -481,14 +495,16 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   descBox: {
-    backgroundColor: '#e8e8e8',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 12,
+    padding: 14,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   description: {
     fontSize: 13,
-    color: '#444',
+    color: '#3D6B52',
     lineHeight: 20,
   },
   section: {
@@ -497,24 +513,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#666',
+    color: '#0F5132',
     letterSpacing: 1.5,
     marginBottom: 4,
   },
   divider: {
     height: 2,
-    backgroundColor: '#ddd',
+    backgroundColor: 'rgba(15,81,50,0.1)',
     borderRadius: 1,
     marginBottom: 10,
   },
   solutionRow: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 10,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 12,
     padding: 12,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   stepBadge: {
     width: 24,
@@ -536,12 +552,12 @@ const styles = StyleSheet.create({
   solutionTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#222',
+    color: '#0F5132',
     marginBottom: 3,
   },
   solutionDesc: {
     fontSize: 12,
-    color: '#666',
+    color: '#5A7D6A',
     lineHeight: 18,
   },
   preventionItem: {
@@ -554,14 +570,14 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#0F5132',
     marginRight: 10,
     marginTop: 6,
   },
   preventionText: {
     flex: 1,
     fontSize: 12,
-    color: '#555',
+    color: '#5A7D6A',
     lineHeight: 18,
   },
   // Products section
@@ -578,17 +594,17 @@ const styles = StyleSheet.create({
   },
   productsLoadingText: {
     fontSize: 12,
-    color: '#888',
+    color: '#6B8F7B',
   },
   productCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    padding: 10,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 6,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: 'rgba(15,81,50,0.08)',
   },
   productEmoji: {
     fontSize: 28,
@@ -600,12 +616,19 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#222',
+    color: '#0F5132',
   },
   productDesc: {
     fontSize: 11,
-    color: '#888',
+    color: '#6B8F7B',
     marginTop: 1,
+  },
+  productIngredient: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#3D6B52',
+    marginTop: 1,
+    fontStyle: 'italic',
   },
   productMeta: {
     flexDirection: 'row',
@@ -616,11 +639,11 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#2E7D32',
+    color: '#0F5132',
   },
   productSeller: {
     fontSize: 10,
-    color: '#aaa',
+    color: '#8BA89A',
   },
   phoneBtn: {
     width: 28,
@@ -632,7 +655,7 @@ const styles = StyleSheet.create({
   },
   noProductsText: {
     fontSize: 12,
-    color: '#999',
+    color: '#8BA89A',
     textAlign: 'center',
     paddingVertical: 12,
   },
@@ -641,10 +664,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 12,
     borderWidth: 1.5,
     marginTop: 4,
+    backgroundColor: 'rgba(15,81,50,0.04)',
   },
   browseAllText: {
     fontWeight: '700',
@@ -655,9 +679,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#F0F7F3',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(15,81,50,0.08)',
   },
   indicatorRow: {
     flexDirection: 'row',
@@ -670,7 +696,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 10,
-    color: '#999',
+    color: '#0F5132',
     fontWeight: '700',
     letterSpacing: 1.5,
   },
@@ -688,13 +714,13 @@ const styles = StyleSheet.create({
   },
   notFoundText: {
     fontSize: 14,
-    color: '#666',
+    color: '#3D6B52',
     textAlign: 'center',
     lineHeight: 20,
   },
   notFoundSubtext: {
     fontSize: 13,
-    color: '#999',
+    color: '#6B8F7B',
     textAlign: 'center',
     marginTop: 8,
     lineHeight: 19,
