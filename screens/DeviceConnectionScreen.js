@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   TextInput,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
@@ -674,19 +675,19 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         }
       }
     } catch (error) {
-      Alert.alert('Connection Error', error.message || 'Failed to connect');
+      Alert.alert(t.connectionError, error.message || t.failedToConnect);
     }
   };
   
 
   const handleDisconnect = () => {
     Alert.alert(
-      'Disconnect Device',
-      'Are you sure you want to disconnect?',
+      t.disconnectDevice,
+      t.disconnectConfirm,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Disconnect',
+          text: t.disconnect,
           style: 'destructive',
           onPress: async () => {
             if (connectionMode === 'bluetooth' || isBLESensor) {
@@ -702,7 +703,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
               ESP32Service.disconnect();
             }
             setFoundDevices([]);
-            Alert.alert('Disconnected', 'Device has been disconnected');
+            Alert.alert(t.disconnected, t.disconnectedMessage);
           },
         },
       ]
@@ -711,14 +712,14 @@ export default function DeviceConnectionScreen({ navigation, route }) {
 
   const handleManualTest = async () => {
     if (!manualIp.trim()) {
-      Alert.alert('Error', 'Please enter an IP address');
+      Alert.alert(t.error, t.enterIp);
       return;
     }
 
     // Validate IP format (basic)
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(manualIp.trim())) {
-      Alert.alert('Invalid IP', 'Please enter a valid IP address (e.g., 192.168.1.100)');
+      Alert.alert(t.invalidIp, t.validIpHint);
       return;
     }
 
@@ -732,15 +733,15 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           }
           return [...prev, device];
         });
-        Alert.alert('Device Found!', `Found ESP32 device at ${device.ip}`);
+        Alert.alert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
       } else {
         Alert.alert(
-          'Device Not Found',
-          `No ESP32 device found at ${manualIp.trim()}. Make sure the device is online and the endpoint is correct.`
+          t.deviceNotFound,
+          `${t.deviceNotAtIp} ${manualIp.trim()}. ${t.deviceNotAtIpHint}`
         );
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to test device');
+      Alert.alert(t.error, error.message || t.failedToTest);
     } finally {
       setTestingManual(false);
     }
@@ -781,59 +782,53 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           <Text style={styles.modeToggleLabel}>{t.connectionMethod}</Text>
           <View style={styles.modeToggle}>
             <TouchableOpacity
-              style={styles.quickConnectButton}
-              onPress={async () => {
-                const apIp = '192.168.4.1';
-                setManualIp(apIp);
-                setTestingManual(true);
-                try {
-                  const device = await ESP32Service.testDevice(apIp);
-                  if (device) {
-                    setFoundDevices(prev => {
-                      if (prev.find(d => d.ip === device.ip)) {
-                        return prev;
-                      }
-                      return [...prev, device];
-                    });
-                    Alert.alert('Device Found!', `Found ESP32 device at ${device.ip}`);
-                  } else {
-                    Alert.alert(
-                      'Device Not Found',
-                      `No ESP32 device found at ${apIp}. Make sure:\n\n• ESP32 is powered on\n• You're connected to ESP32 WiFi network\n• ESP32 is in AP mode`
-                    );
-                  }
-                } catch (error) {
-                  Alert.alert('Error', error.message || 'Failed to test device');
-                } finally {
-                  setTestingManual(false);
-                }
+              style={[
+                styles.modeButton,
+                connectionMode === 'wifi' && styles.modeButtonActive,
+              ]}
+              onPress={() => {
+                setConnectionMode('wifi');
+                setFoundDevices([]);
+                BLEService.stopScan().catch(err => console.error('Error stopping scan:', err));
               }}
             >
-              <Icon name="wifi" size={20} color="white" />
-              <Text style={styles.quickConnectButtonText}>Try 192.168.4.1</Text>
+              <Icon 
+                name="wifi" 
+                size={20} 
+                color={connectionMode === 'wifi' ? 'white' : '#666'} 
+              />
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  connectionMode === 'wifi' && styles.modeButtonTextActive,
+                ]}
+              >
+                {t.wifi}
+              </Text>
             </TouchableOpacity>
-          </View>
-          
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.ipInput}
-              placeholder="192.168.4.1 or 192.168.1.100"
-              value={manualIp}
-              onChangeText={setManualIp}
-              keyboardType="numeric"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
             <TouchableOpacity
-              style={[styles.testButton, testingManual && styles.testButtonDisabled]}
-              onPress={handleManualTest}
-              disabled={testingManual}
+              style={[
+                styles.modeButton,
+                connectionMode === 'bluetooth' && styles.modeButtonActive,
+              ]}
+              onPress={() => {
+                setConnectionMode('bluetooth');
+                setFoundDevices([]);
+              }}
             >
-              {testingManual ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Text style={styles.testButtonText}>Test</Text>
-              )}
+              <Icon 
+                name="bluetooth" 
+                size={20} 
+                color={connectionMode === 'bluetooth' ? 'white' : '#666'} 
+              />
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  connectionMode === 'bluetooth' && styles.modeButtonTextActive,
+                ]}
+              >
+                {t.bluetooth}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -847,12 +842,16 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           {isScanning ? (
             <View style={styles.scanButtonContent}>
               <ActivityIndicator size="small" color="white" style={styles.scanButtonIcon} />
-              <Text style={styles.scanButtonText}>Scanning Network...</Text>
+              <Text style={styles.scanButtonText}>
+                {connectionMode === 'bluetooth' ? t.scanningBluetooth : t.scanningNetwork}
+              </Text>
             </View>
           ) : (
             <View style={styles.scanButtonContent}>
               <Icon name="magnify" size={24} color="white" style={styles.scanButtonIcon} />
-              <Text style={styles.scanButtonText}>Scan for Devices</Text>
+              <Text style={styles.scanButtonText}>
+                {connectionMode === 'bluetooth' ? t.scanForBluetooth : t.scanForDevices}
+              </Text>
             </View>
           )}
         </TouchableOpacity>
@@ -861,7 +860,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         {isScanning && scanProgress.total > 0 && (
           <View style={styles.progressCard}>
             <Text style={styles.progressText}>
-              Scanning... {scanProgress.current} / {scanProgress.total}
+              {t.scanning} {scanProgress.current} / {scanProgress.total}
             </Text>
             <View style={styles.progressBar}>
               <View
@@ -878,7 +877,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         {foundDevices.length > 0 && (
           <View style={styles.devicesSection}>
             <Text style={styles.sectionTitle}>
-              Found Devices ({foundDevices.length})
+              {t.foundDevices} ({foundDevices.length})
             </Text>
             {foundDevices.map((device, index) => {
               // Check connection status - support both isBLESensor (pH) and device.type approaches
@@ -928,7 +927,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                     </View>
                     {isConnected && (
                       <View style={styles.connectedBadge}>
-                        <Text style={styles.connectedBadgeText}>Connected</Text>
+                        <Text style={styles.connectedBadgeText}>{t.connected}</Text>
                       </View>
                     )}
                   </View>
@@ -939,7 +938,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                         onPress={handleDisconnect}
                       >
                         <Icon name="close-circle-outline" size={20} color="#F44336" />
-                        <Text style={styles.disconnectButtonText}>Disconnect</Text>
+                        <Text style={styles.disconnectButtonText}>{t.disconnect}</Text>
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity
@@ -947,7 +946,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                         onPress={() => handleConnect(device)}
                       >
                         <Icon name="check-circle" size={20} color="white" />
-                        <Text style={styles.connectButtonText}>Connect</Text>
+                        <Text style={styles.connectButtonText}>{t.connect}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -955,6 +954,106 @@ export default function DeviceConnectionScreen({ navigation, route }) {
               );
             })}
           </View>
+        )}
+
+        {/* Instructions */}
+        <View style={styles.instructionsCard}>
+          <View style={styles.instructionsHeader}>
+            <Icon 
+              name={connectionMode === 'bluetooth' ? 'bluetooth' : 'wifi'} 
+              size={24} 
+              color="#0F5132" 
+            />
+            <Text style={styles.instructionsTitle}>{t.findDevice}</Text>
+          </View>
+          <Text style={styles.instructionsText}>
+            {connectionMode === 'bluetooth' ? (
+              <>
+                <Text style={styles.instructionsBold}>{t.bluetoothMode}</Text> {t.bluetoothInstructions}{'\n\n'}
+                • {t.bluetoothPoint1}{'\n'}
+                • {t.bluetoothPoint2}{'\n'}
+                • {t.bluetoothPoint3}
+              </>
+            ) : (
+              <>
+                <Text style={styles.instructionsBold}>{t.apMode}</Text> {t.apModeInstructions}{'\n\n'}
+                <Text style={styles.instructionsBold}>{t.wifiMode}</Text> {t.wifiModeInstructions}
+              </>
+            )}
+          </Text>
+        </View>
+
+        {/* Manual IP Entry - Only show for WiFi mode */}
+        {connectionMode === 'wifi' && (
+          <View style={styles.manualCard}>
+            <Text style={styles.sectionTitle}>{t.manualIpEntry}</Text>
+            <Text style={styles.sectionSubtitle}>
+              {t.manualIpHint}
+            </Text>
+          
+          {/* Quick Connect for AP Mode */}
+          <View style={styles.quickConnectCard}>
+            <Text style={styles.quickConnectLabel}>{t.quickConnect}</Text>
+            <Text style={styles.quickConnectHint}>
+              {t.quickConnectHint}
+            </Text>
+            <TouchableOpacity
+              style={styles.quickConnectButton}
+              onPress={async () => {
+                const apIp = '192.168.4.1';
+                setManualIp(apIp);
+                setTestingManual(true);
+                try {
+                  const device = await ESP32Service.testDevice(apIp);
+                  if (device) {
+                    setFoundDevices(prev => {
+                      if (prev.find(d => d.ip === device.ip)) {
+                        return prev;
+                      }
+                      return [...prev, device];
+                    });
+                    Alert.alert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
+                  } else {
+                    Alert.alert(
+                      t.deviceNotFound,
+                      `${t.apModeDeviceNotFound} ${apIp}. ${t.apModeDeviceNotFoundHint}`
+                    );
+                  }
+                } catch (error) {
+                  Alert.alert(t.error, error.message || t.failedToTest);
+                } finally {
+                  setTestingManual(false);
+                }
+              }}
+            >
+              <Icon name="wifi" size={20} color="white" />
+              <Text style={styles.quickConnectButtonText}>{t.tryApIp}</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.ipInput}
+              placeholder="192.168.4.1"
+              value={manualIp}
+              onChangeText={setManualIp}
+              keyboardType="numeric"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <TouchableOpacity
+              style={[styles.testButton, testingManual && styles.testButtonDisabled]}
+              onPress={handleManualTest}
+              disabled={testingManual}
+            >
+              {testingManual ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Text style={styles.testButtonText}>{t.test}</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
         )}
 
         {/* No Devices State */}
@@ -969,7 +1068,9 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         )}
 
         <View style={styles.bottomSpacing} />
-      </ScrollView>
+          </View>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -977,110 +1078,221 @@ export default function DeviceConnectionScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAFBFC',
+    backgroundColor: '#0F5132',
   },
-  header: {
+  safeAreaTop: {
+    backgroundColor: '#0F5132',
+  },
+  safeAreaContent: {
+    flex: 1,
+    backgroundColor: '#F0F7F3',
+  },
+  heroHeader: {
+    backgroundColor: '#0F5132',
+    height: 160,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 24,
+  },
+  headerPattern: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    transform: [{ rotate: '45deg' }],
+  },
+  headerPattern2: {
+    position: 'absolute',
+    bottom: -30,
+    left: -30,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  headerContent: {
+    flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    zIndex: 1,
   },
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#0F5132',
+  headerText: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  welcomeText: {
+    color: '#FFFFFF',
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.5,
   },
   scrollView: {
     flex: 1,
   },
-  instructionsCard: {
-    margin: 16,
-    padding: 20,
-    backgroundColor: '#E3F2FD',
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  innerContent: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+  },
+  modeToggleContainer: {
+    marginHorizontal: 4,
+    marginBottom: 20,
+  },
+  modeToggleLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    marginBottom: 12,
+  },
+  modeToggle: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 4,
+    gap: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+  },
+  modeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  modeButtonActive: {
+    backgroundColor: '#0F5132',
+  },
+  modeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+  },
+  modeButtonTextActive: {
+    color: 'white',
+  },
+  instructionsCard: {
+    marginHorizontal: 4,
+    marginBottom: 20,
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    borderLeftWidth: 5,
+    borderLeftColor: '#0F5132',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+  },
+  instructionsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   instructionsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1976D2',
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
     marginLeft: 12,
-    marginBottom: 4,
     flex: 1,
   },
   instructionsText: {
     fontSize: 14,
-    color: '#424242',
-    marginLeft: 12,
-    flex: 1,
-    lineHeight: 20,
+    color: '#555',
+    lineHeight: 22,
   },
   instructionsBold: {
-    fontWeight: '600',
-    color: '#1976D2',
+    fontWeight: '700',
+    color: '#0F5132',
   },
   manualCard: {
-    margin: 16,
-    marginTop: 0,
-    padding: 20,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    elevation: 2,
+    marginHorizontal: 4,
+    marginBottom: 20,
+    padding: 24,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 12,
   },
   sectionSubtitle: {
     fontSize: 14,
     color: '#666',
     marginBottom: 16,
+    fontWeight: '500',
   },
   quickConnectCard: {
-    backgroundColor: '#E3F2FD',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#F8FBF9',
+    padding: 20,
+    borderRadius: 16,
     marginBottom: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: '#2196F3',
+    borderLeftWidth: 4,
+    borderLeftColor: '#0F5132',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
   },
   quickConnectLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1976D2',
-    marginBottom: 4,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F5132',
+    marginBottom: 6,
   },
   quickConnectHint: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
-    marginBottom: 12,
+    marginBottom: 14,
+    fontWeight: '500',
   },
   quickConnectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2196F3',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#0F5132',
+    padding: 14,
+    borderRadius: 12,
     gap: 8,
+    elevation: 3,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   quickConnectButtonText: {
     color: 'white',
@@ -1094,40 +1306,48 @@ const styles = StyleSheet.create({
   ipInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: '#F9F9F9',
+    borderColor: '#E0E0E0',
+    borderRadius: 16,
+    padding: 14,
+    fontSize: 15,
+    backgroundColor: '#FFFFFF',
+    fontWeight: '500',
   },
   testButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#0F5132',
+    paddingHorizontal: 28,
+    paddingVertical: 14,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    minWidth: 80,
+    minWidth: 90,
+    elevation: 3,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   testButtonDisabled: {
     opacity: 0.6,
   },
   testButtonText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   scanButton: {
-    margin: 16,
-    marginTop: 0,
+    marginHorizontal: 4,
+    marginBottom: 20,
     backgroundColor: '#0F5132',
     padding: 18,
-    borderRadius: 12,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    borderRadius: 24,
+    elevation: 8,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
   scanButtonDisabled: {
     opacity: 0.7,
@@ -1143,14 +1363,21 @@ const styles = StyleSheet.create({
   scanButtonText: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
   },
   progressCard: {
-    margin: 16,
-    marginTop: 0,
-    padding: 16,
-    backgroundColor: 'white',
-    borderRadius: 12,
+    marginHorizontal: 4,
+    marginBottom: 20,
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
   },
   progressText: {
     fontSize: 14,
@@ -1170,19 +1397,23 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   devicesSection: {
-    margin: 16,
-    marginTop: 0,
+    marginHorizontal: 4,
+    marginBottom: 20,
   },
   deviceCard: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 16,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.8)',
+    borderLeftWidth: 5,
+    borderLeftColor: '#4CAF50',
   },
   deviceHeader: {
     flexDirection: 'row',
@@ -1201,80 +1432,89 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deviceName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 6,
   },
   deviceIp: {
     fontSize: 14,
     color: '#666',
-    marginBottom: 4,
+    marginBottom: 6,
+    fontWeight: '500',
   },
   deviceMoisture: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#4CAF50',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   connectedBadge: {
     backgroundColor: '#4CAF50',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   connectedBadgeText: {
     color: 'white',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   deviceActions: {
-    marginTop: 8,
+    marginTop: 12,
   },
   connectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#4CAF50',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#0F5132',
+    padding: 14,
+    borderRadius: 16,
     gap: 8,
+    elevation: 3,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   connectButtonText: {
     color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   disconnectButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFEBEE',
-    padding: 12,
-    borderRadius: 8,
+    padding: 14,
+    borderRadius: 16,
     gap: 8,
+    borderWidth: 1,
+    borderColor: '#F44336' + '30',
   },
   disconnectButtonText: {
     color: '#F44336',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 40,
-    marginTop: 20,
+    padding: 60,
+    marginTop: 40,
   },
   emptyStateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#666',
+    marginTop: 20,
   },
   emptyStateSubtext: {
-    fontSize: 14,
-    color: '#CCC',
-    marginTop: 8,
+    fontSize: 15,
+    color: '#999',
+    marginTop: 12,
     textAlign: 'center',
+    fontWeight: '500',
   },
   bottomSpacing: {
     height: 30,
