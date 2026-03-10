@@ -274,24 +274,21 @@ class BleScanService {
     
                 // Append to buffer
                 this.dataBuffer += chunk;
-
+    
                 // 4. Process buffer using Newline (\n) as the delimiter
                 if (this.dataBuffer.includes('\n')) {
                     let lines = this.dataBuffer.split('\n');
                     
                     // The last element is either empty or an incomplete JSON, keep it in buffer
                     this.dataBuffer = lines.pop();
-
+    
                     for (let line of lines) {
                         let trimmedLine = line.trim();
                         if (!trimmedLine) continue;
-
+    
                         try {
                             const data = JSON.parse(trimmedLine);
                             console.log('Valid JSON Received:', data);
-
-                            // Store latest parsed JSON so UI can read it
-                            this.latestData = data;
                             
                             if (onData) onData(data);
                             if (firstDataResolver) {

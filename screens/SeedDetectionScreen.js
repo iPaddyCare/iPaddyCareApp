@@ -17,8 +17,6 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import BottomNavigation from '../src/components/BottomNavigation';
-import SeedDetectionService from '../src/utils/seedDetectionService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,7 +31,7 @@ const translations = {
     liveDetection: 'Live Detection',
     liveDetectionDesc: 'Open camera for real-time detection',
     selectImage: 'Selected Image',
-    processing: 'Click to Analyze',
+    processing: 'Analyzing...',
     detectionResult: 'Detection Result',
     detectedVariety: 'Detected Variety',
     wildSeedsDetected: 'Wild Seeds Detected',
@@ -134,7 +132,7 @@ export default function SeedDetectionScreen({ navigation }) {
     const options = {
       mediaType: 'photo',
       quality: 0.8,
-      includeBase64: true,
+      includeBase64: false,
     };
 
     launchImageLibrary(options, (response) => {
@@ -144,15 +142,10 @@ export default function SeedDetectionScreen({ navigation }) {
         Alert.alert(t.error, response.errorMessage || t.photoPermissionMessage);
       } else if (response.assets && response.assets[0]) {
         const asset = response.assets[0];
-        const mime = asset.type || 'image/jpeg';
-        const imageBase64 = asset.base64
-          ? `data:${mime};base64,${asset.base64}`
-          : null;
         setSelectedImage({
           uri: asset.uri,
-          type: mime,
+          type: asset.type,
           fileName: asset.fileName,
-          imageBase64,
         });
         setDetectionResult(null);
       }
@@ -169,38 +162,17 @@ export default function SeedDetectionScreen({ navigation }) {
       return;
     }
 
-    const imageBase64 = selectedImage.imageBase64;
-    if (!imageBase64) {
-      Alert.alert(t.error, t.selectImageFirst);
-      return;
-    }
-
     setProcessing(true);
-    setDetectionResult(null);
-
-    try {
-      const result = await SeedDetectionService.predict(imageBase64);
-
-      if (result.success && result.data) {
-        const { predicted_class, confidence, class_id } = result.data;
-        const qualityScore = confidence != null ? Math.round(Number(confidence) * 100) : 0;
-        setDetectionResult({
-          variety: predicted_class ?? 'Unknown',
-          predicted_class,
-          class_id,
-          confidence: confidence != null ? Number(confidence) : 0,
-          wildSeeds: false,
-          qualityScore,
-        });
-      } else {
-        Alert.alert(t.error, result.error || 'Detection failed');
-      }
-    } catch (err) {
-      console.error('Process image error:', err);
-      Alert.alert(t.error, err.message || 'Detection failed');
-    } finally {
+    // TODO: Integrate with your AI model API
+    // Simulating processing for now
+    setTimeout(() => {
       setProcessing(false);
-    }
+      setDetectionResult({
+        variety: 'Basmati',
+        wildSeeds: true,
+        qualityScore: 92,
+      });
+    }, 2000);
   };
 
   return (
@@ -390,7 +362,6 @@ export default function SeedDetectionScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <BottomNavigation />
     </View>
   );
 }
