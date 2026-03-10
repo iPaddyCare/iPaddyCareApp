@@ -10,14 +10,13 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Animated,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { sendMessage, subscribeToMessages, markAsRead } from '../src/services/messagingService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -70,102 +69,148 @@ const translations = {
   },
 };
 
-const formatTime = (date) => {
-  if (!date) return '';
-  const d = date instanceof Date ? date : new Date(date);
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-};
+// Sample messages (in a real app, this would come from backend)
+const sampleMessages = [
+  {
+    id: 1,
+    text: 'Hello! I need advice on seed quality for my paddy field.',
+    sender: 'user',
+    timestamp: '08:30 AM',
+    date: 'Today',
+  },
+  {
+    id: 2,
+    text: 'Hello! How can I help you with your agricultural needs today?',
+    sender: 'officer',
+    timestamp: '08:32 AM',
+    date: 'Today',
+  },
 
-const formatDate = (date) => {
-  if (!date) return '';
-  const d = date instanceof Date ? date : new Date(date);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
+];
 
-const MessageBubble = ({ message, isUser }) => (
+const MessageBubble = ({ message, isUser, t }) => (
   <View style={[styles.messageBubble, isUser ? styles.userMessage : styles.officerMessage]}>
     <Text style={[styles.messageText, isUser && styles.userMessageText]}>
       {message.text}
     </Text>
     <Text style={[styles.messageTime, isUser && styles.userMessageTime]}>
-      {formatTime(message.createdAt)}
+      {message.timestamp}
     </Text>
   </View>
 );
 
 export default function MessageScreen({ route, navigation }) {
   const { selectedLanguage } = useLanguage();
-  const { user, isAuthenticated, isOfficer } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
+  const [fadeAnim] = useState(new Animated.Value(0));
   const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(sampleMessages);
   const [sending, setSending] = useState(false);
-  const [loading, setLoading] = useState(true);
   const scrollViewRef = useRef(null);
 
-  const conversationId = route?.params?.conversationId;
-  const officer = route?.params?.officer || {};
-  // For officer inbox, the "other party" is the farmer
-  const farmerName = route?.params?.farmerName || '';
+  const officer = route?.params?.officer || {
+    id: 1,
+    name: 'Dr. Kamal Perera',
+    title: 'Senior Agricultural Officer',
+    status: 'online',
+    image: '👨‍🌾',
+  };
 
-  const senderRole = isOfficer ? 'officer' : 'farmer';
-
-  // Subscribe to real-time messages
-  useEffect(() => {
-    if (!conversationId) {
-      setLoading(false);
-      return;
-    }
-
-    const unsubscribe = subscribeToMessages(conversationId, (msgs) => {
-      setMessages(msgs);
-      setLoading(false);
-    });
-
-    // Mark as read
-    if (user) {
-      markAsRead(conversationId, senderRole).catch(console.error);
-    }
-
-    return () => unsubscribe();
-  }, [conversationId]);
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 600,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
 
   useEffect(() => {
+    // Scroll to bottom when messages change
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   }, [messages]);
 
-  const handleSendMessage = async () => {
-    if (!messageText.trim() || !conversationId) return;
+  const handleSendMessage = () => {
+    if (!messageText.trim()) return;
 
     if (!isAuthenticated) {
-      Alert.alert('Login Required', 'Please login to send messages.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Login', onPress: () => navigation.navigate('Login') },
-      ]);
+      Alert.alert(
+        'Login Required',
+        'Please login to send messages.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => navigation.navigate('Login') },
+        ]
+      );
       return;
     }
 
-    const text = messageText.trim();
-    setMessageText('');
     setSending(true);
+    const newMessage = {
+      id: messages.length + 1,
+      text: messageText.trim(),
+      sender: 'user',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: 'Today',
+    };
 
-    try {
-      await sendMessage(conversationId, text, user.uid, senderRole);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      Alert.alert('Error', 'Failed to send message. Please try again.');
-      setMessageText(text);
-    } finally {
+    // Add user message
+    setMessages([...messages, newMessage]);
+    setMessageText('');
+
+    // Simulate officer response (in a real app, this would come from backend)
+    setTimeout(() => {
+      const officerResponse = {
+        id: messages.length + 2,
+        text: 'Thank you for your message. I will get back to you shortly.',
+        sender: 'officer',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        date: 'Today',
+      };
+      setMessages(prev => [...prev, officerResponse]);
       setSending(false);
+    }, 1500);
+  };
+
+  const handleShareTestHistory = () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        'Login Required',
+        'Please login to share test history.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => navigation.navigate('Login') },
+        ]
+      );
+      return;
     }
+
+    // Navigate to test history selection or show selection modal
+    Alert.alert(
+      t.shareTestHistory,
+      t.selectTests,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: t.sendTestHistory,
+          onPress: () => {
+            // In a real app, select tests and send
+            const testHistoryMessage = {
+              id: messages.length + 1,
+              text: '📊 Test History Shared: 6 tests',
+              sender: 'user',
+              timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+              date: 'Today',
+            };
+            setMessages(prev => [...prev, testHistoryMessage]);
+            Alert.alert(t.testHistoryShared, t.testHistorySharedDesc);
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -192,22 +237,23 @@ export default function MessageScreen({ route, navigation }) {
             <View style={styles.headerInfo}>
               <View style={styles.officerImageContainer}>
                 <View style={styles.officerImagePlaceholder}>
-                  <Text style={styles.officerImageEmoji}>👨‍🌾</Text>
+                  <Text style={styles.officerImageEmoji}>{officer.image}</Text>
                 </View>
                 {officer.status === 'online' && (
                   <View style={styles.onlineIndicator} />
                 )}
               </View>
               <View style={styles.headerText}>
-                <Text style={styles.officerName}>
-                  {isOfficer ? (farmerName || 'Farmer') : (officer.name || 'Officer')}
-                </Text>
-                <Text style={styles.officerTitle}>
-                  {isOfficer ? 'Farmer' : (officer.title || 'Agricultural Officer')}
-                </Text>
+                <Text style={styles.officerName}>{officer.name}</Text>
+                <Text style={styles.officerTitle}>{officer.title}</Text>
               </View>
             </View>
-            <View style={styles.moreButton} />
+            <TouchableOpacity
+              style={styles.moreButton}
+              onPress={handleShareTestHistory}
+            >
+              <Icon name="share-variant" size={20} color="#FFFFFF" />
+            </TouchableOpacity>
           </View>
 
           {/* Messages */}
@@ -220,25 +266,19 @@ export default function MessageScreen({ route, navigation }) {
             ]}
             showsVerticalScrollIndicator={false}
           >
-            {loading ? (
-              <View style={styles.emptyState}>
-                <ActivityIndicator size="large" color="#0F5132" />
-              </View>
-            ) : messages.length > 0 ? (
+            {messages.length > 0 ? (
               messages.map((message, index) => {
-                const isMe = message.senderId === user?.uid;
-                const msgDate = formatDate(message.createdAt);
-                const prevDate = index > 0 ? formatDate(messages[index - 1].createdAt) : '';
-                const showDate = index === 0 || msgDate !== prevDate;
+                const isUser = message.sender === 'user';
+                const showDate = index === 0 || messages[index - 1].date !== message.date;
                 return (
                   <View key={message.id}>
                     {showDate && (
                       <View style={styles.dateSeparator}>
-                        <Text style={styles.dateText}>{msgDate}</Text>
+                        <Text style={styles.dateText}>{message.date}</Text>
                       </View>
                     )}
-                    <View style={[styles.messageRow, isMe && styles.userMessageRow]}>
-                      <MessageBubble message={message} isUser={isMe} />
+                    <View style={[styles.messageRow, isUser && styles.userMessageRow]}>
+                      <MessageBubble message={message} isUser={isUser} t={t} />
                     </View>
                   </View>
                 );
@@ -259,7 +299,13 @@ export default function MessageScreen({ route, navigation }) {
 
           {/* Input Area */}
           <View style={styles.inputContainer}>
-            <View style={styles.attachButton} />
+            <TouchableOpacity
+              style={styles.attachButton}
+              onPress={handleShareTestHistory}
+              activeOpacity={0.7}
+            >
+              <Icon name="paperclip" size={20} color="#666" />
+            </TouchableOpacity>
             <TextInput
               style={styles.messageInput}
               placeholder={t.typeMessage}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { getPendingProducts } from '../services/marketplaceService';
 
 const translations = {
   English: {
@@ -77,14 +76,6 @@ export default function DrawerContent({
 }) {
   const { user, isAuthenticated, isOfficer, signOut } = useAuth();
   const t = translations[selectedLanguage];
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    if (!isOfficer) return;
-    getPendingProducts()
-      .then((products) => setPendingCount(products.length))
-      .catch(() => setPendingCount(0));
-  }, [isOfficer]);
 
   const getRootNavigation = () => {
     let parentNav = drawerNavigation;
@@ -226,9 +217,9 @@ export default function DrawerContent({
                   styles.menuLabel,
                   (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
                 ]}>{item.label}</Text>
-                {item.id === 'approvals' && isOfficer && pendingCount > 0 && (
+                {item.id === 'approvals' && isOfficer && (
                   <View style={styles.menuBadge}>
-                    <Text style={styles.menuBadgeText}>{pendingCount}</Text>
+                    <Text style={styles.menuBadgeText}>3</Text>
                   </View>
                 )}
                 <Text style={styles.menuArrow}>→</Text>

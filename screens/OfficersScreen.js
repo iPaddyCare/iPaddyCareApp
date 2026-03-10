@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,13 @@ import {
   TextInput,
   Alert,
   Animated,
+  Image,
   Linking,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getOfficers, getOrCreateConversation } from '../src/services/messagingService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -139,14 +138,82 @@ const translations = {
   },
 };
 
-// No hardcoded data — officers fetched from Firestore
+// Sample officers data
+const sampleOfficers = [
+  {
+    id: 1,
+    name: 'Dr. Kamal Perera',
+    title: 'Senior Agricultural Officer',
+    specialization: 'Seed Quality & Crop Management',
+    location: 'Colombo',
+    phone: '+94 77 123 4567',
+    email: 'kamal.perera@agri.gov.lk',
+    status: 'online',
+    rating: 4.8,
+    experience: '15 years',
+    image: '👨‍🌾',
+    available: true,
+  },
+  {
+    id: 2,
+    name: 'Ms. Priya Fernando',
+    title: 'Agricultural Extension Officer',
+    specialization: 'Soil Management & Fertilizers',
+    location: 'Kandy',
+    phone: '+94 77 234 5678',
+    email: 'priya.fernando@agri.gov.lk',
+    status: 'online',
+    rating: 4.6,
+    experience: '12 years',
+    image: '👩‍🌾',
+    available: true,
+  },
+  {
+    id: 3,
+    name: 'Mr. Suresh Kumar',
+    title: 'Pest Control Specialist',
+    specialization: 'Pest & Disease Management',
+    location: 'Gampaha',
+    phone: '+94 77 345 6789',
+    email: 'suresh.kumar@agri.gov.lk',
+    status: 'offline',
+    rating: 4.7,
+    experience: '10 years',
+    image: '👨‍🔬',
+    available: false,
+  },
+  {
+    id: 4,
+    name: 'Dr. Anjali Silva',
+    title: 'Moisture & Irrigation Expert',
+    specialization: 'Water Management & Irrigation',
+    location: 'Matale',
+    phone: '+94 77 456 7890',
+    email: 'anjali.silva@agri.gov.lk',
+    status: 'online',
+    rating: 4.9,
+    experience: '18 years',
+    image: '👩‍🔬',
+    available: true,
+  },
+  {
+    id: 5,
+    name: 'Mr. Ravi Wijesinghe',
+    title: 'Organic Farming Consultant',
+    specialization: 'Organic Farming & Sustainability',
+    location: 'Kurunegala',
+    phone: '+94 77 567 8901',
+    email: 'ravi.wijesinghe@agri.gov.lk',
+    status: 'offline',
+    rating: 4.5,
+    experience: '8 years',
+    image: '👨‍🌾',
+    available: false,
+  },
+];
 
 const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
   const handleCall = () => {
-    if (!officer.phone) {
-      Alert.alert('No Phone', 'This officer has not added a phone number yet.');
-      return;
-    }
     Linking.openURL(`tel:${officer.phone}`).catch(() => {
       Alert.alert('Error', 'Unable to make phone call');
     });
@@ -163,7 +230,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
       <View style={styles.officerHeader}>
         <View style={styles.officerImageContainer}>
           <View style={styles.officerImagePlaceholder}>
-            <Text style={styles.officerImageEmoji}>👨‍🌾</Text>
+            <Text style={styles.officerImageEmoji}>{officer.image}</Text>
           </View>
           {officer.status === 'online' && (
             <View style={styles.onlineIndicator} />
@@ -171,40 +238,28 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
         </View>
         <View style={styles.officerInfo}>
           <View style={styles.officerNameRow}>
-            <Text style={styles.officerName}>{officer.name || 'Officer'}</Text>
+            <Text style={styles.officerName}>{officer.name}</Text>
             <View style={[styles.statusBadge, { backgroundColor: officer.status === 'online' ? '#10B981' : '#6B7280' }]}>
               <Text style={styles.statusText}>{officer.status === 'online' ? t.online : t.offline}</Text>
             </View>
           </View>
-          <Text style={styles.officerTitle}>{officer.title || 'Agricultural Officer'}</Text>
-          {(officer.rating > 0 || officer.experience) && (
-            <View style={styles.officerRating}>
-              {officer.rating > 0 && (
-                <>
-                  <Icon name="star" size={14} color="#FFB800" />
-                  <Text style={styles.ratingText}>{officer.rating}</Text>
-                </>
-              )}
-              {officer.experience ? (
-                <Text style={styles.experienceText}>{officer.rating > 0 ? ' • ' : ''}{officer.experience}</Text>
-              ) : null}
-            </View>
-          )}
+          <Text style={styles.officerTitle}>{officer.title}</Text>
+          <View style={styles.officerRating}>
+            <Icon name="star" size={14} color="#FFB800" />
+            <Text style={styles.ratingText}>{officer.rating}</Text>
+            <Text style={styles.experienceText}> • {officer.experience}</Text>
+          </View>
         </View>
       </View>
       <View style={styles.officerDetails}>
-        {officer.location ? (
-          <View style={styles.detailRow}>
-            <Icon name="map-marker" size={14} color="#666" />
-            <Text style={styles.detailText}>{officer.location}</Text>
-          </View>
-        ) : null}
-        {officer.specialization ? (
-          <View style={styles.detailRow}>
-            <Icon name="briefcase" size={14} color="#666" />
-            <Text style={styles.detailText}>{officer.specialization}</Text>
-          </View>
-        ) : null}
+        <View style={styles.detailRow}>
+          <Icon name="map-marker" size={14} color="#666" />
+          <Text style={styles.detailText}>{officer.location}</Text>
+        </View>
+        <View style={styles.detailRow}>
+          <Icon name="briefcase" size={14} color="#666" />
+          <Text style={styles.detailText}>{officer.specialization}</Text>
+        </View>
       </View>
       <View style={styles.officerActions}>
         <TouchableOpacity
@@ -255,44 +310,29 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
 
 export default function OfficersScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState('all');
-  const [officers, setOfficers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all'); // 'all', 'online', 'area'
+  const [officers] = useState(sampleOfficers);
 
-  useEffect(() => {
-    fetchOfficers();
+  React.useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, []);
-
-  const fetchOfficers = async () => {
-    try {
-      setLoading(true);
-      const data = await getOfficers();
-      setOfficers(data);
-    } catch (error) {
-      console.error('Error fetching officers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [fadeAnim]);
 
   const filteredOfficers = officers.filter((officer) => {
-    const name = (officer.name || '').toLowerCase();
-    const spec = (officer.specialization || '').toLowerCase();
-    const loc = (officer.location || '').toLowerCase();
-    const q = searchQuery.toLowerCase();
-    const matchesSearch = name.includes(q) || spec.includes(q) || loc.includes(q);
-    const matchesFilter = filter === 'all' ||
-                         (filter === 'online' && officer.status === 'online');
+    const matchesSearch = officer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         officer.specialization.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         officer.location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filter === 'all' || 
+                         (filter === 'online' && officer.status === 'online') ||
+                         (filter === 'area' && officer.location === 'Colombo'); // In a real app, use user's location
     return matchesSearch && matchesFilter;
   });
 
@@ -333,7 +373,7 @@ export default function OfficersScreen({ navigation }) {
     );
   };
 
-  const handleMessage = async (officer) => {
+  const handleMessage = (officer) => {
     if (!isAuthenticated) {
       Alert.alert(
         t.loginRequired,
@@ -346,16 +386,8 @@ export default function OfficersScreen({ navigation }) {
       return;
     }
 
-    try {
-      const conversation = await getOrCreateConversation(user, officer);
-      navigation.navigate('Message', {
-        conversationId: conversation.id,
-        officer,
-      });
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      Alert.alert('Error', 'Could not start conversation. Please try again.');
-    }
+    // Navigate to message screen
+    navigation.navigate('Message', { officer });
   };
 
   const handleShareHistory = (officer) => {
@@ -458,12 +490,12 @@ export default function OfficersScreen({ navigation }) {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.filterButton, { opacity: 0.4 }]}
-                  disabled
+                  style={[styles.filterButton, filter === 'area' && styles.filterButtonActive]}
+                  onPress={() => setFilter('area')}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.filterText}>
-                    {officers.length} {officers.length === 1 ? 'officer' : 'officers'}
+                  <Text style={[styles.filterText, filter === 'area' && styles.filterTextActive]}>
+                    {t.yourArea}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -472,12 +504,7 @@ export default function OfficersScreen({ navigation }) {
             {/* Officers List */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.sectionTitle}>{t.availableOfficers}</Text>
-              {loading ? (
-                <View style={styles.emptyState}>
-                  <ActivityIndicator size="large" color="#0F5132" />
-                  <Text style={[styles.emptyStateText, { marginTop: 12 }]}>Loading officers...</Text>
-                </View>
-              ) : filteredOfficers.length > 0 ? (
+              {filteredOfficers.length > 0 ? (
                 <View style={styles.officersContainer}>
                   {filteredOfficers.map((officer) => (
                     <OfficerCard

@@ -7,18 +7,14 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
+  Image,
   Alert,
   Animated,
-  TextInput,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getUserListings, deleteProduct, updateProduct } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -95,25 +91,55 @@ const translations = {
   },
 };
 
-const categoryEmojis = {
-  seeds: '🌾',
-  fertilizers: '🌱',
-  tools: '🔧',
-  pesticides: '🛡️',
-  herbicides: '🧪',
-};
+// Sample user listings (in a real app, this would come from backend)
+const sampleUserListings = [
+  {
+    id: 1,
+    title: 'Premium Paddy Seeds - Variety A',
+    category: 'seeds',
+    price: 2500,
+    location: 'Colombo',
+    status: 'active',
+    image: '🌾',
+    description: 'High quality paddy seeds with 95% germination rate',
+    views: 45,
+    createdAt: '2 days ago',
+  },
+  {
+    id: 2,
+    title: 'Organic Fertilizer 50kg',
+    category: 'fertilizers',
+    price: 3500,
+    location: 'Kandy',
+    status: 'active',
+    image: '🌱',
+    description: 'Natural organic fertilizer for healthy crop growth',
+    views: 32,
+    createdAt: '5 days ago',
+  },
+  {
+    id: 3,
+    title: 'Harvesting Tools Set',
+    category: 'tools',
+    price: 4500,
+    location: 'Gampaha',
+    status: 'sold',
+    image: '🔧',
+    description: 'Complete set of harvesting tools for paddy farming',
+    views: 78,
+    createdAt: '1 week ago',
+  },
+];
 
 const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved':
+      case 'active':
         return '#10B981';
       case 'sold':
         return '#6B7280';
       case 'pending':
         return '#F59E0B';
-      case 'declined':
-        return '#EF4444';
       default:
         return '#6B7280';
     }
@@ -121,7 +147,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved':
+      case 'active':
         return t.active;
       case 'sold':
         return t.sold;
@@ -132,33 +158,21 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    if (typeof date === 'string') return date;
-    const now = new Date();
-    const diff = now - date;
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) return 'Today';
-    if (days === 1) return 'Yesterday';
-    if (days < 7) return `${days} days ago`;
-    return `${Math.floor(days / 7)} week${Math.floor(days / 7) > 1 ? 's' : ''} ago`;
-  };
-
   return (
     <View style={styles.listingCard}>
       <View style={styles.listingImageContainer}>
         <View style={styles.listingImagePlaceholder}>
-          <Text style={styles.listingImageEmoji}>{categoryEmojis[listing.category] || '📦'}</Text>
+          <Text style={styles.listingImageEmoji}>{listing.image}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(listing.status) }]}>
           <Text style={styles.statusText}>{getStatusLabel(listing.status)}</Text>
         </View>
       </View>
       <View style={styles.listingContent}>
-        <Text style={styles.listingTitle} numberOfLines={2}>{listing.productName || listing.title}</Text>
+        <Text style={styles.listingTitle} numberOfLines={2}>{listing.title}</Text>
         <View style={styles.listingPriceRow}>
           <Text style={styles.priceLabel}>Rs.</Text>
-          <Text style={styles.priceValue}>{listing.price?.toLocaleString()}</Text>
+          <Text style={styles.priceValue}>{listing.price.toLocaleString()}</Text>
         </View>
         <View style={styles.listingMeta}>
           <View style={styles.metaItem}>
@@ -167,30 +181,30 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
           </View>
           <View style={styles.metaItem}>
             <Icon name="eye" size={14} color="#666" />
-            <Text style={styles.metaText}>{listing.views || 0} views</Text>
+            <Text style={styles.metaText}>{listing.views} views</Text>
           </View>
         </View>
-        <Text style={styles.listingDate}>{formatDate(listing.createdAt)}</Text>
+        <Text style={styles.listingDate}>{listing.createdAt}</Text>
         <View style={styles.listingActions}>
-          {listing.status !== 'sold' && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.editButton]}
-              onPress={() => onEdit(listing)}
-              activeOpacity={0.7}
-            >
-              <Icon name="pencil" size={16} color="#0F5132" />
-              <Text style={styles.editButtonText}>{t.edit}</Text>
-            </TouchableOpacity>
-          )}
-          {listing.status === 'approved' && (
-            <TouchableOpacity
-              style={[styles.actionButton, styles.soldButton]}
-              onPress={() => onMarkSold(listing)}
-              activeOpacity={0.7}
-            >
-              <Icon name="check-circle" size={16} color="#10B981" />
-              <Text style={styles.soldButtonText}>{t.markSold}</Text>
-            </TouchableOpacity>
+          {listing.status === 'active' && (
+            <>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.editButton]}
+                onPress={() => onEdit(listing)}
+                activeOpacity={0.7}
+              >
+                <Icon name="pencil" size={16} color="#0F5132" />
+                <Text style={styles.editButtonText}>{t.edit}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionButton, styles.soldButton]}
+                onPress={() => onMarkSold(listing)}
+                activeOpacity={0.7}
+              >
+                <Icon name="check-circle" size={16} color="#10B981" />
+                <Text style={styles.soldButtonText}>{t.markSold}</Text>
+              </TouchableOpacity>
+            </>
           )}
           <TouchableOpacity
             style={[styles.actionButton, styles.deleteButton]}
@@ -212,87 +226,22 @@ export default function MyListingsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchListings = async () => {
-    if (!user?.uid) return;
-    try {
-      setLoading(true);
-      const data = await getUserListings(user.uid);
-      setListings(data);
-    } catch (error) {
-      console.error('Error fetching listings:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [listings] = useState(sampleUserListings);
 
   React.useEffect(() => {
-    if (isAuthenticated && user?.uid) {
-      fetchListings();
-    }
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, [isAuthenticated, user?.uid]);
+  }, [fadeAnim]);
 
-  const activeListingsCount = listings.filter(l => l.status === 'approved').length;
-  const soldListingsCount = listings.filter(l => l.status === 'sold').length;
-
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editData, setEditData] = useState(null);
-  const [editSaving, setEditSaving] = useState(false);
+  const activeListings = listings.filter(l => l.status === 'active').length;
+  const soldListings = listings.filter(l => l.status === 'sold').length;
 
   const handleEdit = (listing) => {
-    setEditData({
-      id: listing.id,
-      productName: listing.productName || '',
-      price: String(listing.price || ''),
-      description: listing.description || '',
-      location: listing.location || '',
-      phone: listing.phone || '',
-    });
-    setEditModalVisible(true);
-  };
-
-  const handleSaveEdit = async () => {
-    if (!editData.productName.trim() || !editData.price.trim() || !editData.description.trim() || !editData.location.trim() || !editData.phone.trim()) {
-      Alert.alert('Error', 'Please fill all fields');
-      return;
-    }
-    const phoneClean = editData.phone.replace(/\s/g, '');
-    if (!/^0\d{9}$/.test(phoneClean)) {
-      Alert.alert('Error', 'Please enter a valid phone number (e.g., 0771234567)');
-      return;
-    }
-    setEditSaving(true);
-    try {
-      await updateProduct(editData.id, {
-        productName: editData.productName,
-        price: Number(editData.price),
-        description: editData.description,
-        location: editData.location,
-        phone: editData.phone,
-      });
-      setListings(prev => prev.map(l => l.id === editData.id ? {
-        ...l,
-        productName: editData.productName,
-        price: Number(editData.price),
-        description: editData.description,
-        location: editData.location,
-        phone: editData.phone,
-      } : l));
-      setEditModalVisible(false);
-      Alert.alert('Updated', 'Listing has been updated.');
-    } catch (error) {
-      console.error('Error updating listing:', error);
-      Alert.alert('Error', 'Failed to update listing.');
-    } finally {
-      setEditSaving(false);
-    }
+    // Navigate to edit screen (for now, just show alert)
+    Alert.alert('Edit Listing', `Edit "${listing.title}" - Feature coming soon!`);
   };
 
   const handleDelete = (listing) => {
@@ -304,15 +253,9 @@ export default function MyListingsScreen({ navigation }) {
         {
           text: t.deleteConfirm,
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteProduct(listing.id);
-              setListings(prev => prev.filter(l => l.id !== listing.id));
-              Alert.alert('Deleted', 'Listing has been deleted.');
-            } catch (error) {
-              console.error('Error deleting listing:', error);
-              Alert.alert('Error', 'Failed to delete listing.');
-            }
+          onPress: () => {
+            // In a real app, delete from backend
+            Alert.alert('Deleted', 'Listing has been deleted.');
           },
         },
       ]
@@ -327,15 +270,9 @@ export default function MyListingsScreen({ navigation }) {
         { text: t.cancel, style: 'cancel' },
         {
           text: t.soldConfirm,
-          onPress: async () => {
-            try {
-              await updateProduct(listing.id, { status: 'sold' });
-              setListings(prev => prev.map(l => l.id === listing.id ? { ...l, status: 'sold' } : l));
-              Alert.alert('Updated', 'Listing marked as sold.');
-            } catch (error) {
-              console.error('Error updating listing:', error);
-              Alert.alert('Error', 'Failed to update listing.');
-            }
+          onPress: () => {
+            // In a real app, update status in backend
+            Alert.alert('Updated', 'Listing marked as sold.');
           },
         },
       ]
@@ -445,11 +382,11 @@ export default function MyListingsScreen({ navigation }) {
                 <Text style={styles.statLabel}>{t.totalListings}</Text>
               </View>
               <View style={[styles.statCard, styles.statCardActive]}>
-                <Text style={[styles.statValue, styles.statValueActive]}>{activeListingsCount}</Text>
+                <Text style={[styles.statValue, styles.statValueActive]}>{activeListings}</Text>
                 <Text style={styles.statLabel}>{t.activeListings}</Text>
               </View>
               <View style={[styles.statCard, styles.statCardSold]}>
-                <Text style={[styles.statValue, styles.statValueSold]}>{soldListingsCount}</Text>
+                <Text style={[styles.statValue, styles.statValueSold]}>{soldListings}</Text>
                 <Text style={styles.statLabel}>{t.soldListings}</Text>
               </View>
             </Animated.View>
@@ -486,80 +423,6 @@ export default function MyListingsScreen({ navigation }) {
             </Animated.View>
           </View>
         </ScrollView>
-
-        {/* Edit Modal */}
-        <Modal visible={editModalVisible} animationType="slide" transparent>
-          <View style={styles.modalOverlay}>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={styles.modalKeyboard}
-            >
-              <View style={styles.modalContent}>
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>{t.edit}</Text>
-                  <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                    <Icon name="close" size={24} color="#666" />
-                  </TouchableOpacity>
-                </View>
-                <ScrollView style={styles.modalBody} keyboardShouldPersistTaps="handled">
-                  {editData && (
-                    <>
-                      <Text style={styles.modalLabel}>Product Name</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.productName}
-                        onChangeText={(text) => setEditData({ ...editData, productName: text })}
-                      />
-                      <Text style={styles.modalLabel}>Price (Rs.)</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.price}
-                        onChangeText={(text) => setEditData({ ...editData, price: text.replace(/[^0-9.]/g, '') })}
-                        keyboardType="numeric"
-                      />
-                      <Text style={styles.modalLabel}>Description</Text>
-                      <TextInput
-                        style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
-                        value={editData.description}
-                        onChangeText={(text) => setEditData({ ...editData, description: text })}
-                        multiline
-                      />
-                      <Text style={styles.modalLabel}>Location</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.location}
-                        onChangeText={(text) => setEditData({ ...editData, location: text })}
-                      />
-                      <Text style={styles.modalLabel}>Phone</Text>
-                      <TextInput
-                        style={styles.modalInput}
-                        value={editData.phone}
-                        onChangeText={(text) => setEditData({ ...editData, phone: text.replace(/[^0-9]/g, '') })}
-                        keyboardType="phone-pad"
-                        maxLength={10}
-                      />
-                    </>
-                  )}
-                </ScrollView>
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={styles.modalCancelBtn}
-                    onPress={() => setEditModalVisible(false)}
-                  >
-                    <Text style={styles.modalCancelText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.modalSaveBtn, editSaving && { opacity: 0.6 }]}
-                    onPress={handleSaveEdit}
-                    disabled={editSaving}
-                  >
-                    <Text style={styles.modalSaveText}>{editSaving ? 'Saving...' : 'Save'}</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </KeyboardAvoidingView>
-          </View>
-        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -900,88 +763,6 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalKeyboard: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '85%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  modalBody: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  modalLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 6,
-    marginTop: 12,
-  },
-  modalInput: {
-    backgroundColor: '#F5F7F5',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-    color: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-  },
-  modalCancelBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-  },
-  modalCancelText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666',
-  },
-  modalSaveBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#0F5132',
-    alignItems: 'center',
-  },
-  modalSaveText: {
-    fontSize: 15,
     fontWeight: '700',
     color: '#FFFFFF',
   },

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -10,14 +10,13 @@ import {
   TextInput,
   Alert,
   Animated,
-  KeyboardAvoidingView,
-  Platform,
+  Image,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { addProduct } from '../src/services/marketplaceService';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,7 +113,7 @@ const categories = [
   { id: 'fertilizers', label: { English: 'Fertilizers', සිංහල: 'සාරවත් පොහොර', தமிழ்: 'உரங்கள்' }, icon: '🌱' },
   { id: 'tools', label: { English: 'Tools & Equipment', සිංහල: 'මෙවලම් සහ උපකරණ', தமிழ்: 'கருவிகள் மற்றும் உபகரணங்கள்' }, icon: '🔧' },
   { id: 'pesticides', label: { English: 'Pesticides', සිංහල: 'කෘමිනාශක', தமிழ்: 'பூச்சிக்கொல்லிகள்' }, icon: '🛡️' },
-  { id: 'herbicides', label: { English: 'Herbicides', සිංහල: 'වල් නාශක', தமிழ்: 'களைக்கொல்லிகள்' }, icon: '🧪' },
+  { id: 'organic', label: { English: 'Organic Products', සිංහල: 'කාබනික නිෂ්පාදන', தமிழ்: 'கரிம தயாரிப்புகள்' }, icon: '✨' },
 ];
 
 export default function AddProductScreen({ navigation }) {
@@ -124,8 +123,6 @@ export default function AddProductScreen({ navigation }) {
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
 
-  const scrollRef = useRef(null);
-
   const [formData, setFormData] = useState({
     productName: '',
     category: '',
@@ -133,17 +130,23 @@ export default function AddProductScreen({ navigation }) {
     description: '',
     location: '',
     phone: '',
+    image: null,
   });
 
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   React.useEffect(() => {
+    // Block officers from accessing this screen
     if (isOfficer) {
       Alert.alert(
         'Access Restricted',
         'Officers cannot list products in the marketplace.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.goBack(),
+          },
+        ]
       );
       return;
     }
@@ -155,12 +158,28 @@ export default function AddProductScreen({ navigation }) {
     }).start();
   }, [isOfficer, navigation, fadeAnim]);
 
+  const handleImagePicker = () => {
+    launchImageLibrary(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+        maxWidth: 800,
+        maxHeight: 800,
+      },
+      (response) => {
+        if (response.assets && response.assets[0]) {
+          setFormData({ ...formData, image: response.assets[0] });
+        }
+      }
+    );
+  };
+
   const handleCategorySelect = (categoryId) => {
     setFormData({ ...formData, category: categoryId });
     setShowCategoryPicker(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     // Validation
     if (!formData.productName.trim()) {
       Alert.alert(t.error, t.fillAllFields);
@@ -186,41 +205,32 @@ export default function AddProductScreen({ navigation }) {
       Alert.alert(t.error, t.fillAllFields);
       return;
     }
-    const phoneClean = formData.phone.replace(/\s/g, '');
-    if (!/^0\d{9}$/.test(phoneClean)) {
-      Alert.alert(t.error, 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)');
-      return;
-    }
 
-    setSubmitting(true);
-    try {
-      await addProduct(formData, user);
-      Alert.alert(
-        t.success,
-        t.pendingApprovalMessage || t.successMessage,
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              setFormData({
-                productName: '',
-                category: '',
-                price: '',
-                description: '',
-                location: '',
-                phone: '',
-              });
-              navigation.goBack();
-            },
+    // In a real app, this would submit to a backend
+    // For demo, just show success message
+    Alert.alert(
+      t.success,
+      t.pendingApprovalMessage || t.successMessage,
+      [
+        {
+          text: 'OK',
+          onPress: () => {
+            // Reset form
+            setFormData({
+              productName: '',
+              category: '',
+              price: '',
+              description: '',
+              location: '',
+              phone: '',
+              image: null,
+            });
+            // Navigate back
+            navigation.goBack();
           },
-        ]
-      );
-    } catch (error) {
-      console.error('Error adding product:', error);
-      Alert.alert(t.error, 'Failed to submit product. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+        },
+      ]
+    );
   };
 
   const selectedCategoryLabel = formData.category
@@ -234,16 +244,10 @@ export default function AddProductScreen({ navigation }) {
         <View style={styles.statusBarContainer} />
       </SafeAreaView>
       <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        >
         <ScrollView
-          ref={scrollRef}
           style={styles.scrollView}
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 40 }]}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
         >
           {/* Hero Header */}
           <View style={styles.heroHeader}>
@@ -265,6 +269,30 @@ export default function AddProductScreen({ navigation }) {
           </View>
 
           <View style={styles.innerContent}>
+            {/* Product Image */}
+            <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
+              <Text style={styles.label}>{t.addImage}</Text>
+              <Text style={styles.optionalLabel}>{t.imageOptional}</Text>
+              <TouchableOpacity
+                style={styles.imagePicker}
+                onPress={handleImagePicker}
+                activeOpacity={0.7}
+              >
+                {formData.image ? (
+                  <Image
+                    source={{ uri: formData.image.uri }}
+                    style={styles.selectedImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={styles.imagePlaceholder}>
+                    <Icon name="camera-plus" size={40} color="#999" />
+                    <Text style={styles.imagePlaceholderText}>Tap to add image</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+
             {/* Product Name */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.productName} *</Text>
@@ -372,28 +400,24 @@ export default function AddProductScreen({ navigation }) {
                 placeholder={t.phonePlaceholder}
                 placeholderTextColor="#999"
                 value={formData.phone}
-                onChangeText={(text) => setFormData({ ...formData, phone: text.replace(/[^0-9]/g, '') })}
+                onChangeText={(text) => setFormData({ ...formData, phone: text })}
                 keyboardType="phone-pad"
-                maxLength={10}
-                onFocus={() => setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300)}
               />
             </Animated.View>
 
             {/* Submit Button */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <TouchableOpacity
-                style={[styles.submitButton, submitting && { opacity: 0.6 }]}
+                style={styles.submitButton}
                 onPress={handleSubmit}
                 activeOpacity={0.8}
-                disabled={submitting}
               >
-                <Icon name={submitting ? 'loading' : 'check-circle'} size={24} color="#FFFFFF" />
-                <Text style={styles.submitButtonText}>{submitting ? 'Submitting...' : t.submit}</Text>
+                <Icon name="check-circle" size={24} color="#FFFFFF" />
+                <Text style={styles.submitButtonText}>{t.submit}</Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
         </ScrollView>
-        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
@@ -621,6 +645,32 @@ const styles = StyleSheet.create({
   categoryOptionTextActive: {
     color: '#0F5132',
     fontWeight: '700',
+  },
+  imagePicker: {
+    width: '100%',
+    height: 200,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    borderStyle: 'dashed',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F9F9F9',
+  },
+  imagePlaceholderText: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#999',
+    fontWeight: '500',
+  },
+  selectedImage: {
+    width: '100%',
+    height: '100%',
   },
   submitButton: {
     flexDirection: 'row',

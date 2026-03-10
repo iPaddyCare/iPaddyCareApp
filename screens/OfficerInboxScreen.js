@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,17 +10,11 @@ import {
   TextInput,
   RefreshControl,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import {
-  getConversations,
-  markAsRead,
-  deleteConversation,
-} from '../src/services/messagingService';
 
 const { width } = Dimensions.get('window');
 
@@ -30,7 +24,7 @@ const translations = {
     inbox: 'Inbox',
     messages: 'Messages',
     noMessages: 'No messages yet',
-    noMessagesDesc: 'You will see messages from farmers here',
+    noMessagesDesc: 'You will see messages from users here',
     search: 'Search conversations...',
     unread: 'Unread',
     read: 'Read',
@@ -48,7 +42,7 @@ const translations = {
     inbox: 'එන ලිපි',
     messages: 'පණිවිඩ',
     noMessages: 'තවමත් පණිවිඩ නොමැත',
-    noMessagesDesc: 'ගොවීන්ගෙන් පණිවිඩ මෙහි දිස්වනු ඇත',
+    noMessagesDesc: 'පරිශීලකයන්ගෙන් පණිවිඩ මෙහි දිස්වනු ඇත',
     search: 'සංවාද සොයන්න...',
     unread: 'නොකියවූ',
     read: 'කියවූ',
@@ -66,7 +60,7 @@ const translations = {
     inbox: 'இன்பாக்ஸ்',
     messages: 'செய்திகள்',
     noMessages: 'இன்னும் செய்திகள் இல்லை',
-    noMessagesDesc: 'விவசாயிகளிடமிருந்து செய்திகள் இங்கே தோன்றும்',
+    noMessagesDesc: 'பயனர்களிடமிருந்து செய்திகள் இங்கே தோன்றும்',
     search: 'உரையாடல்களைத் தேடவும்...',
     unread: 'படிக்காத',
     read: 'படித்தது',
@@ -82,92 +76,83 @@ const translations = {
   },
 };
 
-const formatDate = (date) => {
-  if (!date) return '';
-  const d = date instanceof Date ? date : new Date(date);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
-
-const formatTime = (date) => {
-  if (!date) return '';
-  const d = date instanceof Date ? date : new Date(date);
-  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-};
+// Sample conversations (in a real app, this would come from backend)
+const sampleConversations = [
+  {
+    id: '1',
+    userId: 'user1',
+    userName: 'Kamal Perera',
+    userEmail: 'kamal@example.com',
+    lastMessage: 'Hello! I need advice on seed quality for my paddy field.',
+    timestamp: '08:30 AM',
+    date: 'Today',
+    unread: true,
+    unreadCount: 2,
+  },
+  {
+    id: '2',
+    userId: 'user2',
+    userName: 'Samantha Silva',
+    userEmail: 'samantha@example.com',
+    lastMessage: 'Thank you for your help with the soil pH test.',
+    timestamp: 'Yesterday',
+    date: 'Yesterday',
+    unread: false,
+    unreadCount: 0,
+  },
+  {
+    id: '3',
+    userId: 'user3',
+    userName: 'Priya Nadesan',
+    userEmail: 'priya@example.com',
+    lastMessage: 'Can you help me identify this pest?',
+    timestamp: '2 days ago',
+    date: '2 days ago',
+    unread: true,
+    unreadCount: 1,
+  },
+];
 
 export default function OfficerInboxScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
   const { user, isOfficer } = useAuth();
   const t = translations[selectedLanguage];
-  const [conversations, setConversations] = useState([]);
+  const [conversations, setConversations] = useState(sampleConversations);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const fetchConversations = async () => {
-    if (!user) return;
-    try {
-      const data = await getConversations(user.uid, 'officer');
-      setConversations(data);
-    } catch (error) {
-      console.error('Error fetching conversations:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchConversations();
-  }, [user]);
+    // In a real app, fetch conversations from backend
+  }, []);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = React.useCallback(() => {
     setRefreshing(true);
-    await fetchConversations();
-    setRefreshing(false);
-  }, [user]);
+    // In a real app, fetch conversations from backend
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000);
+  }, []);
 
-  const filteredConversations = conversations.filter((conv) => {
-    const name = (conv.farmerName || '').toLowerCase();
-    const msg = (conv.lastMessage || '').toLowerCase();
-    const q = searchQuery.toLowerCase();
-    return name.includes(q) || msg.includes(q);
-  });
+  const filteredConversations = conversations.filter((conv) =>
+    conv.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const handleConversationPress = async (conversation) => {
-    // Mark as read when opening
-    try {
-      await markAsRead(conversation.id, 'officer');
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === conversation.id ? { ...c, unreadByOfficer: 0 } : c,
-        ),
-      );
-    } catch (err) {
-      console.error('Error marking as read:', err);
-    }
-
+  const handleConversationPress = (conversation) => {
     navigation.navigate('Message', {
-      conversationId: conversation.id,
-      farmerName: conversation.farmerName,
-      officer: { name: user?.displayName || 'Officer' },
+      conversation: conversation,
+      isOfficerView: true,
     });
   };
 
-  const handleMarkAsRead = async (conversationId) => {
-    try {
-      await markAsRead(conversationId, 'officer');
-      setConversations((prev) =>
-        prev.map((c) =>
-          c.id === conversationId ? { ...c, unreadByOfficer: 0 } : c,
-        ),
-      );
-    } catch (err) {
-      console.error('Error marking as read:', err);
-    }
+  const handleMarkAsRead = (conversationId) => {
+    setConversations(prev =>
+      prev.map(conv =>
+        conv.id === conversationId
+          ? { ...conv, unread: false, unreadCount: 0 }
+          : conv
+      )
+    );
   };
 
   const handleDelete = (conversationId) => {
@@ -179,43 +164,27 @@ export default function OfficerInboxScreen({ navigation }) {
         {
           text: t.delete,
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteConversation(conversationId);
-              setConversations((prev) =>
-                prev.filter((c) => c.id !== conversationId),
-              );
-            } catch (err) {
-              console.error('Error deleting conversation:', err);
-              Alert.alert('Error', 'Failed to delete conversation.');
-            }
+          onPress: () => {
+            setConversations(prev => prev.filter(conv => conv.id !== conversationId));
           },
         },
-      ],
+      ]
     );
   };
 
-  const getDateLabel = (date) => {
-    const label = formatDate(date);
-    if (label === 'Today') return t.today;
-    if (label === 'Yesterday') return t.yesterday;
-    return label;
+  const formatDate = (date) => {
+    if (date === 'Today') return t.today;
+    if (date === 'Yesterday') return t.yesterday;
+    return date;
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="#0F5132"
-        translucent={false}
-      />
+      <StatusBar barStyle="light-content" backgroundColor="#0F5132" translucent={false} />
       <SafeAreaView style={styles.safeAreaTop} edges={['top']}>
         <View style={styles.statusBarContainer} />
       </SafeAreaView>
-      <SafeAreaView
-        style={styles.safeAreaContent}
-        edges={['left', 'right', 'bottom']}
-      >
+      <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
@@ -233,12 +202,7 @@ export default function OfficerInboxScreen({ navigation }) {
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Icon
-            name="magnify"
-            size={20}
-            color="#999"
-            style={styles.searchIcon}
-          />
+          <Icon name="magnify" size={20} color="#999" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
             placeholder={t.search}
@@ -257,14 +221,7 @@ export default function OfficerInboxScreen({ navigation }) {
         </View>
 
         {/* Conversations List */}
-        {loading ? (
-          <View style={styles.emptyState}>
-            <ActivityIndicator size="large" color="#0F5132" />
-            <Text style={[styles.emptyStateText, { marginTop: 12 }]}>
-              Loading conversations...
-            </Text>
-          </View>
-        ) : filteredConversations.length > 0 ? (
+        {filteredConversations.length > 0 ? (
           <ScrollView
             style={styles.conversationsList}
             refreshControl={
@@ -272,101 +229,76 @@ export default function OfficerInboxScreen({ navigation }) {
             }
             showsVerticalScrollIndicator={false}
           >
-            {filteredConversations.map((conversation) => {
-              const hasUnread =
-                conversation.unreadByOfficer &&
-                conversation.unreadByOfficer > 0;
-              return (
-                <TouchableOpacity
-                  key={conversation.id}
-                  style={[
-                    styles.conversationCard,
-                    hasUnread && styles.conversationCardUnread,
-                  ]}
-                  onPress={() => handleConversationPress(conversation)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.conversationHeader}>
-                    <View style={styles.userInfo}>
-                      <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>
-                          {(conversation.farmerName || 'F')
-                            .charAt(0)
-                            .toUpperCase()}
-                        </Text>
-                      </View>
-                      <View style={styles.userDetails}>
-                        <View style={styles.userNameRow}>
-                          <Text style={styles.userName}>
-                            {conversation.farmerName || 'Farmer'}
-                          </Text>
-                          {hasUnread && (
-                            <View style={styles.unreadBadge}>
-                              <Text style={styles.unreadBadgeText}>
-                                {conversation.unreadByOfficer}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                        <Text style={styles.userEmail}>
-                          {conversation.farmerEmail || ''}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.conversationActions}>
-                      <Text style={styles.timestamp}>
-                        {getDateLabel(conversation.lastMessageAt)}
+            {filteredConversations.map((conversation) => (
+              <TouchableOpacity
+                key={conversation.id}
+                style={[
+                  styles.conversationCard,
+                  conversation.unread && styles.conversationCardUnread,
+                ]}
+                onPress={() => handleConversationPress(conversation)}
+                activeOpacity={0.7}
+              >
+                <View style={styles.conversationHeader}>
+                  <View style={styles.userInfo}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>
+                        {conversation.userName.charAt(0).toUpperCase()}
                       </Text>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => handleMarkAsRead(conversation.id)}
-                      >
-                        <Icon
-                          name={
-                            hasUnread
-                              ? 'email-mark-as-unread'
-                              : 'email-open'
-                          }
-                          size={18}
-                          color="#666"
-                        />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => handleDelete(conversation.id)}
-                      >
-                        <Icon
-                          name="delete-outline"
-                          size={18}
-                          color="#E91E63"
-                        />
-                      </TouchableOpacity>
+                    </View>
+                    <View style={styles.userDetails}>
+                      <View style={styles.userNameRow}>
+                        <Text style={styles.userName}>{conversation.userName}</Text>
+                        {conversation.unread && (
+                          <View style={styles.unreadBadge}>
+                            <Text style={styles.unreadBadgeText}>
+                              {conversation.unreadCount}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.userEmail}>{conversation.userEmail}</Text>
                     </View>
                   </View>
-                  <Text
-                    style={[
-                      styles.lastMessage,
-                      hasUnread && styles.lastMessageUnread,
-                    ]}
-                    numberOfLines={2}
-                  >
-                    {conversation.lastMessage || 'No messages yet'}
-                  </Text>
-                  <View style={styles.conversationFooter}>
-                    <Text style={styles.timeText}>
-                      {formatTime(conversation.lastMessageAt)}
-                    </Text>
-                    {hasUnread && (
-                      <View style={styles.newIndicator}>
-                        <Text style={styles.newIndicatorText}>
-                          {t.newMessage}
-                        </Text>
-                      </View>
-                    )}
+                  <View style={styles.conversationActions}>
+                    <Text style={styles.timestamp}>{formatDate(conversation.date)}</Text>
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={() => handleMarkAsRead(conversation.id)}
+                    >
+                      <Icon
+                        name={conversation.unread ? 'email-mark-as-unread' : 'email-open'}
+                        size={18}
+                        color="#666"
+                      />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.actionButton}
+                      onPress={() => handleDelete(conversation.id)}
+                    >
+                      <Icon name="delete-outline" size={18} color="#E91E63" />
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-              );
-            })}
+                </View>
+                <Text
+                  style={[
+                    styles.lastMessage,
+                    conversation.unread && styles.lastMessageUnread,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {conversation.lastMessage}
+                </Text>
+                <View style={styles.conversationFooter}>
+                  <Text style={styles.timeText}>{conversation.timestamp}</Text>
+                  {conversation.unread && (
+                    <View style={styles.newIndicator}>
+                      <Text style={styles.newIndicatorText}>{t.newMessage}</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         ) : (
           <View style={styles.emptyState}>
@@ -389,7 +321,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0F5132',
   },
   statusBarContainer: {
-    height: 0,
+    height: StatusBar.currentHeight || 0,
+    backgroundColor: '#0F5132',
   },
   safeAreaContent: {
     flex: 1,
@@ -590,3 +523,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
