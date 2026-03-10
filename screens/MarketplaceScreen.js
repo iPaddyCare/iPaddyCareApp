@@ -8,14 +8,17 @@ import {
   StyleSheet,
   Dimensions,
   TextInput,
-  Image,
+  Modal,
   Alert,
   Animated,
+  Linking,
+  Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getApprovedProducts } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -31,7 +34,7 @@ const translations = {
     fertilizers: 'Fertilizers',
     tools: 'Tools & Equipment',
     pesticides: 'Pesticides',
-    organic: 'Organic Products',
+    herbicides: 'Herbicides',
     addProduct: 'Add Product',
     price: 'Price',
     location: 'Location',
@@ -59,7 +62,7 @@ const translations = {
     fertilizers: 'සාරවත් පොහොර',
     tools: 'මෙවලම් සහ උපකරණ',
     pesticides: 'කෘමිනාශක',
-    organic: 'කාබනික නිෂ්පාදන',
+    herbicides: 'වල් නාශක',
     addProduct: 'නිෂ්පාදනයක් එක් කරන්න',
     price: 'මිල',
     location: 'ස්ථානය',
@@ -87,7 +90,7 @@ const translations = {
     fertilizers: 'உரங்கள்',
     tools: 'கருவிகள் மற்றும் உபகரணங்கள்',
     pesticides: 'பூச்சிக்கொல்லிகள்',
-    organic: 'கரிம தயாரிப்புகள்',
+    herbicides: 'களைக்கொல்லிகள்',
     addProduct: 'தயாரிப்பைச் சேர்க்கவும்',
     price: 'விலை',
     location: 'இடம்',
@@ -107,81 +110,13 @@ const translations = {
   },
 };
 
-// Sample product data (in a real app, this would come from a backend)
-const sampleProducts = [
-  {
-    id: 1,
-    title: 'Premium Paddy Seeds - Variety A',
-    category: 'seeds',
-    price: 2500,
-    location: 'Colombo',
-    seller: 'Farm Fresh Co.',
-    image: '🌾',
-    featured: true,
-    description: 'High quality paddy seeds with 95% germination rate',
-    status: 'approved',
-  },
-  {
-    id: 2,
-    title: 'Organic Fertilizer 50kg',
-    category: 'fertilizers',
-    price: 3500,
-    location: 'Kandy',
-    seller: 'Green Farm',
-    image: '🌱',
-    featured: true,
-    description: 'Natural organic fertilizer for healthy crop growth',
-    status: 'approved',
-  },
-  {
-    id: 3,
-    title: 'Harvesting Tools Set',
-    category: 'tools',
-    price: 4500,
-    location: 'Gampaha',
-    seller: 'Agri Tools',
-    image: '🔧',
-    featured: false,
-    description: 'Complete set of harvesting tools for paddy farming',
-    status: 'approved',
-  },
-  {
-    id: 4,
-    title: 'Eco-Friendly Pesticide',
-    category: 'pesticides',
-    price: 1800,
-    location: 'Matale',
-    seller: 'Safe Crop',
-    image: '🛡️',
-    featured: false,
-    description: 'Environmentally safe pesticide for pest control',
-    status: 'approved',
-  },
-  {
-    id: 5,
-    title: 'Organic Paddy Seeds',
-    category: 'organic',
-    price: 3200,
-    location: 'Anuradhapura',
-    seller: 'Organic Farms',
-    image: '🌾',
-    featured: true,
-    description: 'Certified organic paddy seeds',
-    status: 'approved',
-  },
-  {
-    id: 6,
-    title: 'NPK Fertilizer 25kg',
-    category: 'fertilizers',
-    price: 2200,
-    location: 'Kurunegala',
-    seller: 'Crop Care',
-    image: '🌱',
-    featured: false,
-    description: 'Balanced NPK fertilizer for optimal growth',
-    status: 'approved',
-  },
-].filter(product => product.status === 'approved' || !product.status); // Only show approved products
+const categoryEmojis = {
+  seeds: '🌾',
+  fertilizers: '🌱',
+  tools: '🔧',
+  pesticides: '🛡️',
+  herbicides: '🧪',
+};
 
 const CategoryButton = ({ category, label, icon, isActive, onPress }) => (
   <TouchableOpacity
@@ -196,67 +131,65 @@ const CategoryButton = ({ category, label, icon, isActive, onPress }) => (
   </TouchableOpacity>
 );
 
-const ProductCard = ({ product, onContact }) => (
-  <TouchableOpacity style={styles.productCard} activeOpacity={0.9}>
+const ProductCard = ({ product, onContact, onPress }) => (
+  <TouchableOpacity style={styles.productCard} activeOpacity={0.7} onPress={() => onPress(product)}>
     <View style={styles.productImageContainer}>
       <View style={styles.productImagePlaceholder}>
-        <Text style={styles.productImageEmoji}>{product.image}</Text>
+        <Text style={styles.productImageEmoji}>{categoryEmojis[product.category] || '📦'}</Text>
       </View>
-      {product.featured && (
-        <View style={styles.featuredBadge}>
-          <Icon name="star" size={12} color="#FFD700" />
-          <Text style={styles.featuredText}>Featured</Text>
-        </View>
-      )}
     </View>
     <View style={styles.productContent}>
-      <Text style={styles.productTitle} numberOfLines={2}>{product.title}</Text>
-      <Text style={styles.productDescription} numberOfLines={2}>
+      <Text style={styles.productTitle} numberOfLines={1}>{product.productName || product.title}</Text>
+      <Text style={styles.productDescription} numberOfLines={1}>
         {product.description}
       </Text>
       <View style={styles.productFooter}>
         <View style={styles.priceContainer}>
           <Text style={styles.priceLabel}>Rs.</Text>
-          <Text style={styles.priceValue}>{product.price.toLocaleString()}</Text>
-        </View>
-        <View style={styles.locationContainer}>
-          <Icon name="map-marker" size={14} color="#666" />
-          <Text style={styles.locationText}>{product.location}</Text>
+          <Text style={styles.priceValue}>{product.price?.toLocaleString()}</Text>
         </View>
       </View>
-      <View style={styles.sellerContainer}>
-        <Icon name="account" size={14} color="#666" />
-        <Text style={styles.sellerText}>{product.seller}</Text>
+      <View style={styles.locationContainer}>
+        <Icon name="map-marker" size={14} color="#666" />
+        <Text style={styles.locationText} numberOfLines={1}>{product.location}</Text>
       </View>
-      <TouchableOpacity
-        style={styles.contactButton}
-        onPress={() => onContact(product)}
-        activeOpacity={0.7}
-      >
-        <Icon name="phone" size={16} color="#FFFFFF" />
-        <Text style={styles.contactButtonText}>Contact Seller</Text>
-      </TouchableOpacity>
     </View>
   </TouchableOpacity>
 );
 
-export default function MarketplaceScreen({ navigation }) {
+export default function MarketplaceScreen({ navigation, route }) {
   const { selectedLanguage } = useLanguage();
   const { isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [products] = useState(sampleProducts);
+  const [searchQuery, setSearchQuery] = useState(route?.params?.searchQuery || '');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
+
+  const fetchProducts = async (category = null) => {
+    try {
+      setLoading(true);
+      const data = await getApprovedProducts(category);
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   React.useEffect(() => {
+    fetchProducts(selectedCategory === 'all' ? null : selectedCategory);
     Animated.timing(fadeAnim, {
       toValue: 1,
       duration: 600,
       useNativeDriver: true,
     }).start();
-  }, [fadeAnim]);
+  }, [selectedCategory]);
 
   const categories = [
     { id: 'all', label: t.allProducts, icon: '📦' },
@@ -264,36 +197,42 @@ export default function MarketplaceScreen({ navigation }) {
     { id: 'fertilizers', label: t.fertilizers, icon: '🌱' },
     { id: 'tools', label: t.tools, icon: '🔧' },
     { id: 'pesticides', label: t.pesticides, icon: '🛡️' },
-    { id: 'organic', label: t.organic, icon: '✨' },
+    { id: 'herbicides', label: t.herbicides, icon: '🧪' },
   ];
 
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    if (!searchQuery) return true;
+    const name = (product.productName || product.title || '').toLowerCase();
+    const desc = (product.description || '').toLowerCase();
+    const q = searchQuery.toLowerCase();
+    return name.includes(q) || desc.includes(q);
   });
+
+  const handleProductPress = (product) => {
+    setSelectedProduct(product);
+    setDetailModalVisible(true);
+  };
+
+  const handleCall = (phone) => {
+    const url = Platform.OS === 'ios' ? `telprompt:${phone}` : `tel:${phone}`;
+    Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open phone dialer.'));
+  };
 
   const handleContact = (product) => {
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please login to contact sellers.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('Login') },
-        ]
-      );
-    } else {
-      Alert.alert(
-        'Contact Seller',
-        `Contact ${product.seller} about "${product.title}"`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Call', onPress: () => console.log('Call seller') },
-          { text: 'Message', onPress: () => console.log('Message seller') },
-        ]
-      );
+      setDetailModalVisible(false);
+      setTimeout(() => {
+        Alert.alert(
+          'Login Required',
+          'Please login to contact sellers.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login', onPress: () => navigation.navigate('Login') },
+          ]
+        );
+      }, 300);
+    } else if (product.phone) {
+      handleCall(product.phone);
     }
   };
 
@@ -420,6 +359,7 @@ export default function MarketplaceScreen({ navigation }) {
                       key={product.id}
                       product={product}
                       onContact={handleContact}
+                      onPress={handleProductPress}
                     />
                   ))}
                 </View>
@@ -442,6 +382,100 @@ export default function MarketplaceScreen({ navigation }) {
             </Animated.View>
           </View>
         </ScrollView>
+
+        {/* Product Detail Modal */}
+        <Modal visible={detailModalVisible} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              {selectedProduct && (
+                <>
+                  {/* Modal Header */}
+                  <View style={styles.modalHeader}>
+                    <View style={styles.modalDragHandle} />
+                  </View>
+
+                  {/* Product Emoji */}
+                  <View style={styles.modalEmojiContainer}>
+                    <View style={styles.modalEmojiBg}>
+                      <Text style={styles.modalEmoji}>
+                        {categoryEmojis[selectedProduct.category] || '📦'}
+                      </Text>
+                    </View>
+                    <View style={styles.modalCategoryBadge}>
+                      <Text style={styles.modalCategoryText}>
+                        {(selectedProduct.category || '').charAt(0).toUpperCase() + (selectedProduct.category || '').slice(1)}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Product Info */}
+                  <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                    <Text style={styles.modalProductName}>
+                      {selectedProduct.productName || selectedProduct.title}
+                    </Text>
+
+                    <View style={styles.modalPriceRow}>
+                      <Text style={styles.modalPriceLabel}>Rs.</Text>
+                      <Text style={styles.modalPriceValue}>
+                        {selectedProduct.price?.toLocaleString()}
+                      </Text>
+                    </View>
+
+                    <Text style={styles.modalDescription}>
+                      {selectedProduct.description}
+                    </Text>
+
+                    <View style={styles.modalDivider} />
+
+                    {/* Seller Info */}
+                    <View style={styles.modalInfoSection}>
+                      <Text style={styles.modalInfoTitle}>Seller Details</Text>
+                      <View style={styles.modalInfoRow}>
+                        <View style={styles.modalInfoIcon}>
+                          <Icon name="account" size={18} color="#0F5132" />
+                        </View>
+                        <Text style={styles.modalInfoText}>{selectedProduct.seller}</Text>
+                      </View>
+                      <View style={styles.modalInfoRow}>
+                        <View style={styles.modalInfoIcon}>
+                          <Icon name="map-marker" size={18} color="#0F5132" />
+                        </View>
+                        <Text style={styles.modalInfoText}>{selectedProduct.location}</Text>
+                      </View>
+                      {selectedProduct.phone && (
+                        <View style={styles.modalInfoRow}>
+                          <View style={styles.modalInfoIcon}>
+                            <Icon name="phone" size={18} color="#0F5132" />
+                          </View>
+                          <Text style={styles.modalInfoText}>{selectedProduct.phone}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </ScrollView>
+
+                  {/* Action Buttons */}
+                  <View style={styles.modalActions}>
+                    <TouchableOpacity
+                      style={styles.modalCloseBtn}
+                      onPress={() => setDetailModalVisible(false)}
+                    >
+                      <Text style={styles.modalCloseBtnText}>Close</Text>
+                    </TouchableOpacity>
+                    {selectedProduct.phone && (
+                      <TouchableOpacity
+                        style={styles.modalContactBtn}
+                        onPress={() => handleContact(selectedProduct)}
+                      >
+                        <Icon name="phone" size={20} color="#FFFFFF" />
+                        <Text style={styles.modalContactBtnText}>Contact Seller</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -714,38 +748,33 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   productContent: {
-    padding: 12,
+    padding: 10,
   },
   productTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     color: '#1A1A1A',
-    marginBottom: 6,
-    lineHeight: 20,
+    marginBottom: 3,
   },
   productDescription: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 10,
-    lineHeight: 16,
+    fontSize: 11,
+    color: '#888',
+    marginBottom: 6,
   },
   productFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   priceContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
   },
   priceLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
     marginRight: 2,
   },
   priceValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: '#0F5132',
   },
@@ -757,31 +786,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#666',
     marginLeft: 4,
-  },
-  sellerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  sellerText: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 6,
-  },
-  contactButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#0F5132',
-    paddingVertical: 10,
-    borderRadius: 10,
-    marginTop: 4,
-  },
-  contactButtonText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginLeft: 6,
+    flex: 1,
   },
   emptyState: {
     alignItems: 'center',
@@ -819,6 +824,162 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginLeft: 8,
+  },
+  // --- Product Detail Modal ---
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '80%',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#DDD',
+    borderRadius: 2,
+  },
+  modalEmojiContainer: {
+    alignItems: 'center',
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  modalEmojiBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 2,
+    borderColor: '#E0EDE6',
+  },
+  modalEmoji: {
+    fontSize: 40,
+  },
+  modalCategoryBadge: {
+    backgroundColor: '#0F5132',
+    paddingHorizontal: 14,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  modalCategoryText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  modalBody: {
+    paddingHorizontal: 24,
+  },
+  modalProductName: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 8,
+    letterSpacing: -0.3,
+  },
+  modalPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalPriceLabel: {
+    fontSize: 16,
+    color: '#0F5132',
+    fontWeight: '600',
+    marginRight: 4,
+  },
+  modalPriceValue: {
+    fontSize: 28,
+    fontWeight: '900',
+    color: '#0F5132',
+  },
+  modalDescription: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: '#F0F0F0',
+    marginVertical: 12,
+  },
+  modalInfoSection: {
+    marginBottom: 8,
+  },
+  modalInfoTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 12,
+  },
+  modalInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalInfoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  modalInfoText: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    gap: 12,
+  },
+  modalCloseBtn: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 14,
+    backgroundColor: '#F2F2F2',
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#666',
+  },
+  modalContactBtn: {
+    flex: 2,
+    flexDirection: 'row',
+    paddingVertical: 15,
+    borderRadius: 14,
+    backgroundColor: '#0F5132',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  modalContactBtnText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 

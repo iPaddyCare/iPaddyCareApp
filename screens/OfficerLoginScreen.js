@@ -15,8 +15,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import auth from '@react-native-firebase/auth';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import { saveOfficerProfile } from '../src/services/messagingService';
 
 const translations = {
   English: {
@@ -181,6 +183,8 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
       const result = await signUpAsOfficer(formData.email, formData.password, formData.name);
       if (result.success) {
         console.log('Officer registration successful');
+        const currentUser = auth().currentUser;
+        if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
         console.error('Officer registration failed:', result.error);
         Alert.alert('Registration Failed', result.error);
@@ -188,7 +192,8 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     } else {
       const result = await signInAsOfficer(formData.email, formData.password);
       if (result.success) {
-        // Navigation will be handled by auth state change
+        const currentUser = auth().currentUser;
+        if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
         Alert.alert('Error', result.error);
       }

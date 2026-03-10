@@ -36,12 +36,17 @@ const api = axios.create({
 // Add request interceptor to log requests
 api.interceptors.request.use(
   (config) => {
-    console.log('API Request:', config.method?.toUpperCase(), config.url);
-    console.log('Full URL:', config.baseURL + config.url);
+    // Only log in development
+    if (__DEV__) {
+      console.log('API Request:', config.method?.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => {
-    console.error('Request error:', error);
+    // Only log actual errors, not warnings
+    if (error.message) {
+      console.error('Request error:', error.message);
+    }
     return Promise.reject(error);
   }
 );
@@ -49,11 +54,29 @@ api.interceptors.request.use(
 // Add response interceptor to log responses
 api.interceptors.response.use(
   (response) => {
-    console.log('API Response:', response.status, response.config.url);
+    // Only log in development
+    if (__DEV__) {
+      console.log('API Response:', response.status, response.config.url);
+    }
     return response;
   },
   (error) => {
-    console.error('Response error:', error.message);
+    // Better error handling - only log if it's a real error
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const url = error.config?.url || 'unknown';
+      console.error(`API Error [${status}]: ${url}`);
+      if (error.response.data) {
+        console.error('Error details:', error.response.data);
+      }
+    } else if (error.request) {
+      // Request made but no response
+      console.error('Network error: No response from server');
+    } else {
+      // Something else happened
+      console.error('Request setup error:', error.message);
+    }
     return Promise.reject(error);
   }
 );

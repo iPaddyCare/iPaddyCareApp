@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getPendingProducts, updateProductStatus } from '../src/services/marketplaceService';
 
 const { width } = Dimensions.get('window');
 
@@ -121,71 +122,46 @@ const translations = {
   },
 };
 
-// Sample pending products (in a real app, this would come from backend)
-const samplePendingProducts = [
-  {
-    id: '1',
-    productName: 'Premium Paddy Seeds',
-    category: 'Seeds',
-    price: 2500,
-    location: 'Colombo',
-    seller: 'Kamal Perera',
-    sellerEmail: 'kamal@example.com',
-    description: 'High quality paddy seeds for cultivation',
-    image: '🌾',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '10:30 AM',
-  },
-  {
-    id: '2',
-    productName: 'NPK Fertilizer 50kg',
-    category: 'Fertilizers',
-    price: 3500,
-    location: 'Kandy',
-    seller: 'Samantha Silva',
-    sellerEmail: 'samantha@example.com',
-    description: 'Balanced NPK fertilizer for optimal paddy growth',
-    image: '🌱',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '11:15 AM',
-  },
-  {
-    id: '3',
-    productName: 'Smartphone Case', // Non-related item example
-    category: 'Other',
-    price: 500,
-    location: 'Galle',
-    seller: 'Priya Nadesan',
-    sellerEmail: 'priya@example.com',
-    description: 'Protective case for smartphone',
-    image: '📱',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '12:00 PM',
-  },
-];
+const categoryEmojis = {
+  seeds: '🌾',
+  fertilizers: '🌱',
+  tools: '🔧',
+  pesticides: '🛡️',
+  herbicides: '🧪',
+};
 
 export default function ProductApprovalScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
   const { isOfficer } = useAuth();
   const t = translations[selectedLanguage];
-  const [pendingProducts, setPendingProducts] = useState(samplePendingProducts);
+  const [pendingProducts, setPendingProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const fetchPending = async () => {
+    try {
+      setLoading(true);
+      const data = await getPendingProducts();
+      setPendingProducts(data);
+    } catch (error) {
+      console.error('Error fetching pending products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // In a real app, fetch pending products from backend
-  }, []);
+    if (isOfficer) {
+      fetchPending();
+    }
+  }, [isOfficer]);
 
-  const onRefresh = React.useCallback(() => {
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // In a real app, fetch pending products from backend
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    await fetchPending();
+    setRefreshing(false);
   }, []);
 
   const handleApprove = (product) => {
@@ -196,12 +172,17 @@ export default function ProductApprovalScreen({ navigation }) {
         { text: t.cancel, style: 'cancel' },
         {
           text: t.approve,
-          onPress: () => {
-            // In a real app, send approval to backend
-            setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-            Alert.alert(t.approvedSuccess, t.approvedMessage);
-            setShowDetails(false);
-            setSelectedProduct(null);
+          onPress: async () => {
+            try {
+              await updateProductStatus(product.id, 'approved');
+              setPendingProducts(prev => prev.filter(p => p.id !== product.id));
+              Alert.alert(t.approvedSuccess, t.approvedMessage);
+              setShowDetails(false);
+              setSelectedProduct(null);
+            } catch (error) {
+              console.error('Error approving product:', error);
+              Alert.alert('Error', 'Failed to approve product.');
+            }
           },
         },
       ]
@@ -217,12 +198,17 @@ export default function ProductApprovalScreen({ navigation }) {
         {
           text: t.decline,
           style: 'destructive',
-          onPress: () => {
-            // In a real app, send decline to backend with reason
-            setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-            Alert.alert(t.declinedSuccess, t.declinedMessage);
-            setShowDetails(false);
-            setSelectedProduct(null);
+          onPress: async () => {
+            try {
+              await updateProductStatus(product.id, 'declined');
+              setPendingProducts(prev => prev.filter(p => p.id !== product.id));
+              Alert.alert(t.declinedSuccess, t.declinedMessage);
+              setShowDetails(false);
+              setSelectedProduct(null);
+            } catch (error) {
+              console.error('Error declining product:', error);
+              Alert.alert('Error', 'Failed to decline product.');
+            }
           },
         },
       ]
@@ -306,7 +292,7 @@ export default function ProductApprovalScreen({ navigation }) {
               <View key={product.id} style={styles.productCard}>
                 <View style={styles.productHeader}>
                   <View style={styles.productIcon}>
-                    <Text style={styles.productIconText}>{product.image}</Text>
+                    <Text style={styles.productIconText}>{categoryEmojis[product.category] || '📦'}</Text>
                   </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.productName}>{product.productName}</Text>
@@ -317,7 +303,7 @@ export default function ProductApprovalScreen({ navigation }) {
                     </View>
                     <Text style={styles.productSeller}>👤 {product.seller}</Text>
                     <Text style={styles.productDate}>
-                      {t.submitted}: {product.submittedDate} at {product.submittedTime}
+                      {t.submitted}: {product.createdAt instanceof Date ? product.createdAt.toLocaleDateString() : ''}
                     </Text>
                   </View>
                 </View>
