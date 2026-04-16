@@ -328,7 +328,6 @@ npm run android
    # or
 yarn android
 ```
-adb reverse tcp:8000 tcp:8000
 
 ---
 
