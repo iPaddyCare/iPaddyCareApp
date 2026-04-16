@@ -2,6 +2,7 @@
  * Marketplace Service — Firestore CRUD for products
  */
 import firestore from '@react-native-firebase/firestore';
+import RNFS from 'react-native-fs';
 
 const productsCollection = firestore().collection('products');
 
@@ -12,6 +13,43 @@ function getStockStatus(quantity) {
   if (quantity <= 0) return 'out_of_stock';
   if (quantity <= 5) return 'low_stock';
   return 'in_stock';
+}
+
+/**
+ * Upload a product image to Firebase Storage and return the download URL.
+ * @param {string} localUri - local file URI from image picker / resizer
+ * @param {string} userId
+ * @returns {Promise<string>} download URL
+ */
+export async function uploadProductImage(localUri, userId) {
+  // Normalize content:// URIs on Android — copy to a readable temp file first
+  let uploadUri = localUri;
+  if (localUri.startsWith('content://')) {
+    const tempPath = `${RNFS.CachesDirectoryPath}/upload_${Date.now()}.jpg`;
+    await RNFS.copyFile(localUri, tempPath);
+    uploadUri = `file://${tempPath}`;
+  }
+
+  const formData = new FormData();
+  formData.append('file', {
+    uri: uploadUri,
+    type: 'image/jpeg',
+    name: `product_${userId}_${Date.now()}.jpg`,
+  });
+  formData.append('upload_preset', 'ipaddycare_products');
+
+  const response = await fetch('https://api.cloudinary.com/v1_1/dd6nsdcff/image/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data?.error?.message || `Upload failed (${response.status})`);
+  }
+
+  return data.secure_url;
 }
 
 /**
@@ -48,19 +86,22 @@ export async function addProduct(productData, user) {
  * Get approved products with optional category filter
  */
 export async function getApprovedProducts(category = null) {
-  let query = productsCollection.where('status', '==', 'approved');
+  const snapshot = await productsCollection
+    .where('status', '==', 'approved')
+    .orderBy('createdAt', 'desc')
+    .get();
 
-  if (category && category !== 'all') {
-    query = query.where('category', '==', category);
-  }
-
-  const snapshot = await query.orderBy('createdAt', 'desc').get();
-
-  return snapshot.docs.map(doc => ({
+  let results = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   }));
+
+  if (category && category !== 'all') {
+    results = results.filter(p => p.category === category);
+  }
+
+  return results;
 }
 
 /**
@@ -153,6 +194,7 @@ export async function deleteProduct(productId) {
 }
 
 export default {
+  uploadProductImage,
   addProduct,
   getApprovedProducts,
   getProductsByDisease,

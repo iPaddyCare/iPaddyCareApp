@@ -26,6 +26,7 @@ import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
 import PokedexResultCard from '../src/components/PokedexResultCard';
+import { getProductsByDisease } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -45,6 +46,8 @@ export default function PestDetectionScreen({ navigation }) {
   const [imageLoading, setImageLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
+  const [recommendedProducts, setRecommendedProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const cameraRef = useRef(null);
@@ -357,6 +360,15 @@ export default function PestDetectionScreen({ navigation }) {
         prediction,
         solution,
       });
+
+      // Fetch marketplace products that treat this disease
+      if (prediction.disease) {
+        setLoadingProducts(true);
+        getProductsByDisease(prediction.disease)
+          .then(setRecommendedProducts)
+          .catch(() => setRecommendedProducts([]))
+          .finally(() => setLoadingProducts(false));
+      }
     } catch (error) {
       console.error('Detection error:', error);
       Alert.alert('Error', 'Failed to detect disease. Please try again.');
@@ -370,6 +382,7 @@ export default function PestDetectionScreen({ navigation }) {
     setResult(null);
     setShowChat(false);
     setChatMessages([]);
+    setRecommendedProducts([]);
   };
 
   const sendChatMessage = async () => {
@@ -589,6 +602,66 @@ export default function PestDetectionScreen({ navigation }) {
                 solution={result.solution}
                 navigation={navigation}
               />
+            )}
+
+            {/* Recommended Products from Marketplace */}
+            {result && (loadingProducts || recommendedProducts.length > 0) && (
+              <View style={styles.recommendedSection}>
+                <View style={styles.recommendedHeader}>
+                  <Icon name="storefront" size={20} color="#0F5132" />
+                  <Text style={styles.recommendedTitle}>Recommended Products</Text>
+                </View>
+                <Text style={styles.recommendedSubtitle}>
+                  Products available in the marketplace that treat {result.solution.diseaseName || result.prediction.disease}
+                </Text>
+                {loadingProducts ? (
+                  <ActivityIndicator color="#0F5132" style={{ marginVertical: 16 }} />
+                ) : (
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.recommendedList}
+                  >
+                    {recommendedProducts.map((product) => (
+                      <TouchableOpacity
+                        key={product.id}
+                        style={styles.recommendedCard}
+                        activeOpacity={0.8}
+                        onPress={() => navigation.navigate('Marketplace', { searchQuery: product.productName })}
+                      >
+                        {product.imageUrl ? (
+                          <Image source={{ uri: product.imageUrl }} style={styles.recommendedCardImage} />
+                        ) : (
+                          <View style={styles.recommendedCardImagePlaceholder}>
+                            <Text style={{ fontSize: 32 }}>
+                              {product.category === 'pesticides' ? '🛡️' : '🧪'}
+                            </Text>
+                          </View>
+                        )}
+                        <View style={styles.recommendedCardBody}>
+                          <Text style={styles.recommendedCardName} numberOfLines={2}>
+                            {product.productName}
+                          </Text>
+                          <Text style={styles.recommendedCardPrice}>
+                            Rs. {product.price?.toLocaleString()}
+                          </Text>
+                          <Text style={styles.recommendedCardLocation} numberOfLines={1}>
+                            {product.location}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+                <TouchableOpacity
+                  style={styles.viewMarketplaceBtn}
+                  onPress={() => navigation.navigate('Marketplace')}
+                  activeOpacity={0.8}
+                >
+                  <Icon name="storefront-outline" size={18} color="#0F5132" />
+                  <Text style={styles.viewMarketplaceBtnText}>View Full Marketplace</Text>
+                </TouchableOpacity>
+              </View>
             )}
 
             {/* Chat Section */}
@@ -1624,5 +1697,97 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingHorizontal: 40,
     lineHeight: 22,
+  },
+  recommendedSection: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.1)',
+  },
+  recommendedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 4,
+  },
+  recommendedTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  recommendedSubtitle: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 16,
+    lineHeight: 17,
+  },
+  recommendedList: {
+    paddingRight: 8,
+    gap: 12,
+  },
+  recommendedCard: {
+    width: 150,
+    backgroundColor: '#F8FAF9',
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.07)',
+  },
+  recommendedCardImage: {
+    width: '100%',
+    height: 100,
+    resizeMode: 'cover',
+  },
+  recommendedCardImagePlaceholder: {
+    width: '100%',
+    height: 100,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  recommendedCardBody: {
+    padding: 10,
+  },
+  recommendedCardName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 4,
+    lineHeight: 17,
+  },
+  recommendedCardPrice: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0F5132',
+    marginBottom: 2,
+  },
+  recommendedCardLocation: {
+    fontSize: 11,
+    color: '#888',
+  },
+  viewMarketplaceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    marginTop: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#F0F7F3',
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.15)',
+  },
+  viewMarketplaceBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F5132',
   },
 });

@@ -298,7 +298,11 @@ export default function ProductApprovalScreen({ navigation }) {
               <View key={product.id} style={styles.productCard}>
                 <View style={styles.productHeader}>
                   <View style={styles.productIcon}>
-                    <Text style={styles.productIconText}>{categoryEmojis[product.category] || '📦'}</Text>
+                    {product.imageUrl ? (
+                      <Image source={{ uri: product.imageUrl }} style={styles.productThumbImage} />
+                    ) : (
+                      <Text style={styles.productIconText}>{categoryEmojis[product.category] || '📦'}</Text>
+                    )}
                   </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.productName}>{product.productName}</Text>
@@ -376,9 +380,13 @@ export default function ProductApprovalScreen({ navigation }) {
               <View style={styles.modalHeader}>
                 <View style={styles.modalHeaderLeft}>
                   <View style={styles.modalIconCircle}>
-                    <Text style={{ fontSize: 24 }}>
-                      {categoryEmojis[selectedProduct?.category] || '📦'}
-                    </Text>
+                    {selectedProduct?.imageUrl ? (
+                      <Image source={{ uri: selectedProduct.imageUrl }} style={styles.modalThumbImage} />
+                    ) : (
+                      <Text style={{ fontSize: 24 }}>
+                        {categoryEmojis[selectedProduct?.category] || '📦'}
+                      </Text>
+                    )}
                   </View>
                   <View>
                     <Text style={styles.modalTitle}>{selectedProduct?.productName}</Text>
@@ -579,6 +587,18 @@ const styles = StyleSheet.create({
   },
   productIconText: {
     fontSize: 32,
+  },
+  productThumbImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  modalThumbImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    resizeMode: 'cover',
   },
   productInfo: {
     flex: 1,

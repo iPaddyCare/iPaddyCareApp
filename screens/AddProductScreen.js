@@ -19,7 +19,10 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { addProduct } from '../src/services/marketplaceService';
+import { Image } from 'react-native';
+import { launchImageLibrary } from 'react-native-image-picker';
+import ImageResizer from 'react-native-image-resizer';
+import { addProduct, uploadProductImage } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -165,6 +168,8 @@ export default function AddProductScreen({ navigation }) {
     targetDiseases: [],
   });
 
+  const [imageUri, setImageUri] = useState(null);
+  const [imageUploading, setImageUploading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [showDiseasePicker, setShowDiseasePicker] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -191,6 +196,20 @@ export default function AddProductScreen({ navigation }) {
       useNativeDriver: true,
     }).start();
   }, [isOfficer, navigation, fadeAnim]);
+
+  const handlePickImage = async () => {
+    const result = await launchImageLibrary({ mediaType: 'photo', quality: 0.8 });
+    if (result.didCancel || !result.assets?.[0]) return;
+    const asset = result.assets[0];
+    try {
+      const resized = await ImageResizer.createResizedImage(
+        asset.uri, 800, 800, 'JPEG', 75
+      );
+      setImageUri(resized.uri);
+    } catch {
+      setImageUri(asset.uri);
+    }
+  };
 
   const handleCategorySelect = (categoryId) => {
     const showDiseases = categoryId === 'pesticides' || categoryId === 'herbicides';
@@ -252,9 +271,16 @@ export default function AddProductScreen({ navigation }) {
 
     setSubmitting(true);
     try {
-      await addProduct(formData, user);
+      let imageUrl = null;
+      if (imageUri) {
+        setImageUploading(true);
+        imageUrl = await uploadProductImage(imageUri, user.uid);
+        setImageUploading(false);
+      }
+      await addProduct({ ...formData, imageUrl }, user);
       setShowSuccessModal(true);
     } catch (error) {
+      setImageUploading(false);
       console.error('Error adding product:', error);
       Alert.alert(t.error, 'Failed to submit product. Please try again.');
     } finally {
@@ -528,16 +554,47 @@ export default function AddProductScreen({ navigation }) {
               />
             </Animated.View>
 
+            {/* Product Image */}
+            <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
+              <Text style={styles.label}>{t.addImage} <Text style={styles.optionalLabel}>({t.imageOptional})</Text></Text>
+              <TouchableOpacity
+                style={styles.imagePicker}
+                onPress={handlePickImage}
+                activeOpacity={0.7}
+              >
+                {imageUri ? (
+                  <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                ) : (
+                  <View style={styles.imagePlaceholder}>
+                    <Icon name="camera-plus" size={32} color="#0F5132" />
+                    <Text style={styles.imagePlaceholderText}>Tap to add photo</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              {imageUri && (
+                <TouchableOpacity
+                  style={styles.removeImageBtn}
+                  onPress={() => setImageUri(null)}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="close-circle" size={16} color="#EF4444" />
+                  <Text style={styles.removeImageText}>Remove photo</Text>
+                </TouchableOpacity>
+              )}
+            </Animated.View>
+
             {/* Submit Button */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <TouchableOpacity
-                style={[styles.submitButton, submitting && { opacity: 0.6 }]}
+                style={[styles.submitButton, (submitting || imageUploading) && { opacity: 0.6 }]}
                 onPress={handleSubmit}
                 activeOpacity={0.8}
-                disabled={submitting}
+                disabled={submitting || imageUploading}
               >
-                <Icon name={submitting ? 'loading' : 'check-circle'} size={24} color="#FFFFFF" />
-                <Text style={styles.submitButtonText}>{submitting ? 'Submitting...' : t.submit}</Text>
+                <Icon name={(submitting || imageUploading) ? 'loading' : 'check-circle'} size={24} color="#FFFFFF" />
+                <Text style={styles.submitButtonText}>
+                  {imageUploading ? 'Uploading image...' : submitting ? 'Submitting...' : t.submit}
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -582,6 +639,7 @@ export default function AddProductScreen({ navigation }) {
                   activeIngredient: '',
                   targetDiseases: [],
                 });
+                setImageUri(null);
                 navigation.goBack();
               }}
               activeOpacity={0.8}
@@ -951,6 +1009,44 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginLeft: 8,
+  },
+  imagePicker: {
+    width: '100%',
+    height: 180,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: 'rgba(15,81,50,0.2)',
+    borderStyle: 'dashed',
+  },
+  imagePreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    flex: 1,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  imagePlaceholderText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0F5132',
+  },
+  removeImageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 8,
+    alignSelf: 'flex-end',
+  },
+  removeImageText: {
+    fontSize: 13,
+    color: '#EF4444',
+    fontWeight: '600',
   },
 });
 

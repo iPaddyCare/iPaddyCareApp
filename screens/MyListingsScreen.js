@@ -13,6 +13,8 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  RefreshControl,
+  Image,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -148,9 +150,13 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
   return (
     <View style={styles.listingCard}>
       <View style={styles.listingImageContainer}>
-        <View style={styles.listingImagePlaceholder}>
-          <Text style={styles.listingImageEmoji}>{categoryEmojis[listing.category] || '📦'}</Text>
-        </View>
+        {listing.imageUrl ? (
+          <Image source={{ uri: listing.imageUrl }} style={styles.listingImage} />
+        ) : (
+          <View style={styles.listingImagePlaceholder}>
+            <Text style={styles.listingImageEmoji}>{categoryEmojis[listing.category] || '📦'}</Text>
+          </View>
+        )}
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(listing.status) }]}>
           <Text style={styles.statusText}>{getStatusLabel(listing.status)}</Text>
         </View>
@@ -215,6 +221,7 @@ export default function MyListingsScreen({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchListings = async () => {
     if (!user?.uid) return;
@@ -226,6 +233,19 @@ export default function MyListingsScreen({ navigation }) {
       console.error('Error fetching listings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!user?.uid) return;
+    setRefreshing(true);
+    try {
+      const data = await getUserListings(user.uid);
+      setListings(data);
+    } catch (error) {
+      console.error('Error refreshing listings:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -416,6 +436,14 @@ export default function MyListingsScreen({ navigation }) {
           style={styles.scrollView}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#0F5132']}
+              tintColor="#0F5132"
+            />
+          }
         >
           {/* Hero Header */}
           <View style={styles.heroHeader}>
@@ -761,6 +789,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  listingImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   listingImagePlaceholder: {
     width: 100,

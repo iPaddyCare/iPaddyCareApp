@@ -13,6 +13,8 @@ import {
   Animated,
   Linking,
   Platform,
+  RefreshControl,
+  Image,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -135,9 +137,13 @@ const CategoryButton = ({ category, label, icon, isActive, onPress }) => (
 const ProductCard = ({ product, onContact, onPress }) => (
   <TouchableOpacity style={styles.productCard} activeOpacity={0.7} onPress={() => onPress(product)}>
     <View style={styles.productImageContainer}>
-      <View style={styles.productImagePlaceholder}>
-        <Text style={styles.productImageEmoji}>{categoryEmojis[product.category] || '📦'}</Text>
-      </View>
+      {product.imageUrl ? (
+        <Image source={{ uri: product.imageUrl }} style={styles.productImage} />
+      ) : (
+        <View style={styles.productImagePlaceholder}>
+          <Text style={styles.productImageEmoji}>{categoryEmojis[product.category] || '📦'}</Text>
+        </View>
+      )}
     </View>
     <View style={styles.productContent}>
       <Text style={styles.productTitle} numberOfLines={1}>{product.productName || product.title}</Text>
@@ -166,8 +172,10 @@ export default function MarketplaceScreen({ navigation, route }) {
   const [fadeAnim] = useState(new Animated.Value(0));
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState(route?.params?.searchQuery || '');
+  const [sortBy, setSortBy] = useState('newest');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
 
@@ -180,6 +188,18 @@ export default function MarketplaceScreen({ navigation, route }) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const data = await getApprovedProducts(selectedCategory === 'all' ? null : selectedCategory);
+      setProducts(data);
+    } catch (error) {
+      console.error('Error refreshing products:', error);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -204,12 +224,19 @@ export default function MarketplaceScreen({ navigation, route }) {
     { id: 'herbicides', label: t.herbicides, icon: '🧪' },
   ];
 
-  const filteredProducts = products.filter((product) => {
-    if (!searchQuery) return true;
-    const name = (product.productName || product.title || '').toLowerCase();
-    const desc = (product.description || '').toLowerCase();
-    const q = searchQuery.toLowerCase();
-    return name.includes(q) || desc.includes(q);
+  const filteredProducts = [...products
+    .filter((product) => {
+      if (!searchQuery) return true;
+      const name = (product.productName || product.title || '').toLowerCase();
+      const desc = (product.description || '').toLowerCase();
+      const q = searchQuery.toLowerCase();
+      return name.includes(q) || desc.includes(q);
+    })
+  ].sort((a, b) => {
+    if (sortBy === 'priceLow') return a.price - b.price;
+    if (sortBy === 'priceHigh') return b.price - a.price;
+    if (sortBy === 'oldest') return a.createdAt - b.createdAt;
+    return b.createdAt - a.createdAt; // newest (default)
   });
 
   const handleProductPress = (product) => {
@@ -275,6 +302,14 @@ export default function MarketplaceScreen({ navigation, route }) {
           style={styles.scrollView}
           contentContainerStyle={[styles.scrollContent, { paddingBottom: 72 + insets.bottom + 20 }]}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleRefresh}
+              colors={['#0F5132']}
+              tintColor="#0F5132"
+            />
+          }
         >
           {/* Hero Header */}
           <View style={styles.heroHeader}>
@@ -325,6 +360,27 @@ export default function MarketplaceScreen({ navigation, route }) {
                   <Icon name="close-circle" size={20} color="#999" />
                 </TouchableOpacity>
               )}
+            </Animated.View>
+
+            {/* Sort Pills */}
+            <Animated.View style={[styles.sortContainer, { opacity: fadeAnim }]}>
+              {[
+                { id: 'newest', label: t.newest },
+                { id: 'priceLow', label: t.priceLow },
+                { id: 'priceHigh', label: t.priceHigh },
+                { id: 'oldest', label: t.oldest },
+              ].map((option) => (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[styles.sortPill, sortBy === option.id && styles.sortPillActive]}
+                  onPress={() => setSortBy(option.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.sortPillText, sortBy === option.id && styles.sortPillTextActive]}>
+                    {option.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </Animated.View>
 
             {/* Categories */}
@@ -403,13 +459,17 @@ export default function MarketplaceScreen({ navigation, route }) {
                     <View style={styles.modalDragHandle} />
                   </View>
 
-                  {/* Product Emoji */}
+                  {/* Product Image / Emoji */}
                   <View style={styles.modalEmojiContainer}>
-                    <View style={styles.modalEmojiBg}>
-                      <Text style={styles.modalEmoji}>
-                        {categoryEmojis[selectedProduct.category] || '📦'}
-                      </Text>
-                    </View>
+                    {selectedProduct.imageUrl ? (
+                      <Image source={{ uri: selectedProduct.imageUrl }} style={styles.modalProductImage} />
+                    ) : (
+                      <View style={styles.modalEmojiBg}>
+                        <Text style={styles.modalEmoji}>
+                          {categoryEmojis[selectedProduct.category] || '📦'}
+                        </Text>
+                      </View>
+                    )}
                     <View style={styles.modalCategoryBadge}>
                       <Text style={styles.modalCategoryText}>
                         {(selectedProduct.category || '').charAt(0).toUpperCase() + (selectedProduct.category || '').slice(1)}
@@ -760,6 +820,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  productImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
   productImagePlaceholder: {
     width: 80,
     height: 80,
@@ -895,6 +960,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 8,
     paddingBottom: 12,
+  },
+  modalProductImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 16,
+    marginBottom: 8,
+    resizeMode: 'cover',
   },
   modalEmojiBg: {
     width: 80,
@@ -1035,6 +1107,37 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: 'rgba(15,81,50,0.1)',
+  },
+  sortContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 20,
+  },
+  sortPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  sortPillActive: {
+    backgroundColor: '#0F5132',
+    borderColor: '#0F5132',
+  },
+  sortPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  sortPillTextActive: {
+    color: '#FFFFFF',
   },
   modalIngredientText: {
     fontSize: 13,
