@@ -23,10 +23,12 @@ import { Image } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';
 import { addProduct, uploadProductImage } from '../src/services/marketplaceService';
+import CityPickerModal from '../src/components/CityPickerModal';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
+const UNIT_OPTIONS = ['kg', 'bags', 'litres', 'bundles', 'units'];
+
 const translations = {
   English: {
     title: 'Add Product',
@@ -40,7 +42,7 @@ const translations = {
     description: 'Description',
     descriptionPlaceholder: 'Describe your product...',
     location: 'Location',
-    locationPlaceholder: 'e.g., Colombo',
+    locationPlaceholder: 'Select city',
     contactInfo: 'Contact Information',
     phone: 'Phone Number',
     phonePlaceholder: 'Enter your phone number',
@@ -55,6 +57,13 @@ const translations = {
     fillAllFields: 'Please fill all required fields',
     invalidPrice: 'Please enter a valid price',
     selectCategoryError: 'Please select a category',
+    invalidQuantity: 'Please enter a valid quantity',
+    requiredActiveIngredient: 'Active ingredient is required for pesticides/herbicides',
+    requiredTargetDiseases: 'Select at least one target disease/pest',
+    minName: 'Product name must be at least 3 characters',
+    minDescription: 'Description must be at least 10 characters',
+    maxPrice: 'Price cannot exceed Rs. 9,999,999',
+    invalidPhone: 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)',
   },
   සිංහල: {
     title: 'නිෂ්පාදනයක් එක් කරන්න',
@@ -68,7 +77,7 @@ const translations = {
     description: 'විස්තරය',
     descriptionPlaceholder: 'ඔබේ නිෂ්පාදනය විස්තර කරන්න...',
     location: 'ස්ථානය',
-    locationPlaceholder: 'උදා: කොළඹ',
+    locationPlaceholder: 'දිස්ත්‍රික්කය තෝරන්න',
     contactInfo: 'සම්බන්ධතා තොරතුරු',
     phone: 'දුරකථන අංකය',
     phonePlaceholder: 'ඔබේ දුරකථන අංකය ඇතුළත් කරන්න',
@@ -83,6 +92,13 @@ const translations = {
     fillAllFields: 'කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න',
     invalidPrice: 'කරුණාකර වලංගු මිලක් ඇතුළත් කරන්න',
     selectCategoryError: 'කරුණාකර කාණ්ඩයක් තෝරන්න',
+    invalidQuantity: 'කරුණාකර වලංගු ප්‍රමාණයක් ඇතුළත් කරන්න',
+    requiredActiveIngredient: 'කෘමිනාශක/වල් නාශක සඳහා ක්‍රියාකාරී අමිල අවශ්‍ය වේ',
+    requiredTargetDiseases: 'අවම වශයෙන් එක් ඉලක්ක රෝගයක්/පළිඹු වර්ගයක් තෝරන්න',
+    minName: 'නිෂ්පාදන නම අවම වශයෙන් අකුරු 3ක් විය යුතුය',
+    minDescription: 'විස්තරය අවම වශයෙන් අකුරු 10ක් විය යුතුය',
+    maxPrice: 'මිල රු. 9,999,999 ඉක්මවිය නොහැක',
+    invalidPhone: 'කරුණාකර වලංගු ශ්‍රී ලංකා දුරකථන අංකයක් ඇතුළත් කරන්න (උදා: 0771234567)',
   },
   தமிழ்: {
     title: 'தயாரிப்பைச் சேர்க்கவும்',
@@ -96,7 +112,7 @@ const translations = {
     description: 'விளக்கம்',
     descriptionPlaceholder: 'உங்கள் தயாரிப்பை விவரிக்கவும்...',
     location: 'இடம்',
-    locationPlaceholder: 'எ.கா., கொழும்பு',
+    locationPlaceholder: 'மாவட்டத்தைத் தேர்ந்தெடுக்கவும்',
     contactInfo: 'தொடர்பு தகவல்',
     phone: 'தொலைபேசி எண்',
     phonePlaceholder: 'உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்',
@@ -111,6 +127,13 @@ const translations = {
     fillAllFields: 'தயவுசெய்து அனைத்து தேவையான புலங்களையும் நிரப்பவும்',
     invalidPrice: 'தயவுசெய்து சரியான விலையை உள்ளிடவும்',
     selectCategoryError: 'தயவுசெய்து வகையைத் தேர்ந்தெடுக்கவும்',
+    invalidQuantity: 'தயவுசெய்து சரியான அளவை உள்ளிடவும்',
+    requiredActiveIngredient: 'பூச்சிக்கொல்லிகள்/களைக்கொல்லிகளுக்கு செயலில் உள்ள பொருள் தேவை',
+    requiredTargetDiseases: 'குறைந்தது ஒரு இலக்கு நோய்/பூச்சியைத் தேர்ந்தெடுக்கவும்',
+    minName: 'தயாரிப்பு பெயர் குறைந்தது 3 எழுத்துகளாக இருக்க வேண்டும்',
+    minDescription: 'விளக்கம் குறைந்தது 10 எழுத்துகளாக இருக்க வேண்டும்',
+    maxPrice: 'விலை ரூ. 9,999,999 ஐ தாண்டக்கூடாது',
+    invalidPhone: 'தயவுசெய்து சரியான இலங்கை தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா., 0771234567)',
   },
 };
 
@@ -161,6 +184,7 @@ export default function AddProductScreen({ navigation }) {
     category: '',
     price: '',
     quantity: '',
+    unit: 'kg',
     description: '',
     location: '',
     phone: '',
@@ -168,16 +192,20 @@ export default function AddProductScreen({ navigation }) {
     targetDiseases: [],
   });
 
+  const [fieldErrors, setFieldErrors] = useState({});
   const [imageUri, setImageUri] = useState(null);
   const [imageUploading, setImageUploading] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
+  const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [showDiseasePicker, setShowDiseasePicker] = useState(false);
+  const [showCityPicker, setShowCityPicker] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const closeAllPickers = () => {
     setShowCategoryPicker(false);
     setShowDiseasePicker(false);
+    setShowUnitPicker(false);
   };
 
   React.useEffect(() => {
@@ -219,6 +247,7 @@ export default function AddProductScreen({ navigation }) {
       targetDiseases: showDiseases ? formData.targetDiseases : [],
     });
     setShowCategoryPicker(false);
+    setFieldErrors(prev => ({ ...prev, category: undefined }));
   };
 
   const toggleDisease = (disease) => {
@@ -229,46 +258,78 @@ export default function AddProductScreen({ navigation }) {
         : [...current, disease];
       return { ...prev, targetDiseases: updated };
     });
+    setFieldErrors(prev => ({ ...prev, targetDiseases: undefined }));
   };
 
   const showDiseaseField = formData.category === 'pesticides' || formData.category === 'herbicides';
 
+  const setField = (key, value) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+    if (fieldErrors[key]) {
+      setFieldErrors(prev => ({ ...prev, [key]: undefined }));
+    }
+  };
+
   const handleSubmit = async () => {
-    // Validation
+    const errors = {};
+
     if (!formData.productName.trim()) {
-      Alert.alert(t.error, t.fillAllFields);
-      return;
+      errors.productName = t.fillAllFields;
+    } else if (formData.productName.trim().length < 3) {
+      errors.productName = t.minName;
     }
+
     if (!formData.category) {
-      Alert.alert(t.error, t.selectCategoryError);
-      return;
+      errors.category = t.selectCategoryError;
     }
-    if (!formData.price.trim() || isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
-      Alert.alert(t.error, t.invalidPrice);
-      return;
+
+    if (showDiseaseField && formData.targetDiseases.length === 0) {
+      errors.targetDiseases = t.requiredTargetDiseases;
     }
-    if (!formData.quantity.trim() || isNaN(parseInt(formData.quantity)) || parseInt(formData.quantity) < 0) {
-      Alert.alert(t.error, 'Please enter a valid quantity');
-      return;
+
+    if (showDiseaseField && !formData.activeIngredient.trim()) {
+      errors.activeIngredient = t.requiredActiveIngredient;
     }
+
+    const priceNum = parseFloat(formData.price);
+    if (!formData.price.trim() || isNaN(priceNum) || priceNum <= 0) {
+      errors.price = t.invalidPrice;
+    } else if (priceNum > 9999999) {
+      errors.price = t.maxPrice;
+    }
+
+    const qtyNum = parseInt(formData.quantity, 10);
+    if (!formData.quantity.trim() || isNaN(qtyNum) || qtyNum < 0) {
+      errors.quantity = t.invalidQuantity;
+    }
+
     if (!formData.description.trim()) {
-      Alert.alert(t.error, t.fillAllFields);
-      return;
+      errors.description = t.fillAllFields;
+    } else if (formData.description.trim().length < 10) {
+      errors.description = t.minDescription;
     }
-    if (!formData.location.trim()) {
-      Alert.alert(t.error, t.fillAllFields);
-      return;
+
+    if (!formData.location) {
+      errors.location = t.fillAllFields;
     }
+
     if (!formData.phone.trim()) {
-      Alert.alert(t.error, t.fillAllFields);
-      return;
+      errors.phone = t.fillAllFields;
+    } else {
+      const phoneClean = formData.phone.replace(/\s/g, '');
+      if (!/^0\d{9}$/.test(phoneClean)) {
+        errors.phone = t.invalidPhone;
+      }
     }
-    const phoneClean = formData.phone.replace(/\s/g, '');
-    if (!/^0\d{9}$/.test(phoneClean)) {
-      Alert.alert(t.error, 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)');
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // Scroll to top so user sees errors
+      scrollRef.current?.scrollTo({ y: 0, animated: true });
       return;
     }
 
+    setFieldErrors({});
     setSubmitting(true);
     try {
       let imageUrl = null;
@@ -291,6 +352,16 @@ export default function AddProductScreen({ navigation }) {
   const selectedCategoryLabel = formData.category
     ? categories.find(c => c.id === formData.category)?.label[selectedLanguage] || ''
     : '';
+
+  const inputStyle = (key) => [
+    styles.input,
+    fieldErrors[key] && styles.inputError,
+  ];
+
+  const selectorStyle = (key) => [
+    styles.categorySelector,
+    fieldErrors[key] && styles.inputError,
+  ];
 
   return (
     <View style={styles.container}>
@@ -336,19 +407,22 @@ export default function AddProductScreen({ navigation }) {
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.productName} *</Text>
               <TextInput
-                style={styles.input}
+                style={inputStyle('productName')}
                 placeholder={t.productNamePlaceholder}
                 placeholderTextColor="#999"
                 value={formData.productName}
-                onChangeText={(text) => setFormData({ ...formData, productName: text })}
+                onChangeText={(text) => setField('productName', text)}
               />
+              {fieldErrors.productName && (
+                <Text style={styles.fieldError}>{fieldErrors.productName}</Text>
+              )}
             </Animated.View>
 
             {/* Category */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.category} *</Text>
               <TouchableOpacity
-                style={styles.categorySelector}
+                style={selectorStyle('category')}
                 onPress={() => setShowCategoryPicker(!showCategoryPicker)}
                 activeOpacity={0.7}
               >
@@ -357,6 +431,9 @@ export default function AddProductScreen({ navigation }) {
                 </Text>
                 <Icon name="chevron-down" size={24} color="#666" />
               </TouchableOpacity>
+              {fieldErrors.category && (
+                <Text style={styles.fieldError}>{fieldErrors.category}</Text>
+              )}
               {showCategoryPicker && (
                 <View style={styles.categoryPicker}>
                   {categories.map((category) => (
@@ -390,10 +467,10 @@ export default function AddProductScreen({ navigation }) {
             {/* Target Diseases — only for pesticides/herbicides */}
             {showDiseaseField && (
               <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                <Text style={styles.label}>Target Diseases / Pests</Text>
+                <Text style={styles.label}>Target Diseases / Pests *</Text>
                 <Text style={styles.optionalLabel}>Select which diseases or pests this product treats</Text>
                 <TouchableOpacity
-                  style={styles.categorySelector}
+                  style={selectorStyle('targetDiseases')}
                   onPress={() => setShowDiseasePicker(!showDiseasePicker)}
                   activeOpacity={0.7}
                 >
@@ -404,6 +481,9 @@ export default function AddProductScreen({ navigation }) {
                   </Text>
                   <Icon name={showDiseasePicker ? 'chevron-up' : 'chevron-down'} size={24} color="#666" />
                 </TouchableOpacity>
+                {fieldErrors.targetDiseases && (
+                  <Text style={styles.fieldError}>{fieldErrors.targetDiseases}</Text>
+                )}
                 {/* Selected tags */}
                 {formData.targetDiseases.length > 0 && (
                   <View style={styles.diseaseTagsContainer}>
@@ -463,45 +543,86 @@ export default function AddProductScreen({ navigation }) {
                 <Text style={styles.label}>Active Ingredient / Chemical Composition *</Text>
                 <Text style={styles.optionalLabel}>e.g., Mancozeb 64% + Metalaxyl 8% WP</Text>
                 <TextInput
-                  style={styles.input}
+                  style={inputStyle('activeIngredient')}
                   placeholder="Enter chemical composition"
                   placeholderTextColor="#999"
                   value={formData.activeIngredient}
-                  onChangeText={(text) => setFormData({ ...formData, activeIngredient: text })}
+                  onChangeText={(text) => setField('activeIngredient', text)}
                   onFocus={closeAllPickers}
                 />
+                {fieldErrors.activeIngredient && (
+                  <Text style={styles.fieldError}>{fieldErrors.activeIngredient}</Text>
+                )}
               </Animated.View>
             )}
 
             {/* Price & Quantity Row */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <View style={styles.rowFields}>
+                {/* Price */}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>{t.price} *</Text>
-                  <View style={styles.priceContainer}>
+                  <View style={[styles.priceContainer, fieldErrors.price && styles.inputError]}>
                     <Text style={styles.currencySymbol}>Rs.</Text>
                     <TextInput
                       style={[styles.input, styles.priceInput]}
                       placeholder={t.pricePlaceholder}
                       placeholderTextColor="#999"
                       value={formData.price}
-                      onChangeText={(text) => setFormData({ ...formData, price: text.replace(/[^0-9.]/g, '') })}
+                      onChangeText={(text) => setField('price', text.replace(/[^0-9.]/g, ''))}
                       keyboardType="numeric"
                       onFocus={closeAllPickers}
                     />
                   </View>
+                  {fieldErrors.price && (
+                    <Text style={styles.fieldError}>{fieldErrors.price}</Text>
+                  )}
                 </View>
+                {/* Quantity */}
                 <View style={{ flex: 1 }}>
                   <Text style={styles.label}>Quantity *</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="e.g., 50"
-                    placeholderTextColor="#999"
-                    value={formData.quantity}
-                    onChangeText={(text) => setFormData({ ...formData, quantity: text.replace(/[^0-9]/g, '') })}
-                    keyboardType="numeric"
-                    onFocus={closeAllPickers}
-                  />
+                  <View style={styles.quantityRow}>
+                    <TextInput
+                      style={[inputStyle('quantity'), { flex: 1, marginRight: 6 }]}
+                      placeholder="e.g., 50"
+                      placeholderTextColor="#999"
+                      value={formData.quantity}
+                      onChangeText={(text) => setField('quantity', text.replace(/[^0-9]/g, ''))}
+                      keyboardType="numeric"
+                      onFocus={closeAllPickers}
+                    />
+                    <TouchableOpacity
+                      style={styles.unitSelector}
+                      onPress={() => setShowUnitPicker(!showUnitPicker)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.unitText}>{formData.unit}</Text>
+                      <Icon name="chevron-down" size={14} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+                  {fieldErrors.quantity && (
+                    <Text style={styles.fieldError}>{fieldErrors.quantity}</Text>
+                  )}
+                  {showUnitPicker && (
+                    <View style={[styles.categoryPicker, { zIndex: 10 }]}>
+                      {UNIT_OPTIONS.map(u => (
+                        <TouchableOpacity
+                          key={u}
+                          style={[styles.categoryOption, formData.unit === u && styles.categoryOptionActive]}
+                          onPress={() => {
+                            setField('unit', u);
+                            setShowUnitPicker(false);
+                          }}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.categoryOptionText, formData.unit === u && styles.categoryOptionTextActive]}>
+                            {u}
+                          </Text>
+                          {formData.unit === u && <Icon name="check" size={16} color="#0F5132" />}
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
               </View>
             </Animated.View>
@@ -510,29 +631,41 @@ export default function AddProductScreen({ navigation }) {
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.description} *</Text>
               <TextInput
-                style={[styles.input, styles.textArea]}
+                style={[inputStyle('description'), styles.textArea]}
                 placeholder={t.descriptionPlaceholder}
                 placeholderTextColor="#999"
                 value={formData.description}
-                onChangeText={(text) => setFormData({ ...formData, description: text })}
+                onChangeText={(text) => setField('description', text)}
                 multiline
                 numberOfLines={4}
                 textAlignVertical="top"
                 onFocus={closeAllPickers}
               />
+              {fieldErrors.description && (
+                <Text style={styles.fieldError}>{fieldErrors.description}</Text>
+              )}
             </Animated.View>
 
-            {/* Location */}
+            {/* Location — city picker */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.location} *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={t.locationPlaceholder}
-                placeholderTextColor="#999"
-                value={formData.location}
-                onChangeText={(text) => setFormData({ ...formData, location: text })}
-                onFocus={closeAllPickers}
-              />
+              <TouchableOpacity
+                style={selectorStyle('location')}
+                onPress={() => {
+                  closeAllPickers();
+                  setShowCityPicker(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <Icon name="map-marker" size={18} color={formData.location ? '#0F5132' : '#999'} style={{ marginRight: 8 }} />
+                <Text style={[styles.categoryText, !formData.location && styles.categoryPlaceholder]}>
+                  {formData.location || t.locationPlaceholder}
+                </Text>
+                <Icon name="chevron-down" size={24} color="#666" />
+              </TouchableOpacity>
+              {fieldErrors.location && (
+                <Text style={styles.fieldError}>{fieldErrors.location}</Text>
+              )}
             </Animated.View>
 
             {/* Contact Info */}
@@ -540,11 +673,11 @@ export default function AddProductScreen({ navigation }) {
               <Text style={styles.sectionTitle}>{t.contactInfo}</Text>
               <Text style={styles.label}>{t.phone} *</Text>
               <TextInput
-                style={styles.input}
+                style={inputStyle('phone')}
                 placeholder={t.phonePlaceholder}
                 placeholderTextColor="#999"
                 value={formData.phone}
-                onChangeText={(text) => setFormData({ ...formData, phone: text.replace(/[^0-9]/g, '') })}
+                onChangeText={(text) => setField('phone', text.replace(/[^0-9]/g, ''))}
                 keyboardType="phone-pad"
                 maxLength={10}
                 onFocus={() => {
@@ -552,6 +685,9 @@ export default function AddProductScreen({ navigation }) {
                   setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
                 }}
               />
+              {fieldErrors.phone && (
+                <Text style={styles.fieldError}>{fieldErrors.phone}</Text>
+              )}
             </Animated.View>
 
             {/* Product Image */}
@@ -602,6 +738,17 @@ export default function AddProductScreen({ navigation }) {
         </KeyboardAvoidingView>
       </SafeAreaView>
 
+      {/* City Picker Modal */}
+      <CityPickerModal
+        visible={showCityPicker}
+        selected={formData.location}
+        onSelect={(district) => {
+          setField('location', district);
+          setShowCityPicker(false);
+        }}
+        onClose={() => setShowCityPicker(false)}
+      />
+
       {/* Success Modal */}
       <Modal
         visible={showSuccessModal}
@@ -633,6 +780,7 @@ export default function AddProductScreen({ navigation }) {
                   category: '',
                   price: '',
                   quantity: '',
+                  unit: 'kg',
                   description: '',
                   location: '',
                   phone: '',
@@ -640,11 +788,12 @@ export default function AddProductScreen({ navigation }) {
                   targetDiseases: [],
                 });
                 setImageUri(null);
-                navigation.goBack();
+                setFieldErrors({});
+                navigation.navigate('MyListings');
               }}
               activeOpacity={0.8}
             >
-              <Text style={styles.successButtonText}>Done</Text>
+              <Text style={styles.successButtonText}>View My Listings</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -784,6 +933,17 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
+  inputError: {
+    borderColor: '#EF4444',
+    borderWidth: 1.5,
+  },
+  fieldError: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    marginLeft: 4,
+    fontWeight: '500',
+  },
   textArea: {
     minHeight: 100,
     paddingTop: 14,
@@ -814,6 +974,28 @@ const styles = StyleSheet.create({
     elevation: 0,
     shadowOpacity: 0,
   },
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  unitSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    gap: 4,
+    minWidth: 64,
+    justifyContent: 'center',
+  },
+  unitText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
   categorySelector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -834,6 +1016,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1A1A1A',
     fontWeight: '500',
+    flex: 1,
   },
   categoryPlaceholder: {
     color: '#999',
@@ -1049,4 +1232,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

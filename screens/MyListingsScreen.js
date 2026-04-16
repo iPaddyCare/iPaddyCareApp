@@ -15,6 +15,7 @@ import {
   Platform,
   RefreshControl,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
@@ -22,10 +23,37 @@ import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getUserListings, deleteProduct, updateProduct } from '../src/services/marketplaceService';
+import CityPickerModal from '../src/components/CityPickerModal';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
+const UNIT_OPTIONS = ['kg', 'bags', 'litres', 'bundles', 'units'];
+
+const DISEASE_OPTIONS = [
+  'Blast (Magnaporthe grisea)',
+  'Sheath Blight (Rhizoctonia solani)',
+  'Brown spot',
+  'Downy Mildew',
+  'Bacterial Leaf Blight',
+  'Bacterial Leaf Streak',
+  'Bacterial Panicle Blight',
+  'Dead Heart',
+  'Hispa',
+  'Tungro Disease',
+  'Rice Leaf Roller',
+  'Rice Leaf Caterpillar',
+  'Rice Shell Pest',
+  'Thrips',
+  'Paddy Stem Maggot',
+  'Asiatic Rice Borer',
+  'Yellow Rice Borer',
+  'Rice Gall Midge',
+  'Brown Plant Hopper',
+  'Rice Stem Fly',
+  'Rice Water Weevil',
+  'Rice Leaf Hopper',
+];
+
 const translations = {
   English: {
     title: 'My Listings',
@@ -36,6 +64,7 @@ const translations = {
     active: 'Active',
     sold: 'Sold',
     pending: 'Pending',
+    declined: 'Declined',
     edit: 'Edit',
     delete: 'Delete',
     markSold: 'Mark as Sold',
@@ -49,6 +78,8 @@ const translations = {
     totalListings: 'Total Listings',
     activeListings: 'Active',
     soldListings: 'Sold',
+    declineReasonLabel: 'Decline reason:',
+    pendingBadge: 'pending review',
   },
   සිංහල: {
     title: 'මගේ ලැයිස්තු',
@@ -59,6 +90,7 @@ const translations = {
     active: 'ක්‍රියාකාරී',
     sold: 'විකුණන ලදී',
     pending: 'පොරොත්තුවෙන්',
+    declined: 'ප්‍රතික්ෂේප කරන ලදී',
     edit: 'සංස්කරණය',
     delete: 'මකන්න',
     markSold: 'විකුණන ලදී ලෙස සලකුණු කරන්න',
@@ -72,6 +104,8 @@ const translations = {
     totalListings: 'සම්පූර්ණ ලැයිස්තු',
     activeListings: 'ක්‍රියාකාරී',
     soldListings: 'විකුණන ලදී',
+    declineReasonLabel: 'ප්‍රතික්ෂේප කිරීමේ හේතුව:',
+    pendingBadge: 'සමාලෝචනය',
   },
   தமிழ்: {
     title: 'எனது பட்டியல்கள்',
@@ -82,6 +116,7 @@ const translations = {
     active: 'செயலில்',
     sold: 'விற்கப்பட்டது',
     pending: 'நிலுவையில்',
+    declined: 'நிராகரிக்கப்பட்டது',
     edit: 'திருத்து',
     delete: 'நீக்கு',
     markSold: 'விற்கப்பட்டதாகக் குறிக்கவும்',
@@ -95,6 +130,8 @@ const translations = {
     totalListings: 'மொத்த பட்டியல்கள்',
     activeListings: 'செயலில்',
     soldListings: 'விற்கப்பட்டது',
+    declineReasonLabel: 'நிராகரிப்பு காரணம்:',
+    pendingBadge: 'மதிப்பாய்வு',
   },
 };
 
@@ -109,29 +146,21 @@ const categoryEmojis = {
 const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved':
-        return '#10B981';
-      case 'sold':
-        return '#6B7280';
-      case 'pending':
-        return '#F59E0B';
-      case 'declined':
-        return '#EF4444';
-      default:
-        return '#6B7280';
+      case 'approved': return '#10B981';
+      case 'sold': return '#6B7280';
+      case 'pending': return '#F59E0B';
+      case 'declined': return '#EF4444';
+      default: return '#6B7280';
     }
   };
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved':
-        return t.active;
-      case 'sold':
-        return t.sold;
-      case 'pending':
-        return t.pending;
-      default:
-        return status;
+      case 'approved': return t.active;
+      case 'sold': return t.sold;
+      case 'pending': return t.pending;
+      case 'declined': return t.declined;
+      default: return status;
     }
   };
 
@@ -177,6 +206,14 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
             <Text style={styles.metaText}>{listing.views || 0} views</Text>
           </View>
         </View>
+        {listing.status === 'declined' && listing.declineReason ? (
+          <View style={styles.declineReasonBanner}>
+            <Icon name="alert-circle" size={14} color="#EF4444" />
+            <Text style={styles.declineReasonText}>
+              {t.declineReasonLabel} {listing.declineReason}
+            </Text>
+          </View>
+        ) : null}
         <Text style={styles.listingDate}>{formatDate(listing.createdAt)}</Text>
         <View style={styles.listingActions}>
           {listing.status !== 'sold' && (
@@ -249,7 +286,6 @@ export default function MyListingsScreen({ navigation }) {
     }
   };
 
-  // Refetch listings every time the screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       if (isAuthenticated && user?.uid) {
@@ -265,26 +301,56 @@ export default function MyListingsScreen({ navigation }) {
 
   const activeListingsCount = listings.filter(l => l.status === 'approved').length;
   const soldListingsCount = listings.filter(l => l.status === 'sold').length;
+  const pendingCount = listings.filter(l => l.status === 'pending').length;
 
+  // Edit modal state
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editData, setEditData] = useState(null);
   const [editSaving, setEditSaving] = useState(false);
+  const [showEditUnitPicker, setShowEditUnitPicker] = useState(false);
+  const [showEditDiseasePicker, setShowEditDiseasePicker] = useState(false);
+  const [showEditCityPicker, setShowEditCityPicker] = useState(false);
+
+  const editShowDiseaseField = editData?.category === 'pesticides' || editData?.category === 'herbicides';
 
   const handleEdit = (listing) => {
     setEditData({
       id: listing.id,
       productName: listing.productName || '',
       price: String(listing.price || ''),
+      quantity: String(listing.quantity || ''),
+      unit: listing.unit || 'kg',
       description: listing.description || '',
       location: listing.location || '',
       phone: listing.phone || '',
+      activeIngredient: listing.activeIngredient || '',
+      targetDiseases: listing.targetDiseases || [],
+      category: listing.category || '',
     });
     setEditModalVisible(true);
+    setShowEditUnitPicker(false);
+    setShowEditDiseasePicker(false);
+  };
+
+  const toggleEditDisease = (disease) => {
+    setEditData(prev => {
+      const current = prev.targetDiseases;
+      const updated = current.includes(disease)
+        ? current.filter(d => d !== disease)
+        : [...current, disease];
+      return { ...prev, targetDiseases: updated };
+    });
   };
 
   const handleSaveEdit = async () => {
-    if (!editData.productName.trim() || !editData.price.trim() || !editData.description.trim() || !editData.location.trim() || !editData.phone.trim()) {
-      Alert.alert('Error', 'Please fill all fields');
+    if (
+      !editData.productName.trim() ||
+      !editData.price.trim() ||
+      !editData.description.trim() ||
+      !editData.location.trim() ||
+      !editData.phone.trim()
+    ) {
+      Alert.alert('Error', 'Please fill all required fields');
       return;
     }
     const phoneClean = editData.phone.replace(/\s/g, '');
@@ -292,23 +358,31 @@ export default function MyListingsScreen({ navigation }) {
       Alert.alert('Error', 'Please enter a valid phone number (e.g., 0771234567)');
       return;
     }
+    if (editShowDiseaseField && editData.targetDiseases.length === 0) {
+      Alert.alert('Error', 'Select at least one target disease/pest');
+      return;
+    }
+    if (editShowDiseaseField && !editData.activeIngredient.trim()) {
+      Alert.alert('Error', 'Active ingredient is required for pesticides/herbicides');
+      return;
+    }
+
     setEditSaving(true);
     try {
-      await updateProduct(editData.id, {
+      const updatePayload = {
         productName: editData.productName,
         price: Number(editData.price),
+        quantity: Number(editData.quantity) || 0,
+        unit: editData.unit,
         description: editData.description,
         location: editData.location,
         phone: editData.phone,
-      });
-      setListings(prev => prev.map(l => l.id === editData.id ? {
-        ...l,
-        productName: editData.productName,
-        price: Number(editData.price),
-        description: editData.description,
-        location: editData.location,
-        phone: editData.phone,
-      } : l));
+        activeIngredient: editData.activeIngredient,
+        targetDiseases: editData.targetDiseases,
+        targetDiseasesLower: editData.targetDiseases.map(d => d.toLowerCase().trim()),
+      };
+      await updateProduct(editData.id, updatePayload);
+      setListings(prev => prev.map(l => l.id === editData.id ? { ...l, ...updatePayload } : l));
       setEditModalVisible(false);
       Alert.alert('Updated', 'Listing has been updated.');
     } catch (error) {
@@ -379,10 +453,7 @@ export default function MyListingsScreen({ navigation }) {
         </SafeAreaView>
         <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right', 'bottom']}>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.menuButton}
-              onPress={() => navigation.openDrawer()}
-            >
+            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
               <Text style={styles.menuIcon}>☰</Text>
             </TouchableOpacity>
             <View style={styles.headerText}>
@@ -460,11 +531,17 @@ export default function MyListingsScreen({ navigation }) {
                 <Text style={styles.headerTitle}>{t.title}</Text>
                 <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
               </View>
+              {/* Add button with pending badge */}
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={handleAddProduct}
               >
                 <Icon name="plus" size={24} color="#FFFFFF" />
+                {pendingCount > 0 && (
+                  <View style={styles.pendingBadge}>
+                    <Text style={styles.pendingBadgeText}>{pendingCount}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -486,9 +563,21 @@ export default function MyListingsScreen({ navigation }) {
               </View>
             </Animated.View>
 
+            {/* Pending notice */}
+            {pendingCount > 0 && (
+              <Animated.View style={[styles.pendingNotice, { opacity: fadeAnim }]}>
+                <Icon name="clock-outline" size={16} color="#F59E0B" />
+                <Text style={styles.pendingNoticeText}>
+                  {pendingCount} listing{pendingCount > 1 ? 's' : ''} {t.pendingBadge}
+                </Text>
+              </Animated.View>
+            )}
+
             {/* Listings */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              {listings.length > 0 ? (
+              {loading ? (
+                <ActivityIndicator size="large" color="#0F5132" style={{ marginTop: 40 }} />
+              ) : listings.length > 0 ? (
                 <View style={styles.listingsContainer}>
                   {listings.map((listing) => (
                     <ListingCard
@@ -550,33 +639,85 @@ export default function MyListingsScreen({ navigation }) {
               >
                 {editData && (
                   <>
-                    <Text style={styles.modalLabel}>Product Name</Text>
+                    <Text style={styles.modalLabel}>Product Name *</Text>
                     <TextInput
                       style={styles.modalInput}
                       value={editData.productName}
                       onChangeText={(text) => setEditData({ ...editData, productName: text })}
                     />
-                    <Text style={styles.modalLabel}>Price (Rs.)</Text>
+
+                    <Text style={styles.modalLabel}>Price (Rs.) *</Text>
                     <TextInput
                       style={styles.modalInput}
                       value={editData.price}
                       onChangeText={(text) => setEditData({ ...editData, price: text.replace(/[^0-9.]/g, '') })}
                       keyboardType="numeric"
                     />
-                    <Text style={styles.modalLabel}>Description</Text>
+
+                    {/* Quantity + Unit */}
+                    <Text style={styles.modalLabel}>Quantity *</Text>
+                    <View style={styles.quantityRow}>
+                      <TextInput
+                        style={[styles.modalInput, { flex: 1, marginRight: 8 }]}
+                        value={editData.quantity}
+                        onChangeText={(text) => setEditData({ ...editData, quantity: text.replace(/[^0-9]/g, '') })}
+                        keyboardType="numeric"
+                        placeholder="e.g., 50"
+                        placeholderTextColor="#999"
+                      />
+                      <TouchableOpacity
+                        style={styles.editUnitSelector}
+                        onPress={() => setShowEditUnitPicker(!showEditUnitPicker)}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.editUnitText}>{editData.unit || 'kg'}</Text>
+                        <Icon name="chevron-down" size={14} color="#666" />
+                      </TouchableOpacity>
+                    </View>
+                    {showEditUnitPicker && (
+                      <View style={styles.editPickerDropdown}>
+                        {UNIT_OPTIONS.map(u => (
+                          <TouchableOpacity
+                            key={u}
+                            style={[styles.editPickerOption, editData.unit === u && styles.editPickerOptionActive]}
+                            onPress={() => {
+                              setEditData({ ...editData, unit: u });
+                              setShowEditUnitPicker(false);
+                            }}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={[styles.editPickerOptionText, editData.unit === u && styles.editPickerOptionTextActive]}>
+                              {u}
+                            </Text>
+                            {editData.unit === u && <Icon name="check" size={14} color="#0F5132" />}
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+
+                    <Text style={styles.modalLabel}>Description *</Text>
                     <TextInput
                       style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
                       value={editData.description}
                       onChangeText={(text) => setEditData({ ...editData, description: text })}
                       multiline
                     />
-                    <Text style={styles.modalLabel}>Location</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={editData.location}
-                      onChangeText={(text) => setEditData({ ...editData, location: text })}
-                    />
-                    <Text style={styles.modalLabel}>Phone</Text>
+
+                    {/* Location — city picker */}
+                    <Text style={styles.modalLabel}>Location *</Text>
+                    <TouchableOpacity
+                      style={styles.editLocationSelector}
+                      onPress={() => setShowEditCityPicker(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Icon name="map-marker" size={16} color={editData.location ? '#0F5132' : '#999'} />
+                      <Text style={[styles.editLocationText, !editData.location && { color: '#999' }]}>
+                        {editData.location || 'Select city'}
+                      </Text>
+                      <Icon name="chevron-down" size={18} color="#666" />
+                    </TouchableOpacity>
+
+                    <Text style={styles.modalLabel}>Phone *</Text>
                     <TextInput
                       style={styles.modalInput}
                       value={editData.phone}
@@ -584,6 +725,83 @@ export default function MyListingsScreen({ navigation }) {
                       keyboardType="phone-pad"
                       maxLength={10}
                     />
+
+                    {/* Target Diseases — only for pesticides/herbicides */}
+                    {editShowDiseaseField && (
+                      <>
+                        <Text style={styles.modalLabel}>Target Diseases / Pests *</Text>
+                        <TouchableOpacity
+                          style={styles.editLocationSelector}
+                          onPress={() => setShowEditDiseasePicker(!showEditDiseasePicker)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[styles.editLocationText, editData.targetDiseases.length === 0 && { color: '#999' }]}>
+                            {editData.targetDiseases.length > 0
+                              ? `${editData.targetDiseases.length} selected`
+                              : 'Select diseases / pests'}
+                          </Text>
+                          <Icon name={showEditDiseasePicker ? 'chevron-up' : 'chevron-down'} size={18} color="#666" />
+                        </TouchableOpacity>
+                        {editData.targetDiseases.length > 0 && (
+                          <View style={styles.editTagsContainer}>
+                            {editData.targetDiseases.map(d => (
+                              <TouchableOpacity
+                                key={d}
+                                style={styles.editTag}
+                                onPress={() => toggleEditDisease(d)}
+                                activeOpacity={0.7}
+                              >
+                                <Text style={styles.editTagText}>{d}</Text>
+                                <Icon name="close" size={12} color="#0F5132" />
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+                        {showEditDiseasePicker && (
+                          <View style={styles.editPickerDropdown}>
+                            <ScrollView nestedScrollEnabled style={{ maxHeight: 200 }}>
+                              {DISEASE_OPTIONS.map(disease => {
+                                const isSel = editData.targetDiseases.includes(disease);
+                                return (
+                                  <TouchableOpacity
+                                    key={disease}
+                                    style={[styles.editPickerOption, isSel && styles.editPickerOptionActive]}
+                                    onPress={() => toggleEditDisease(disease)}
+                                    activeOpacity={0.7}
+                                  >
+                                    <Icon
+                                      name={isSel ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                      size={18}
+                                      color={isSel ? '#0F5132' : '#999'}
+                                      style={{ marginRight: 10 }}
+                                    />
+                                    <Text style={[styles.editPickerOptionText, isSel && styles.editPickerOptionTextActive]}>
+                                      {disease}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              })}
+                            </ScrollView>
+                            <TouchableOpacity
+                              style={styles.pickerDoneBtn}
+                              onPress={() => setShowEditDiseasePicker(false)}
+                              activeOpacity={0.7}
+                            >
+                              <Text style={styles.pickerDoneText}>Done</Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+
+                        <Text style={styles.modalLabel}>Active Ingredient / Chemical Composition *</Text>
+                        <TextInput
+                          style={styles.modalInput}
+                          value={editData.activeIngredient}
+                          onChangeText={(text) => setEditData({ ...editData, activeIngredient: text })}
+                          placeholder="e.g., Mancozeb 64% + Metalaxyl 8% WP"
+                          placeholderTextColor="#999"
+                        />
+                      </>
+                    )}
                   </>
                 )}
               </ScrollView>
@@ -606,6 +824,17 @@ export default function MyListingsScreen({ navigation }) {
             </View>
           </KeyboardAvoidingView>
         </Modal>
+
+        {/* City picker for edit modal */}
+        <CityPickerModal
+          visible={showEditCityPicker}
+          selected={editData?.location || ''}
+          onSelect={(district) => {
+            setEditData(prev => ({ ...prev, location: district }));
+            setShowEditCityPicker(false);
+          }}
+          onClose={() => setShowEditCityPicker(false)}
+        />
       </SafeAreaView>
     </View>
   );
@@ -685,6 +914,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
+  headerRight: {
+    width: 48,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+  },
   headerText: {
     flex: 1,
     alignItems: 'center',
@@ -713,6 +951,41 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
+    position: 'relative',
+  },
+  pendingBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#F59E0B',
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  pendingBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  pendingNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FEF3C7',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.25)',
+  },
+  pendingNoticeText: {
+    fontSize: 13,
+    color: '#92400E',
+    fontWeight: '600',
   },
   innerContent: {
     paddingHorizontal: 20,
@@ -721,7 +994,7 @@ const styles = StyleSheet.create({
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 16,
   },
   statCard: {
     flex: 1,
@@ -856,6 +1129,25 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 6,
   },
+  declineReasonBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.2)',
+  },
+  declineReasonText: {
+    flex: 1,
+    fontSize: 12,
+    color: '#B91C1C',
+    fontWeight: '500',
+    lineHeight: 18,
+  },
   listingDate: {
     fontSize: 11,
     color: '#999',
@@ -954,6 +1246,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
   },
+  // Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -966,7 +1259,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
-    maxHeight: '85%',
+    maxHeight: '90%',
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   modalDragHandle: {
@@ -1023,6 +1316,113 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(15,81,50,0.12)',
   },
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  editUnitSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(15,81,50,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 13,
+    gap: 6,
+    minWidth: 72,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  editUnitText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  editLocationSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(15,81,50,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    gap: 8,
+    backgroundColor: '#FFFFFF',
+  },
+  editLocationText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  editPickerDropdown: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    overflow: 'hidden',
+  },
+  editPickerOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.04)',
+  },
+  editPickerOptionActive: {
+    backgroundColor: '#F0F7F3',
+  },
+  editPickerOptionText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  editPickerOptionTextActive: {
+    color: '#0F5132',
+    fontWeight: '700',
+  },
+  editTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 8,
+  },
+  editTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F7F3',
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.15)',
+    gap: 4,
+  },
+  editTagText: {
+    fontSize: 11,
+    color: '#0F5132',
+    fontWeight: '600',
+  },
+  pickerDoneBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    backgroundColor: '#F0F7F3',
+  },
+  pickerDoneText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F5132',
+  },
   modalActions: {
     flexDirection: 'row',
     paddingHorizontal: 24,
@@ -1065,4 +1465,3 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-

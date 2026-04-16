@@ -15,17 +15,18 @@ import {
   Platform,
   RefreshControl,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { getApprovedProducts } from '../src/services/marketplaceService';
+import { getApprovedProducts, incrementProductViews } from '../src/services/marketplaceService';
+import { SL_DISTRICTS } from '../src/components/CityPickerModal';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
 const translations = {
   English: {
     title: 'Marketplace',
@@ -54,6 +55,8 @@ const translations = {
     newest: 'Newest First',
     oldest: 'Oldest First',
     myListings: 'My Listings',
+    allDistricts: 'All Cities',
+    loadMore: 'Load More',
   },
   සිංහල: {
     title: 'වෙළඳපොළ',
@@ -82,6 +85,8 @@ const translations = {
     newest: 'නවතම',
     oldest: 'පැරණිතම',
     myListings: 'මගේ ලැයිස්තු',
+    allDistricts: 'සියලු නගර',
+    loadMore: 'තවත් පූරණය කරන්න',
   },
   தமிழ்: {
     title: 'சந்தை',
@@ -110,6 +115,8 @@ const translations = {
     newest: 'புதியது முதலில்',
     oldest: 'பழையது முதலில்',
     myListings: 'எனது பட்டியல்கள்',
+    allDistricts: 'அனைத்து நகரங்கள்',
+    loadMore: 'மேலும் ஏற்றவும்',
   },
 };
 
@@ -134,7 +141,7 @@ const CategoryButton = ({ category, label, icon, isActive, onPress }) => (
   </TouchableOpacity>
 );
 
-const ProductCard = ({ product, onContact, onPress }) => (
+const ProductCard = ({ product, onPress }) => (
   <TouchableOpacity style={styles.productCard} activeOpacity={0.7} onPress={() => onPress(product)}>
     <View style={styles.productImageContainer}>
       {product.imageUrl ? (
@@ -171,31 +178,53 @@ export default function MarketplaceScreen({ navigation, route }) {
   const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [searchQuery, setSearchQuery] = useState(route?.params?.searchQuery || '');
   const [sortBy, setSortBy] = useState('newest');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [lastDoc, setLastDoc] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
 
-  const fetchProducts = async (category = null) => {
+  const fetchProducts = async (category = null, reset = true) => {
     try {
-      setLoading(true);
-      const data = await getApprovedProducts(category);
-      setProducts(data);
+      if (reset) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+      const result = await getApprovedProducts(category, reset ? null : lastDoc);
+      if (reset) {
+        setProducts(result.products);
+      } else {
+        setProducts(prev => [...prev, ...result.products]);
+      }
+      setLastDoc(result.lastDoc);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const handleLoadMore = async () => {
+    if (!hasMore || loadingMore) return;
+    await fetchProducts(selectedCategory === 'all' ? null : selectedCategory, false);
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      const data = await getApprovedProducts(selectedCategory === 'all' ? null : selectedCategory);
-      setProducts(data);
+      const result = await getApprovedProducts(selectedCategory === 'all' ? null : selectedCategory, null);
+      setProducts(result.products);
+      setLastDoc(result.lastDoc);
+      setHasMore(result.hasMore);
     } catch (error) {
       console.error('Error refreshing products:', error);
     } finally {
@@ -203,10 +232,9 @@ export default function MarketplaceScreen({ navigation, route }) {
     }
   };
 
-  // Refetch products every time the screen comes into focus or category changes
   useFocusEffect(
     React.useCallback(() => {
-      fetchProducts(selectedCategory === 'all' ? null : selectedCategory);
+      fetchProducts(selectedCategory === 'all' ? null : selectedCategory, true);
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 600,
@@ -226,22 +254,27 @@ export default function MarketplaceScreen({ navigation, route }) {
 
   const filteredProducts = [...products
     .filter((product) => {
-      if (!searchQuery) return true;
-      const name = (product.productName || product.title || '').toLowerCase();
-      const desc = (product.description || '').toLowerCase();
-      const q = searchQuery.toLowerCase();
-      return name.includes(q) || desc.includes(q);
+      if (searchQuery) {
+        const name = (product.productName || product.title || '').toLowerCase();
+        const desc = (product.description || '').toLowerCase();
+        const loc = (product.location || '').toLowerCase();
+        const q = searchQuery.toLowerCase();
+        if (!name.includes(q) && !desc.includes(q) && !loc.includes(q)) return false;
+      }
+      if (selectedDistrict && product.location !== selectedDistrict) return false;
+      return true;
     })
   ].sort((a, b) => {
     if (sortBy === 'priceLow') return a.price - b.price;
     if (sortBy === 'priceHigh') return b.price - a.price;
     if (sortBy === 'oldest') return a.createdAt - b.createdAt;
-    return b.createdAt - a.createdAt; // newest (default)
+    return b.createdAt - a.createdAt;
   });
 
   const handleProductPress = (product) => {
     setSelectedProduct(product);
     setDetailModalVisible(true);
+    incrementProductViews(product.id).catch(() => {});
   };
 
   const handleCall = (phone) => {
@@ -276,7 +309,7 @@ export default function MarketplaceScreen({ navigation, route }) {
       );
       return;
     }
-    
+
     if (!isAuthenticated) {
       Alert.alert(
         'Login Required',
@@ -383,6 +416,43 @@ export default function MarketplaceScreen({ navigation, route }) {
               ))}
             </Animated.View>
 
+            {/* District filter pills */}
+            <Animated.View style={[{ opacity: fadeAnim }, { marginBottom: 20 }]}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.districtPillsContainer}
+              >
+                <TouchableOpacity
+                  style={[styles.districtPill, !selectedDistrict && styles.districtPillActive]}
+                  onPress={() => setSelectedDistrict(null)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.districtPillText, !selectedDistrict && styles.districtPillTextActive]}>
+                    {t.allDistricts}
+                  </Text>
+                </TouchableOpacity>
+                {SL_DISTRICTS.map(district => (
+                  <TouchableOpacity
+                    key={district}
+                    style={[styles.districtPill, selectedDistrict === district && styles.districtPillActive]}
+                    onPress={() => setSelectedDistrict(selectedDistrict === district ? null : district)}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name="map-marker"
+                      size={12}
+                      color={selectedDistrict === district ? '#FFFFFF' : '#666'}
+                      style={{ marginRight: 4 }}
+                    />
+                    <Text style={[styles.districtPillText, selectedDistrict === district && styles.districtPillTextActive]}>
+                      {district}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+
             {/* Categories */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.sectionTitle}>{t.categories}</Text>
@@ -412,17 +482,34 @@ export default function MarketplaceScreen({ navigation, route }) {
                 </Text>
                 <Text style={styles.productCount}>{filteredProducts.length} items</Text>
               </View>
-              {filteredProducts.length > 0 ? (
-                <View style={styles.productsGrid}>
-                  {filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      onContact={handleContact}
-                      onPress={handleProductPress}
-                    />
-                  ))}
-                </View>
+              {loading ? (
+                <ActivityIndicator size="large" color="#0F5132" style={{ marginTop: 40 }} />
+              ) : filteredProducts.length > 0 ? (
+                <>
+                  <View style={styles.productsGrid}>
+                    {filteredProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        onPress={handleProductPress}
+                      />
+                    ))}
+                  </View>
+                  {hasMore && (
+                    <TouchableOpacity
+                      style={styles.loadMoreBtn}
+                      onPress={handleLoadMore}
+                      disabled={loadingMore}
+                      activeOpacity={0.7}
+                    >
+                      {loadingMore ? (
+                        <ActivityIndicator size="small" color="#0F5132" />
+                      ) : (
+                        <Text style={styles.loadMoreText}>{t.loadMore}</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </>
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>📦</Text>
@@ -506,7 +593,9 @@ export default function MarketplaceScreen({ navigation, route }) {
                           { color: selectedProduct.quantity > 5 ? '#10B981' : selectedProduct.quantity > 0 ? '#F59E0B' : '#EF4444' },
                         ]}>
                           {selectedProduct.quantity > 5 ? 'In Stock' : selectedProduct.quantity > 0 ? 'Low Stock' : 'Out of Stock'}
-                          {selectedProduct.quantity > 0 ? ` (${selectedProduct.quantity} available)` : ''}
+                          {selectedProduct.quantity > 0
+                            ? ` (${selectedProduct.quantity}${selectedProduct.unit ? ` ${selectedProduct.unit}` : ''} available)`
+                            : ''}
                         </Text>
                       </View>
                     )}
@@ -673,20 +762,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
-  headerButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIconButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
   addButton: {
     width: 48,
     height: 48,
@@ -718,7 +793,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    marginBottom: 24,
+    marginBottom: 16,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -735,6 +810,68 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#1A1A1A',
     padding: 0,
+  },
+  sortContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  sortPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  sortPillActive: {
+    backgroundColor: '#0F5132',
+    borderColor: '#0F5132',
+  },
+  sortPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  sortPillTextActive: {
+    color: '#FFFFFF',
+  },
+  districtPillsContainer: {
+    paddingRight: 20,
+  },
+  districtPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    marginRight: 8,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 2,
+  },
+  districtPillActive: {
+    backgroundColor: '#0F5132',
+    borderColor: '#0F5132',
+  },
+  districtPillText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#666',
+  },
+  districtPillTextActive: {
+    color: '#FFFFFF',
   },
   section: {
     marginBottom: 32,
@@ -834,23 +971,6 @@ const styles = StyleSheet.create({
   productImageEmoji: {
     fontSize: 48,
   },
-  featuredBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFD700',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  featuredText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#1A1A1A',
-    marginLeft: 4,
-  },
   productContent: {
     padding: 10,
   },
@@ -929,7 +1049,21 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     marginLeft: 8,
   },
-  // --- Product Detail Modal ---
+  loadMoreBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.2)',
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F5132',
+  },
+  // Product Detail Modal
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.55)',
@@ -1108,37 +1242,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(15,81,50,0.1)',
   },
-  sortContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-  },
-  sortPill: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.1)',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  sortPillActive: {
-    backgroundColor: '#0F5132',
-    borderColor: '#0F5132',
-  },
-  sortPillText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-  },
-  sortPillTextActive: {
-    color: '#FFFFFF',
-  },
   modalIngredientText: {
     fontSize: 13,
     fontWeight: '700',
@@ -1156,4 +1259,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-

@@ -6,6 +6,8 @@ import RNFS from 'react-native-fs';
 
 const productsCollection = firestore().collection('products');
 
+const PAGE_SIZE = 20;
+
 /**
  * Derive stock status from quantity
  */
@@ -68,6 +70,7 @@ export async function addProduct(productData, user) {
     targetDiseases: productData.targetDiseases || [],
     targetDiseasesLower: (productData.targetDiseases || []).map(d => d.toLowerCase().trim()),
     quantity: Number(productData.quantity) || 0,
+    unit: productData.unit || 'units',
     stockStatus: getStockStatus(Number(productData.quantity) || 0),
     status: 'pending',
     userId: user.uid,
@@ -83,13 +86,20 @@ export async function addProduct(productData, user) {
 }
 
 /**
- * Get approved products with optional category filter
+ * Get approved products with optional category filter and pagination.
+ * Returns { products, lastDoc, hasMore }.
  */
-export async function getApprovedProducts(category = null) {
-  const snapshot = await productsCollection
+export async function getApprovedProducts(category = null, lastDoc = null, pageSize = PAGE_SIZE) {
+  let query = productsCollection
     .where('status', '==', 'approved')
     .orderBy('createdAt', 'desc')
-    .get();
+    .limit(pageSize);
+
+  if (lastDoc) {
+    query = query.startAfter(lastDoc);
+  }
+
+  const snapshot = await query.get();
 
   let results = snapshot.docs.map(doc => ({
     id: doc.id,
@@ -101,7 +111,11 @@ export async function getApprovedProducts(category = null) {
     results = results.filter(p => p.category === category);
   }
 
-  return results;
+  return {
+    products: results,
+    lastDoc: snapshot.docs[snapshot.docs.length - 1] || null,
+    hasMore: snapshot.docs.length === pageSize,
+  };
 }
 
 /**
@@ -157,13 +171,21 @@ export async function updateProduct(productId, data) {
 }
 
 /**
+ * Increment the view counter for a product (fire-and-forget safe)
+ */
+export async function incrementProductViews(productId) {
+  await productsCollection.doc(productId).update({
+    views: firestore.FieldValue.increment(1),
+  });
+}
+
+/**
  * Get approved products that target a specific disease/pest
  */
 export async function getProductsByDisease(diseaseName) {
   const normalized = diseaseName.toLowerCase().trim();
 
   // Fetch all approved products and filter client-side for robust matching
-  // (avoids needing composite Firestore indexes for every field combo)
   const snapshot = await productsCollection
     .where('status', '==', 'approved')
     .orderBy('createdAt', 'desc')
@@ -178,7 +200,6 @@ export async function getProductsByDisease(diseaseName) {
     .filter(product => {
       const diseases = product.targetDiseases || [];
       const diseasesLower = product.targetDiseasesLower || [];
-      // Match on lowercase array, or case-insensitive check on original array
       return diseasesLower.includes(normalized)
         || diseases.some(d => d.toLowerCase().trim() === normalized);
     });
@@ -202,5 +223,6 @@ export default {
   getPendingProducts,
   updateProductStatus,
   updateProduct,
+  incrementProductViews,
   deleteProduct,
 };
