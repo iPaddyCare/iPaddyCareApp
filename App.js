@@ -1,4 +1,5 @@
 import 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import React, { useState, useEffect, useRef } from 'react';
 import { NavigationContainer, CommonActions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -32,6 +33,7 @@ import DrawerContent from './src/components/DrawerContent';
 import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import DeviceConnectionScreenSeedDetection from './screens/DeviceConnectionScreenSeedDetection';
+import { AppAlertHost } from './src/components/AppAlert';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -87,7 +89,7 @@ function MainStack() {
       <Stack.Screen 
         name="PestDetection" 
         component={PestDetectionScreen} 
-        options={{ title: 'Pest & Disease Detection' }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen 
         name="DeviceConnection" 
@@ -274,18 +276,21 @@ export default function App() {
   const navigationRef = useRef(null);
 
   return (
-    <AuthProvider>
-      <LanguageProvider>
-        <NavigationContainer 
-          ref={navigationRef}
-          onReady={() => {
-            // Navigation container is ready
-          }}
-        >
-          <RootNavigator navigationRef={navigationRef} />
-        </NavigationContainer>
-      </LanguageProvider>
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <LanguageProvider>
+          <NavigationContainer
+            ref={navigationRef}
+            onReady={() => {
+              // Navigation container is ready
+            }}
+          >
+            <RootNavigator navigationRef={navigationRef} />
+          </NavigationContainer>
+          <AppAlertHost />
+        </LanguageProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
 

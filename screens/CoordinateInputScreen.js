@@ -5,12 +5,14 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useTranslation } from '../src/i18n/useTranslation';
 
 export default function CoordinateInputScreen({ navigation, route }) {
+  const translate = useTranslation('coordinateInput');
   const { onLocationSelect, initialLocation } = route.params || {};
   const [lat, setLat] = useState(initialLocation?.lat?.toString() || '7.5');
   const [lon, setLon] = useState(initialLocation?.lon?.toString() || '80.5');
@@ -21,30 +23,30 @@ export default function CoordinateInputScreen({ navigation, route }) {
 
     // Validate coordinates
     if (isNaN(latitude) || isNaN(longitude)) {
-      Alert.alert('Invalid Input', 'Please enter valid numbers for latitude and longitude');
+      showAppAlert(translate('invalidInput'), translate('invalidInputMsg'));
       return;
     }
 
     // Validate Sri Lanka coordinates
     if (latitude < 5.0 || latitude > 10.0) {
-      Alert.alert(
-        'Invalid Latitude',
-        'Latitude must be between 5.0 and 10.0 (Sri Lanka range)',
+      showAppAlert(
+        translate('invalidLatitude'),
+        translate('invalidLatitudeMsg'),
         [
-          { text: 'Use Anyway', onPress: () => proceedWithLocation(latitude, longitude) },
-          { text: 'Cancel', style: 'cancel' },
+          { text: translate('useAnyway'), onPress: () => proceedWithLocation(latitude, longitude) },
+          { text: translate('cancel'), style: 'cancel' },
         ]
       );
       return;
     }
 
     if (longitude < 79.0 || longitude > 82.0) {
-      Alert.alert(
-        'Invalid Longitude',
-        'Longitude must be between 79.0 and 82.0 (Sri Lanka range)',
+      showAppAlert(
+        translate('invalidLongitude'),
+        translate('invalidLongitudeMsg'),
         [
-          { text: 'Use Anyway', onPress: () => proceedWithLocation(latitude, longitude) },
-          { text: 'Cancel', style: 'cancel' },
+          { text: translate('useAnyway'), onPress: () => proceedWithLocation(latitude, longitude) },
+          { text: translate('cancel'), style: 'cancel' },
         ]
       );
       return;
@@ -80,7 +82,7 @@ export default function CoordinateInputScreen({ navigation, route }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={24} color="#0F5132" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Enter Location</Text>
+        <Text style={styles.headerTitle}>{translate('headerTitle')}</Text>
         <View style={styles.placeholder} />
       </View>
 
@@ -88,15 +90,15 @@ export default function CoordinateInputScreen({ navigation, route }) {
         <View style={styles.infoCard}>
           <Icon name="information" size={24} color="#2196F3" />
           <View style={styles.infoTextContainer}>
-            <Text style={styles.infoTitle}>Location Coordinates</Text>
+            <Text style={styles.infoTitle}>{translate('locationCoords')}</Text>
             <Text style={styles.infoText}>
-              Enter latitude and longitude for Sri Lanka (Lat: 5-10, Lon: 79-82)
+              {translate('locationCoordsDesc')}
             </Text>
           </View>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Latitude</Text>
+          <Text style={styles.label}>{translate('latitude')}</Text>
           <TextInput
             style={styles.input}
             value={lat}
@@ -105,11 +107,11 @@ export default function CoordinateInputScreen({ navigation, route }) {
             keyboardType="numeric"
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>Range: 5.0 to 10.0 (Sri Lanka)</Text>
+          <Text style={styles.hint}>{translate('latitudeRange')}</Text>
         </View>
 
         <View style={styles.inputGroup}>
-          <Text style={styles.label}>Longitude</Text>
+          <Text style={styles.label}>{translate('longitude')}</Text>
           <TextInput
             style={styles.input}
             value={lon}
@@ -118,18 +120,18 @@ export default function CoordinateInputScreen({ navigation, route }) {
             keyboardType="numeric"
             autoCapitalize="none"
           />
-          <Text style={styles.hint}>Range: 79.0 to 82.0 (Sri Lanka)</Text>
+          <Text style={styles.hint}>{translate('longitudeRange')}</Text>
         </View>
 
         {initialLocation && (
           <TouchableOpacity style={styles.currentButton} onPress={handleUseCurrent}>
             <Icon name="crosshairs-gps" size={20} color="#2196F3" />
-            <Text style={styles.currentButtonText}>Use Current Location</Text>
+            <Text style={styles.currentButtonText}>{translate('useCurrentLocation')}</Text>
           </TouchableOpacity>
         )}
 
         <View style={styles.previewCard}>
-          <Text style={styles.previewLabel}>Preview</Text>
+          <Text style={styles.previewLabel}>{translate('preview')}</Text>
           <Text style={styles.previewValue}>
             {parseFloat(lat) || 0}, {parseFloat(lon) || 0}
           </Text>
@@ -138,11 +140,11 @@ export default function CoordinateInputScreen({ navigation, route }) {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.defaultButton} onPress={handleUseDefault}>
-          <Text style={styles.defaultButtonText}>Use Default (7.5, 80.5)</Text>
+          <Text style={styles.defaultButtonText}>{translate('useDefault')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
           <Icon name="check" size={20} color="white" />
-          <Text style={styles.confirmButtonText}>Confirm</Text>
+          <Text style={styles.confirmButtonText}>{translate('confirm')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

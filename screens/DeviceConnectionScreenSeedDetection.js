@@ -7,152 +7,21 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
   TextInput,
   Dimensions,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
 import PHSensorService from '../src/utils/phSensorService';
 import BluetoothPermissionService from '../src/utils/bluetoothPermissionService';
 import BleScanServiceEsp32 from '../src/utils/BleScanServiceEsp32';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
 
 const { width } = Dimensions.get('window');
 
-// Language translations (matching DeviceConnectionScreen)
-const translations = {
-  English: {
-    title: 'Connect Device',
-    findDevice: 'Connect Soil pH Sensor',
-    findDeviceBLE: 'Find Your ESP32 Soil Sensor',
-    findDeviceWifi: 'Find Your ESP32 Device',
-    bluetoothInstructions: 'Make sure Bluetooth is enabled on your phone and ESP32 sensor is powered on. Tap "Scan for Devices" to search for nearby sensors.',
-    apModeInstructions: 'Connect your phone to ESP32\'s WiFi network (e.g., "ESP32-Moisture-Sensor"), then tap "Try 192.168.4.1" or scan.',
-    wifiModeInstructions: 'Make sure ESP32 and phone are on the same WiFi network, then scan for devices.',
-    manualIpEntry: 'Manual IP Entry',
-    manualIpHint: 'If you know your ESP32\'s IP address, enter it here',
-    quickConnect: 'Quick Connect (AP Mode)',
-    quickConnectHint: 'If ESP32 is in Access Point mode, try the default IP:',
-    tryApIp: 'Try 192.168.4.1',
-    test: 'Test',
-    scanForDevices: 'Scan for Devices',
-    scanForBluetooth: 'Scan for Bluetooth Devices',
-    scanningNetwork: 'Scanning Network...',
-    scanningBluetooth: 'Scanning Bluetooth...',
-    scanning: 'Scanning...',
-    foundDevices: 'Found Devices',
-    connected: 'Connected',
-    connect: 'Connect',
-    disconnect: 'Disconnect',
-    disconnectDevice: 'Disconnect Device',
-    disconnectConfirm: 'Are you sure you want to disconnect?',
-    cancel: 'Cancel',
-    disconnected: 'Disconnected',
-    disconnectedMessage: 'Device has been disconnected',
-    noDevicesFound: 'No devices found',
-    noDevicesHint: 'Tap "Scan for Devices" to search your network',
-    noDevicesHintBLE: 'Tap "Scan for Devices" to search for Bluetooth sensors',
-    deviceFound: 'Device Found!',
-    deviceNotFound: 'Device Not Found',
-    connectionFailed: 'Connection Failed',
-    error: 'Error',
-    enterIp: 'Please enter an IP address',
-    invalidIp: 'Invalid IP',
-    validIpHint: 'Please enter a valid IP address (e.g., 192.168.1.100)',
-    permissionRequired: 'Permission Required',
-    permissionMessage: 'Bluetooth permissions are required to scan for devices. Please grant permissions in app settings.',
-    moisture: 'Moisture:',
-  },
-  සිංහල: {
-    title: 'උපාංගය සම්බන්ධ කරන්න',
-    findDevice: 'මිරිදිය pH සංවේදකය සම්බන්ධ කරන්න',
-    findDeviceBLE: 'ඔබේ ESP32 පස් සංවේදකය සොයන්න',
-    findDeviceWifi: 'ඔබේ ESP32 උපාංගය සොයන්න',
-    bluetoothInstructions: 'ඔබේ දුරකථනයේ බ්ලූටූත් සක්‍රිය කර ඇති බවට සහ ESP32 සංවේදකය බලයට සම්බන්ධ කර ඇති බවට වග බලා ගන්න. අසල සංවේදක සොයා බැලීමට "උපාංග සොයන්න" ට තට්ටු කරන්න.',
-    apModeInstructions: 'ඔබේ දුරකථනය ESP32 හි WiFi ජාලයට සම්බන්ධ කරන්න (උදා: "ESP32-Moisture-Sensor"), පසුව "192.168.4.1 උත්සාහ කරන්න" ට තට්ටු කරන්න හෝ සොයන්න.',
-    wifiModeInstructions: 'ESP32 සහ දුරකථනය එකම WiFi ජාලයේ ඇති බවට වග බලා ගන්න, පසුව උපාංග සොයන්න.',
-    manualIpEntry: 'අතින් IP ඇතුළත් කිරීම',
-    manualIpHint: 'ඔබේ ESP32 හි IP ලිපිනය දන්නේ නම්, මෙහි ඇතුළත් කරන්න',
-    quickConnect: 'ඉක්මන් සම්බන්ධතාව (AP ක්‍රමය)',
-    quickConnectHint: 'ESP32 ප්‍රවේශ ලක්ෂ්‍ය ක්‍රමයේ නම්, පෙරනිමි IP උත්සාහ කරන්න:',
-    tryApIp: '192.168.4.1 උත්සාහ කරන්න',
-    test: 'පරීක්ෂා කරන්න',
-    scanForDevices: 'උපාංග සොයන්න',
-    scanForBluetooth: 'බ්ලූටූත් උපාංග සොයන්න',
-    scanningNetwork: 'ජාලය සොයමින්...',
-    scanningBluetooth: 'බ්ලූටූත් සොයමින්...',
-    scanning: 'සොයමින්...',
-    foundDevices: 'සොයාගත් උපාංග',
-    connected: 'සම්බන්ධ වී ඇත',
-    connect: 'සම්බන්ධ වන්න',
-    disconnect: 'විසන්ධි කරන්න',
-    disconnectDevice: 'උපාංගය විසන්ධි කරන්න',
-    disconnectConfirm: 'ඔබට විසන්ධි කිරීමට අවශ්‍යද?',
-    cancel: 'අවලංගු කරන්න',
-    disconnected: 'විසන්ධි විය',
-    disconnectedMessage: 'උපාංගය විසන්ධි කර ඇත',
-    noDevicesFound: 'උපාංග හමු නොවීය',
-    noDevicesHint: 'ඔබේ ජාලය සොයා බැලීමට "උපාංග සොයන්න" ට තට්ටු කරන්න',
-    noDevicesHintBLE: 'බ්ලූටූත් සංවේදක සොයා බැලීමට "උපාංග සොයන්න" ට තට්ටු කරන්න',
-    deviceFound: 'උපාංගය හමු විය!',
-    deviceNotFound: 'උපාංගය හමු නොවීය',
-    connectionFailed: 'සම්බන්ධතාව අසාර්ථක විය',
-    error: 'දෝෂය',
-    enterIp: 'කරුණාකර IP ලිපිනයක් ඇතුළත් කරන්න',
-    invalidIp: 'වලංගු නොවන IP',
-    validIpHint: 'කරුණාකර වලංගු IP ලිපිනයක් ඇතුළත් කරන්න (උදා: 192.168.1.100)',
-    permissionRequired: 'අවසරය අවශ්‍යයි',
-    permissionMessage: 'උපාංග සොයා බැලීමට බ්ලූටූත් අවසර අවශ්‍යයි. කරුණාකර යෙදුම් සැකසුම්වල අවසර ලබා දෙන්න.',
-    moisture: 'තෙතමනය:',
-  },
-  தமிழ்: {
-    title: 'சாதனத்தை இணைக்கவும்',
-    findDevice: 'மண் pH சென்சாரை இணைக்கவும்',
-    findDeviceBLE: 'உங்கள் ESP32 மண் சென்சாரைக் கண்டறியவும்',
-    findDeviceWifi: 'உங்கள் ESP32 சாதனத்தைக் கண்டறியவும்',
-    bluetoothInstructions: 'உங்கள் தொலைபேசியில் புளூடூத் இயக்கப்பட்டுள்ளது மற்றும் ESP32 சென்சார் இயக்கத்தில் உள்ளது என்பதை உறுதிப்படுத்தவும். அருகிலுள்ள சென்சார்களைத் தேட "சாதனங்களை ஸ்கேன் செய்யவும்" ஐத் தட்டவும்.',
-    apModeInstructions: 'உங்கள் தொலைபேசியை ESP32 இன் WiFi நெட்வொர்க்குடன் இணைக்கவும் (எ.கா: "ESP32-Moisture-Sensor"), பின்னர் "192.168.4.1 ஐ முயற்சிக்கவும்" ஐத் தட்டவும் அல்லது ஸ்கேன் செய்யவும்.',
-    wifiModeInstructions: 'ESP32 மற்றும் தொலைபேசி ஒரே WiFi நெட்வொர்க்கில் உள்ளன என்பதை உறுதிப்படுத்தவும், பின்னர் சாதனங்களை ஸ்கேன் செய்யவும்.',
-    manualIpEntry: 'கைமுறை IP நுழைவு',
-    manualIpHint: 'உங்கள் ESP32 இன் IP முகவரியை நீங்கள் அறிந்திருந்தால், இங்கே உள்ளிடவும்',
-    quickConnect: 'விரைவு இணைப்பு (AP முறை)',
-    quickConnectHint: 'ESP32 அணுகல் புள்ளி முறையில் இருந்தால், இயல்புநிலை IP ஐ முயற்சிக்கவும்:',
-    tryApIp: '192.168.4.1 ஐ முயற்சிக்கவும்',
-    test: 'சோதனை',
-    scanForDevices: 'சாதனங்களை ஸ்கேன் செய்யவும்',
-    scanForBluetooth: 'புளூடூத் சாதனங்களை ஸ்கேன் செய்யவும்',
-    scanningNetwork: 'நெட்வொர்க்கை ஸ்கேன் செய்கிறது...',
-    scanningBluetooth: 'புளூடூத்தை ஸ்கேன் செய்கிறது...',
-    scanning: 'ஸ்கேன் செய்கிறது...',
-    foundDevices: 'கண்டறியப்பட்ட சாதனங்கள்',
-    connected: 'இணைக்கப்பட்டது',
-    connect: 'இணைக்கவும்',
-    disconnect: 'துண்டிக்கவும்',
-    disconnectDevice: 'சாதனத்தை துண்டிக்கவும்',
-    disconnectConfirm: 'நீங்கள் துண்டிக்க விரும்புகிறீர்களா?',
-    cancel: 'ரத்துசெய்',
-    disconnected: 'துண்டிக்கப்பட்டது',
-    disconnectedMessage: 'சாதனம் துண்டிக்கப்பட்டது',
-    noDevicesFound: 'சாதனங்கள் கண்டறியப்படவில்லை',
-    noDevicesHint: 'உங்கள் நெட்வொர்க்கைத் தேட "சாதனங்களை ஸ்கேன் செய்யவும்" ஐத் தட்டவும்',
-    noDevicesHintBLE: 'புளூடூத் சென்சார்களைத் தேட "சாதனங்களை ஸ்கேன் செய்யவும்" ஐத் தட்டவும்',
-    deviceFound: 'சாதனம் கண்டறியப்பட்டது!',
-    deviceNotFound: 'சாதனம் கண்டறியப்படவில்லை',
-    connectionFailed: 'இணைப்பு தோல்வியடைந்தது',
-    error: 'பிழை',
-    enterIp: 'தயவுசெய்து IP முகவரியை உள்ளிடவும்',
-    invalidIp: 'தவறான IP',
-    validIpHint: 'தயவுசெய்து சரியான IP முகவரியை உள்ளிடவும் (எ.கா: 192.168.1.100)',
-    permissionRequired: 'அனுமதி தேவை',
-    permissionMessage: 'சாதனங்களை ஸ்கேன் செய்ய புளூடூத் அனுமதிகள் தேவை. தயவுசெய்து பயன்பாட்டு அமைப்புகளில் அனுமதிகளை வழங்கவும்.',
-    moisture: 'ஈரப்பதம்:',
-  },
-};
-
 export default function DeviceConnectionScreenSeedDetection({ navigation, route }) {
-  const { selectedLanguage } = useLanguage();
-  const t = translations[selectedLanguage];
+  const translate = useTranslation('deviceConnectionSeed');
   const [isScanning, setIsScanning] = useState(false);
   const [foundDevices, setFoundDevices] = useState([]);
   const [scanProgress, setScanProgress] = useState({ current: 0, total: 0 });
@@ -195,7 +64,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         if (!hasPermission) {
           const permissionGranted = await BluetoothPermissionService.requestPermissions();
           if (!permissionGranted) {
-            Alert.alert(t.permissionRequired, t.permissionMessage);
+            showAppAlert(translate('common.permissionRequired'), translate('permissionMessage'));
             setIsScanning(false);
             return;
           }
@@ -220,7 +89,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         );
 
         if (devices.length === 0) {
-          Alert.alert(t.noDevicesFound, 'No ESP32-Soil-Sensor devices were found. Make sure:\n\n• ESP32 sensor is powered on\n• Bluetooth is enabled on your phone\n• ESP32 sensor is in range');
+          showAppAlert(translate('noDevicesFound'), translate('bleHelpHint'));
         }
       } else {
         // WiFi scan
@@ -242,11 +111,11 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         );
 
         if (devices.length === 0) {
-          Alert.alert(t.noDevicesFound, 'No ESP32 devices were found on your network. Make sure:\n\n• ESP32 is powered on\n• ESP32 is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry');
+          showAppAlert(translate('noDevicesFound'), translate('wifiHelpHint'));
         }
       }
     } catch (error) {
-      Alert.alert(t.error, error.message || 'Failed to scan for devices');
+      showAppAlert(translate('common.error'), error.message || translate('failedScan'));
     } finally {
       setIsScanning(false);
     }
@@ -305,7 +174,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           const storedData = BleScanServiceEsp32.getLatestData();
   //           console.log('Stored data after receiving:', storedData);
             
-  //           Alert.alert(
+  //           showAppAlert(
   //             'Connected!',
   //             `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
   //             [
@@ -324,7 +193,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           console.log('No data in promise, but checking stored data:', storedData);
             
   //           if (storedData) {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data available!`,
   //               [
@@ -337,7 +206,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //               ]
   //             );
   //           } else {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
   //               [
@@ -352,7 +221,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           }
   //         }
   //       } else {
-  //         Alert.alert('Connection Failed', result.error || 'Could not connect to device');
+  //         showAppAlert('Connection Failed', result.error || 'Could not connect to device');
   //       }
   //     } else {
   //       // WiFi connection
@@ -360,7 +229,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //       const testResult = await service.testConnection();
         
   //       if (testResult) {
-  //         Alert.alert(
+  //         showAppAlert(
   //           'Connected!',
   //           `Successfully connected to ${device.name || device.ip}`,
   //           [
@@ -373,11 +242,11 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           ]
   //         );
   //       } else {
-  //         Alert.alert('Connection Failed', 'Could not connect to device');
+  //         showAppAlert('Connection Failed', 'Could not connect to device');
   //       }
   //     }
   //   } catch (error) {
-  //     Alert.alert('Connection Error', error.message || 'Failed to connect');
+  //     showAppAlert('Connection Error', error.message || 'Failed to connect');
   //   }
   // };
   const handleConnect = async (device) => {
@@ -392,7 +261,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
       });
   
       if (!result.success) {
-        Alert.alert(t.connectionFailed, result.error || 'Could not connect to device');
+        showAppAlert(translate('connectionFailed'), result.error || translate('couldNotConnect'));
         return;
       }
   
@@ -405,37 +274,37 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
       const firstData = await result.firstDataPromise;
   
       if (firstData) {
-        Alert.alert(
-          t.connected,
+        showAppAlert(
+          translate('connected'),
           `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       } else {
-        Alert.alert(
-          t.connected,
+        showAppAlert(
+          translate('connected'),
           `Connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       }
     } catch (error) {
-      Alert.alert(t.error, error.message || 'Failed to connect');
+      showAppAlert(translate('common.error'), error.message || translate('failedConnect'));
     }
   };
   
 
   const handleDisconnect = () => {
-    Alert.alert(
-      t.disconnectDevice,
-      t.disconnectConfirm,
+    showAppAlert(
+      translate('disconnectDevice'),
+      translate('disconnectConfirm'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.disconnect,
+          text: translate('disconnect'),
           style: 'destructive',
           onPress: () => {
             service.disconnect?.();
             setFoundDevices([]);
-            Alert.alert(t.disconnected, t.disconnectedMessage);
+            showAppAlert(translate('disconnected'), translate('disconnectedMessage'));
           },
         },
       ]
@@ -444,14 +313,14 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
 
   const handleManualTest = async () => {
     if (!manualIp.trim()) {
-      Alert.alert(t.error, t.enterIp);
+      showAppAlert(translate('common.error'), translate('enterIp'));
       return;
     }
 
     // Validate IP format (basic)
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(manualIp.trim())) {
-      Alert.alert(t.invalidIp, t.validIpHint);
+      showAppAlert(translate('invalidIp'), translate('validIpHint'));
       return;
     }
 
@@ -465,15 +334,15 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
           }
           return [...prev, device];
         });
-        Alert.alert('Device Found!', `Found ESP32 device at ${device.ip}`);
+        showAppAlert(translate('deviceFound'), `${translate('foundEsp32At')} ${device.ip}`);
       } else {
-        Alert.alert(
-          t.deviceNotFound,
+        showAppAlert(
+          translate('deviceNotFound'),
           `No ESP32 device found at ${manualIp.trim()}. Make sure the device is online and the endpoint is correct.`
         );
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to test device');
+      showAppAlert(translate('common.error'), error.message || translate('failedTestDevice'));
     } finally {
       setTestingManual(false);
     }
@@ -497,7 +366,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
               <Icon name="arrow-left" size={24} color="#FFFFFF" />
             </TouchableOpacity>
             <View style={styles.headerText}>
-              <Text style={styles.welcomeText}>{t.title}</Text>
+              <Text style={styles.welcomeText}>{translate('title')}</Text>
             </View>
             <View style={styles.backButton} />
           </View>
@@ -515,14 +384,14 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                 <View style={styles.scanButtonContent}>
                   <ActivityIndicator size="small" color="white" style={styles.scanButtonIcon} />
                   <Text style={styles.scanButtonText}>
-                    {isBLESensor ? t.scanningBluetooth : t.scanningNetwork}
+                    {isBLESensor ? translate('scanningBluetooth') : translate('scanningNetwork')}
                   </Text>
                 </View>
               ) : (
                 <View style={styles.scanButtonContent}>
                   <Icon name="magnify" size={24} color="white" style={styles.scanButtonIcon} />
                   <Text style={styles.scanButtonText}>
-                    {isBLESensor ? t.scanForBluetooth : t.scanForDevices}
+                    {isBLESensor ? translate('scanForBluetooth') : translate('scanForDevices')}
                   </Text>
                 </View>
               )}
@@ -532,7 +401,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
             {isScanning && scanProgress.total > 0 && (
               <View style={styles.progressCard}>
                 <Text style={styles.progressText}>
-                  {t.scanning} {scanProgress.current} / {scanProgress.total}
+                  {translate('scanning')} {scanProgress.current} / {scanProgress.total}
                 </Text>
                 <View style={styles.progressBar}>
                   <View
@@ -549,7 +418,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
             {foundDevices.length > 0 && (
               <View style={styles.devicesSection}>
                 <Text style={styles.sectionTitle}>
-                  {t.foundDevices} ({foundDevices.length})
+                  {translate('foundDevices')} ({foundDevices.length})
                 </Text>
                 {foundDevices.map((device, index) => {
                   const isConnected = isBLESensor
@@ -581,7 +450,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                                 <Text style={styles.deviceIp}>{device.ip}</Text>
                                 {device.moisture !== undefined && (
                                   <Text style={styles.deviceMoisture}>
-                                    {t.moisture} {device.moisture.toFixed(1)}%
+                                    {translate('moisture')} {device.moisture.toFixed(1)}%
                                   </Text>
                                 )}
                               </>
@@ -590,7 +459,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                         </View>
                         {isConnected && (
                           <View style={styles.connectedBadge}>
-                            <Text style={styles.connectedBadgeText}>{t.connected}</Text>
+                            <Text style={styles.connectedBadgeText}>{translate('connected')}</Text>
                           </View>
                         )}
                       </View>
@@ -601,7 +470,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                             onPress={handleDisconnect}
                           >
                             <Icon name="close-circle-outline" size={20} color="#F44336" />
-                            <Text style={styles.disconnectButtonText}>{t.disconnect}</Text>
+                            <Text style={styles.disconnectButtonText}>{translate('disconnect')}</Text>
                           </TouchableOpacity>
                         ) : (
                           <TouchableOpacity
@@ -609,7 +478,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                             onPress={() => handleConnect(device)}
                           >
                             <Icon name="check-circle" size={20} color="white" />
-                            <Text style={styles.connectButtonText}>{t.connect}</Text>
+                            <Text style={styles.connectButtonText}>{translate('common.connect')}</Text>
                           </TouchableOpacity>
                         )}
                       </View>
@@ -627,15 +496,15 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                   size={24}
                   color="#0F5132"
                 />
-                <Text style={styles.instructionsTitle}>{t.findDevice}</Text>
+                <Text style={styles.instructionsTitle}>{translate('findDevice')}</Text>
               </View>
               <Text style={styles.instructionsText}>
                 {isBLESensor ? (
-                  t.bluetoothInstructions
+                  translate('bluetoothInstructions')
                 ) : (
                   <>
-                    <Text style={styles.instructionsBold}>AP Mode:</Text> {t.apModeInstructions}{'\n\n'}
-                    <Text style={styles.instructionsBold}>WiFi Mode:</Text> {t.wifiModeInstructions}
+                    <Text style={styles.instructionsBold}>AP Mode:</Text> {translate('apModeInstructions')}{'\n\n'}
+                    <Text style={styles.instructionsBold}>WiFi Mode:</Text> {translate('wifiModeInstructions')}
                   </>
                 )}
               </Text>
@@ -644,12 +513,12 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
             {/* Manual IP Entry - Only for WiFi */}
             {!isBLESensor && (
               <View style={styles.manualCard}>
-                <Text style={styles.sectionTitle}>{t.manualIpEntry}</Text>
-                <Text style={styles.sectionSubtitle}>{t.manualIpHint}</Text>
+                <Text style={styles.sectionTitle}>{translate('manualIpEntry')}</Text>
+                <Text style={styles.sectionSubtitle}>{translate('manualIpHint')}</Text>
 
                 <View style={styles.quickConnectCard}>
-                  <Text style={styles.quickConnectLabel}>{t.quickConnect}</Text>
-                  <Text style={styles.quickConnectHint}>{t.quickConnectHint}</Text>
+                  <Text style={styles.quickConnectLabel}>{translate('quickConnect')}</Text>
+                  <Text style={styles.quickConnectHint}>{translate('quickConnectHint')}</Text>
                   <TouchableOpacity
                     style={styles.quickConnectButton}
                     onPress={async () => {
@@ -665,22 +534,22 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                             }
                             return [...prev, device];
                           });
-                          Alert.alert(t.deviceFound, `Found ESP32 device at ${device.ip}`);
+                          showAppAlert(translate('deviceFound'), `${translate('foundEsp32At')} ${device.ip}`);
                         } else {
-                          Alert.alert(
-                            t.deviceNotFound,
-                            `No ESP32 device found at ${apIp}. Make sure:\n\n• ESP32 is powered on\n• You're connected to ESP32 WiFi network\n• ESP32 is in AP mode`
+                          showAppAlert(
+                            translate('deviceNotFound'),
+                            `${translate('noEsp32At')} ${apIp}. ${translate('noEsp32Hint')}`
                           );
                         }
                       } catch (error) {
-                        Alert.alert(t.error, error.message || 'Failed to test device');
+                        showAppAlert(translate('common.error'), error.message || translate('failedTestDevice'));
                       } finally {
                         setTestingManual(false);
                       }
                     }}
                   >
                     <Icon name="wifi" size={20} color="white" />
-                    <Text style={styles.quickConnectButtonText}>{t.tryApIp}</Text>
+                    <Text style={styles.quickConnectButtonText}>{translate('tryApIp')}</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -702,7 +571,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                     {testingManual ? (
                       <ActivityIndicator size="small" color="white" />
                     ) : (
-                      <Text style={styles.testButtonText}>{t.test}</Text>
+                      <Text style={styles.testButtonText}>{translate('test')}</Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -713,9 +582,9 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
             {!isScanning && foundDevices.length === 0 && (
               <View style={styles.emptyState}>
                 <Icon name={isBLESensor ? "bluetooth-off" : "wifi-off"} size={48} color="#CCC" />
-                <Text style={styles.emptyStateText}>{t.noDevicesFound}</Text>
+                <Text style={styles.emptyStateText}>{translate('noDevicesFound')}</Text>
                 <Text style={styles.emptyStateSubtext}>
-                  {isBLESensor ? t.noDevicesHintBLE : t.noDevicesHint}
+                  {isBLESensor ? translate('noDevicesHintBLE') : translate('noDevicesHint')}
                 </Text>
               </View>
             )}

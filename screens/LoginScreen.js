@@ -10,92 +10,23 @@ import {
   Platform,
   ScrollView,
   Animated,
-  Alert,
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
 
-const translations = {
-  English: {
-    welcomeBack: 'Welcome Back',
-    subtitle: 'Sign in to continue to iPaddyCare',
-    email: 'Email',
-    password: 'Password',
-    login: 'Login',
-    signUp: 'Sign Up',
-    forgotPassword: 'Forgot Password?',
-    skip: 'Skip for Now',
-    orContinueWith: 'or continue with',
-    continueWithGoogle: 'Continue with Google',
-    dontHaveAccount: "Don't have an account?",
-    alreadyHaveAccount: 'Already have an account?',
-    name: 'Full Name',
-    confirmPassword: 'Confirm Password',
-    createAccount: 'Create Account',
-    resetPassword: 'Reset Password',
-    enterEmail: 'Enter your email to reset password',
-    sendResetLink: 'Send Reset Link',
-    backToLogin: 'Back to Login',
-    officerLogin: 'Login as Officer',
-    officerLoginDesc: 'Are you an agricultural officer?',
-  },
-  සිංහල: {
-    welcomeBack: 'ආපසු සාදරයෙන් පිළිගනිමු',
-    subtitle: 'iPaddyCare වෙත යාමට පිවිසෙන්න',
-    email: 'විද්‍යුත් තැපෑල',
-    password: 'මුරපදය',
-    login: 'පිවිසෙන්න',
-    signUp: 'ලියාපදිංචි වන්න',
-    forgotPassword: 'මුරපදය අමතකද?',
-    skip: 'දැනට මඟ හරින්න',
-    orContinueWith: 'නැතහොත් ඉදිරියට යන්න',
-    continueWithGoogle: 'Google සමඟ ඉදිරියට',
-    dontHaveAccount: 'ගිණුමක් නැතද?',
-    alreadyHaveAccount: 'දැනටමත් ගිණුමක් ඇතද?',
-    name: 'සම්පූර්ණ නම',
-    confirmPassword: 'මුරපදය තහවුරු කරන්න',
-    createAccount: 'ගිණුම සාදන්න',
-    resetPassword: 'මුරපදය නැවත සැකසීම',
-    enterEmail: 'මුරපදය නැවත සැකසීමට ඔබේ විද්‍යුත් තැපෑල ඇතුළත් කරන්න',
-    sendResetLink: 'නැවත සැකසීමේ සබැඳිය යවන්න',
-    backToLogin: 'පිවිසීමට ආපසු යන්න',
-    officerLogin: 'නිලධාරියෙකු ලෙස පිවිසෙන්න',
-    officerLoginDesc: 'ඔබ කෘෂිකර්ම නිලධාරියෙක්ද?',
-  },
-  தமிழ்: {
-    welcomeBack: 'மீண்டும் வரவேற்கிறோம்',
-    subtitle: 'iPaddyCare க்கு தொடர உள்நுழையவும்',
-    email: 'மின்னஞ்சல்',
-    password: 'கடவுச்சொல்',
-    login: 'உள்நுழைக',
-    signUp: 'பதிவு செய்ய',
-    forgotPassword: 'கடவுச்சொல் மறந்துவிட்டதா?',
-    skip: 'இப்போது தவிர்',
-    orContinueWith: 'அல்லது தொடரவும்',
-    continueWithGoogle: 'Google உடன் தொடரவும்',
-    dontHaveAccount: 'கணக்கு இல்லையா?',
-    alreadyHaveAccount: 'ஏற்கனவே கணக்கு உள்ளதா?',
-    name: 'முழுப் பெயர்',
-    confirmPassword: 'கடவுச்சொல்லை உறுதிப்படுத்த',
-    createAccount: 'கணக்கை உருவாக்க',
-    resetPassword: 'கடவுச்சொல்லை மீட்டமை',
-    enterEmail: 'கடவுச்சொல்லை மீட்டமைக்க உங்கள் மின்னஞ்சலை உள்ளிடவும்',
-    sendResetLink: 'மீட்டமைப்பு இணைப்பை அனுப்ப',
-    backToLogin: 'உள்நுழைக்கு திரும்ப',
-    officerLogin: 'அதிகாரியாக உள்நுழைக',
-    officerLoginDesc: 'நீங்கள் விவசாய அதிகாரியா?',
-  },
-};
+import { useTranslation } from '../src/i18n/useTranslation';
 
-const languageOptions = Object.keys(translations);
+const languageOptions = ['English', 'සිංහල', 'தமிழ்'];
 
 export default function LoginScreen({ navigation, onSkip }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const translate = useTranslation('login');
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(30));
 
@@ -108,8 +39,6 @@ export default function LoginScreen({ navigation, onSkip }) {
 
   const [errors, setErrors] = useState({});
   const { signIn, signUp, resetPassword, signInWithGoogle, loading } = useAuth();
-
-  const t = translations[selectedLanguage];
 
   React.useEffect(() => {
     Animated.parallel([
@@ -130,28 +59,28 @@ export default function LoginScreen({ navigation, onSkip }) {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = translate('emailRequired');
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = translate('invalidEmail');
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = translate('passwordRequired');
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = translate('passwordTooShort');
     }
 
     if (isSignUp) {
       if (!formData.name.trim()) {
-        newErrors.name = 'Name is required';
+        newErrors.name = translate('nameRequired');
       }
       if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+        newErrors.confirmPassword = translate('passwordsDoNotMatch');
       }
     }
 
     if (isResetPassword && !formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = translate('emailRequired');
     }
 
     setErrors(newErrors);
@@ -164,11 +93,11 @@ export default function LoginScreen({ navigation, onSkip }) {
     if (isResetPassword) {
       const result = await resetPassword(formData.email);
       if (result.success) {
-        Alert.alert('Success', result.message || 'Password reset email sent!');
+        showAppAlert(translate('success'), result.message || translate('passwordResetSent'));
         setIsResetPassword(false);
         setFormData({ ...formData, email: '' });
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(translate('common.error'), result.error);
       }
       return;
     }
@@ -180,14 +109,14 @@ export default function LoginScreen({ navigation, onSkip }) {
         console.log('Registration successful');
       } else {
         console.error('Registration failed:', result.error);
-        Alert.alert('Registration Failed', result.error);
+        showAppAlert(translate('registrationFailed'), result.error);
       }
     } else {
       const result = await signIn(formData.email, formData.password);
       if (result.success) {
         // Navigation will be handled by auth state change
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(translate('common.error'), result.error);
       }
     }
   };
@@ -231,8 +160,8 @@ export default function LoginScreen({ navigation, onSkip }) {
               <View style={styles.headerPattern2} />
             </View>
             <Text style={styles.appName}>iPaddyCare</Text>
-            <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
-            <Text style={styles.subtitle}>{t.subtitle}</Text>
+            <Text style={styles.welcomeText}>{translate('welcomeBack')}</Text>
+            <Text style={styles.subtitle}>{translate('subtitle')}</Text>
             <View style={styles.languageSelector}>
               {languageOptions.map((language) => {
                 const isActive = selectedLanguage === language;
@@ -273,12 +202,12 @@ export default function LoginScreen({ navigation, onSkip }) {
           >
             {isResetPassword ? (
               <>
-                <Text style={styles.resetText}>{t.enterEmail}</Text>
+                <Text style={styles.resetText}>{translate('enterEmail')}</Text>
                 <View style={styles.inputContainer}>
-                  <Text style={styles.label}>{t.email}</Text>
+                  <Text style={styles.label}>{translate('common.email')}</Text>
                   <TextInput
                     style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="Enter your email"
+                    placeholder={translate('enterYourEmail')}
                     placeholderTextColor="#999"
                     value={formData.email}
                     onChangeText={(text) =>
@@ -301,7 +230,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                   {loading ? (
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
-                    <Text style={styles.submitButtonText}>{t.sendResetLink}</Text>
+                    <Text style={styles.submitButtonText}>{translate('sendResetLink')}</Text>
                   )}
                 </TouchableOpacity>
 
@@ -312,17 +241,17 @@ export default function LoginScreen({ navigation, onSkip }) {
                   }}
                   style={styles.linkButton}
                 >
-                  <Text style={styles.linkText}>{t.backToLogin}</Text>
+                  <Text style={styles.linkText}>{translate('backToLogin')}</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 {isSignUp && (
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>{t.name}</Text>
+                    <Text style={styles.label}>{translate('name')}</Text>
                     <TextInput
                       style={[styles.input, errors.name && styles.inputError]}
-                      placeholder="Enter your full name"
+                      placeholder={translate('enterYourFullName')}
                       placeholderTextColor="#999"
                       value={formData.name}
                       onChangeText={(text) =>
@@ -337,10 +266,10 @@ export default function LoginScreen({ navigation, onSkip }) {
                 )}
 
                 <View style={styles.inputContainer}>
-                  <Text style={styles.label}>{t.email}</Text>
+                  <Text style={styles.label}>{translate('common.email')}</Text>
                   <TextInput
                     style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="Enter your email"
+                    placeholder={translate('enterYourEmail')}
                     placeholderTextColor="#999"
                     value={formData.email}
                     onChangeText={(text) => {
@@ -357,10 +286,10 @@ export default function LoginScreen({ navigation, onSkip }) {
                 </View>
 
                 <View style={styles.inputContainer}>
-                  <Text style={styles.label}>{t.password}</Text>
+                  <Text style={styles.label}>{translate('common.password')}</Text>
                   <TextInput
                     style={[styles.input, errors.password && styles.inputError]}
-                    placeholder="Enter your password"
+                    placeholder={translate('enterYourPassword')}
                     placeholderTextColor="#999"
                     value={formData.password}
                     onChangeText={(text) => {
@@ -378,13 +307,13 @@ export default function LoginScreen({ navigation, onSkip }) {
 
                 {isSignUp && (
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>{t.confirmPassword}</Text>
+                    <Text style={styles.label}>{translate('confirmPassword')}</Text>
                     <TextInput
                       style={[
                         styles.input,
                         errors.confirmPassword && styles.inputError,
                       ]}
-                      placeholder="Confirm your password"
+                      placeholder={translate('confirmYourPassword')}
                       placeholderTextColor="#999"
                       value={formData.confirmPassword}
                       onChangeText={(text) => {
@@ -409,7 +338,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                     style={styles.forgotPasswordButton}
                   >
                     <Text style={styles.forgotPasswordText}>
-                      {t.forgotPassword}
+                      {translate('forgotPassword')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -423,14 +352,14 @@ export default function LoginScreen({ navigation, onSkip }) {
                     <ActivityIndicator color="#FFFFFF" />
                   ) : (
                     <Text style={styles.submitButtonText}>
-                      {isSignUp ? t.createAccount : t.login}
+                      {isSignUp ? translate('createAccount') : translate('login')}
                     </Text>
                   )}
                 </TouchableOpacity>
 
                 <View style={styles.switchContainer}>
                   <Text style={styles.switchText}>
-                    {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}{' '}
+                    {isSignUp ? translate('alreadyHaveAccount') : translate('dontHaveAccount')}{' '}
                   </Text>
                   <TouchableOpacity
                     onPress={() => {
@@ -445,7 +374,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                     }}
                   >
                     <Text style={styles.switchLink}>
-                      {isSignUp ? t.login : t.signUp}
+                      {isSignUp ? translate('login') : translate('signUp')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -454,7 +383,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                 <View style={styles.oauthContainer}>
                   <View style={styles.divider}>
                     <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>{t.orContinueWith}</Text>
+                    <Text style={styles.dividerText}>{translate('orContinueWith')}</Text>
                     <View style={styles.dividerLine} />
                   </View>
 
@@ -463,7 +392,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                     onPress={async () => {
                       const result = await signInWithGoogle();
                       if (!result.success && !result.cancelled) {
-                        Alert.alert('Error', result.error);
+                        showAppAlert(translate('common.error'), result.error);
                       }
                     }}
                     disabled={loading}
@@ -473,7 +402,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                       style={styles.googleIcon}
                       resizeMode="contain"
                     />
-                    <Text style={styles.oauthButtonText}>{t.continueWithGoogle}</Text>
+                    <Text style={styles.oauthButtonText}>{translate('continueWithGoogle')}</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -490,12 +419,12 @@ export default function LoginScreen({ navigation, onSkip }) {
             ]}
           >
             <View style={styles.officerLoginDivider} />
-            <Text style={styles.officerLoginText}>{t.officerLoginDesc}</Text>
+            <Text style={styles.officerLoginText}>{translate('officerLoginDesc')}</Text>
             <TouchableOpacity
               onPress={() => navigation.navigate('OfficerLogin')}
               style={styles.officerLoginButton}
             >
-              <Text style={styles.officerLoginButtonText}>{t.officerLogin}</Text>
+              <Text style={styles.officerLoginButtonText}>{translate('officerLogin')}</Text>
             </TouchableOpacity>
           </Animated.View>
 
@@ -509,7 +438,7 @@ export default function LoginScreen({ navigation, onSkip }) {
             ]}
           >
             <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
-              <Text style={styles.skipText}>{t.skip}</Text>
+              <Text style={styles.skipText}>{translate('skip')}</Text>
             </TouchableOpacity>
           </Animated.View>
         </ScrollView>

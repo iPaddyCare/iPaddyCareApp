@@ -8,144 +8,19 @@ import {
   StyleSheet,
   Dimensions,
   Switch,
-  Alert,
   Platform,
   Animated,
   Image,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
-
-// Language translations
-const translations = {
-  English: {
-    title: 'Settings',
-    account: 'Account',
-    profile: 'Profile',
-    myListings: 'My Listings',
-    email: 'Email',
-    password: 'Password',
-    preferences: 'Preferences',
-    language: 'Language',
-    notifications: 'Notifications',
-    theme: 'Theme',
-    device: 'Device',
-    autoConnect: 'Auto-connect Devices',
-    connectionTimeout: 'Connection Timeout',
-    data: 'Data & Storage',
-    clearCache: 'Clear Cache',
-    exportData: 'Export Data',
-    measurement: 'Measurement Units',
-    temperature: 'Temperature Unit',
-    moisture: 'Moisture Unit',
-    about: 'About',
-    version: 'Version',
-    terms: 'Terms & Conditions',
-    privacy: 'Privacy Policy',
-    help: 'Help & Support',
-    logout: 'Logout',
-    logoutConfirm: 'Are you sure you want to logout?',
-    yes: 'Yes',
-    no: 'No',
-    celsius: 'Celsius (°C)',
-    fahrenheit: 'Fahrenheit (°F)',
-    percentage: 'Percentage (%)',
-    decimal: 'Decimal (0.00)',
-    light: 'Light',
-    dark: 'Dark',
-    system: 'System Default',
-    enabled: 'Enabled',
-    disabled: 'Disabled',
-    clearCacheConfirm: 'Clear all cached data?',
-    cacheCleared: 'Cache cleared successfully',
-  },
-  සිංහල: {
-    title: 'සැකසුම්',
-    account: 'ගිණුම',
-    profile: 'පැතිකඩ',
-    myListings: 'මගේ ලැයිස්තු',
-    email: 'විද්‍යුත් තැපෑල',
-    password: 'මුරපදය',
-    preferences: 'අභිමතයන්',
-    language: 'භාෂාව',
-    notifications: 'දැනුම්දීම්',
-    theme: 'තේමාව',
-    device: 'උපාංගය',
-    autoConnect: 'ස්වයංක්‍රීයව සම්බන්ධ කරන්න',
-    connectionTimeout: 'සම්බන්ධතා කල් ඉකුත් වීම',
-    data: 'දත්ත සහ ගබඩාව',
-    clearCache: 'කෑෂ් මකන්න',
-    exportData: 'දත්ත නිර්යාත කරන්න',
-    measurement: 'මිනුම් ඒකක',
-    temperature: 'උෂ්ණත්ව ඒකකය',
-    moisture: 'තෙතමන ඒකකය',
-    about: 'මෙහි ගැන',
-    version: 'අනුවාදය',
-    terms: 'කොන්දේසි සහ නියම',
-    privacy: 'රහස්‍යතා ප්‍රතිපත්තිය',
-    help: 'උදව් සහ සහාය',
-    logout: 'ඉවත් වන්න',
-    logoutConfirm: 'ඔබට ඉවත් වීමට අවශ්‍යද?',
-    yes: 'ඔව්',
-    no: 'නැත',
-    celsius: 'සෙල්සියස් (°C)',
-    fahrenheit: 'ෆැරන්හයිට් (°F)',
-    percentage: 'ශතය (%)',
-    decimal: 'දශම (0.00)',
-    light: 'ආලෝක',
-    dark: 'අඳුරු',
-    system: 'පද්ධති පෙරනිමිය',
-    enabled: 'සක්‍රිය',
-    disabled: 'අක්‍රිය',
-    clearCacheConfirm: 'සියලුම කෑෂ් දත්ත මකන්නද?',
-    cacheCleared: 'කෑෂ් සාර්ථකව මකා ඇත',
-  },
-  தமிழ்: {
-    title: 'அமைப்புகள்',
-    account: 'கணக்கு',
-    profile: 'சுயவிவரம்',
-    myListings: 'எனது பட்டியல்கள்',
-    email: 'மின்னஞ்சல்',
-    password: 'கடவுச்சொல்',
-    preferences: 'விருப்பங்கள்',
-    language: 'மொழி',
-    notifications: 'அறிவிப்புகள்',
-    theme: 'தீம்',
-    device: 'சாதனம்',
-    autoConnect: 'தானாக இணைக்க',
-    connectionTimeout: 'இணைப்பு நேரம்',
-    data: 'தரவு மற்றும் சேமிப்பு',
-    clearCache: 'கேச் அழிக்க',
-    exportData: 'தரவு ஏற்றுமதி',
-    measurement: 'அளவீட்டு அலகுகள்',
-    temperature: 'வெப்பநிலை அலகு',
-    moisture: 'ஈரப்பதம் அலகு',
-    about: 'பற்றி',
-    version: 'பதிப்பு',
-    terms: 'விதிமுறைகள் மற்றும் நிபந்தனைகள்',
-    privacy: 'தனியுரிமை கொள்கை',
-    help: 'உதவி மற்றும் ஆதரவு',
-    logout: 'வெளியேற',
-    logoutConfirm: 'நீங்கள் வெளியேற விரும்புகிறீர்களா?',
-    yes: 'ஆம்',
-    no: 'இல்லை',
-    celsius: 'செல்சியஸ் (°C)',
-    fahrenheit: 'பாரன்ஹீட் (°F)',
-    percentage: 'சதவீதம் (%)',
-    decimal: 'தசம (0.00)',
-    light: 'வெளிச்சம்',
-    dark: 'இருள்',
-    system: 'கணினி இயல்புநிலை',
-    enabled: 'இயக்கப்பட்டது',
-    disabled: 'முடக்கப்பட்டது',
-    clearCacheConfirm: 'அனைத்து கேச் தரவையும் அழிக்கவா?',
-    cacheCleared: 'கேச் வெற்றிகரமாக அழிக்கப்பட்டது',
-  },
-};
 
 const SettingItem = ({ icon, label, value, onPress, rightComponent, showArrow = true }) => {
   return (
@@ -186,9 +61,9 @@ const SettingSection = ({ title, children }) => {
 
 export default function SettingsScreen({ navigation }) {
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const translate = useTranslation('settings');
   const { user, isAuthenticated, signOut } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoConnectEnabled, setAutoConnectEnabled] = useState(false);
@@ -205,13 +80,13 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(t.logout, t.logoutConfirm, [
+    showAppAlert(translate('logout'), translate('logoutConfirm'), [
       {
-        text: t.no,
+        text: translate('common.no'),
         style: 'cancel',
       },
       {
-        text: t.yes,
+        text: translate('common.yes'),
         style: 'destructive',
         onPress: async () => {
           await signOut();
@@ -222,16 +97,16 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleClearCache = () => {
-    Alert.alert(t.clearCache, t.clearCacheConfirm, [
+    showAppAlert(translate('clearCache'), translate('clearCacheConfirm'), [
       {
-        text: t.no,
+        text: translate('common.no'),
         style: 'cancel',
       },
       {
-        text: t.yes,
+        text: translate('common.yes'),
         onPress: () => {
           // TODO: Implement cache clearing
-          Alert.alert('Success', t.cacheCleared);
+          showAppAlert(translate('success'), translate('cacheCleared'));
         },
       },
     ]);
@@ -239,7 +114,7 @@ export default function SettingsScreen({ navigation }) {
 
   const handleExportData = () => {
     // TODO: Implement data export
-    Alert.alert('Export Data', 'Data export feature coming soon');
+    showAppAlert(translate('exportDataTitle'), translate('exportDataMsg'));
   };
 
   return (
@@ -267,7 +142,7 @@ export default function SettingsScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -304,43 +179,43 @@ export default function SettingsScreen({ navigation }) {
 
             {/* Account Section */}
             {isAuthenticated && (
-              <SettingSection title={t.account}>
+              <SettingSection title={translate('account')}>
                 <SettingItem
                   icon="account"
-                  label={t.profile}
+                  label={translate('profile')}
                   value={user?.displayName || user?.email}
-                  onPress={() => Alert.alert('Profile', 'Profile editing coming soon')}
+                  onPress={() => showAppAlert(translate('profileTitle'), translate('profileMsg'))}
                 />
                 <SettingItem
                   icon="package-variant"
-                  label={t.myListings}
+                  label={translate('common.myListings')}
                   onPress={() => navigation.navigate('MyListings')}
                 />
                 <SettingItem
                   icon="email"
-                  label={t.email}
+                  label={translate('common.email')}
                   value={user?.email}
-                  onPress={() => Alert.alert('Email', 'Email settings coming soon')}
+                  onPress={() => showAppAlert(translate('common.email'), translate('emailMsg'))}
                 />
                 <SettingItem
                   icon="lock"
-                  label={t.password}
-                  onPress={() => Alert.alert('Password', 'Password change coming soon')}
+                  label={translate('common.password')}
+                  onPress={() => showAppAlert(translate('common.password'), translate('passwordMsg'))}
                 />
               </SettingSection>
             )}
 
             {/* Preferences Section */}
-            <SettingSection title={t.preferences}>
+            <SettingSection title={translate('preferences')}>
               <SettingItem
                 icon="translate"
-                label={t.language}
+                label={translate('language')}
                 value={selectedLanguage}
                 onPress={handleLanguageChange}
               />
               <SettingItem
                 icon="bell"
-                label={t.notifications}
+                label={translate('notifications')}
                 rightComponent={
                   <Switch
                     value={notificationsEnabled}
@@ -353,8 +228,8 @@ export default function SettingsScreen({ navigation }) {
               />
               <SettingItem
                 icon="palette"
-                label={t.theme}
-                value={theme === 'system' ? t.system : theme === 'light' ? t.light : t.dark}
+                label={translate('theme')}
+                value={theme === 'system' ? translate('system') : theme === 'light' ? translate('light') : translate('dark')}
                 onPress={() => {
                   const themes = ['system', 'light', 'dark'];
                   const currentIndex = themes.indexOf(theme);
@@ -365,10 +240,10 @@ export default function SettingsScreen({ navigation }) {
             </SettingSection>
 
             {/* Device Section */}
-            <SettingSection title={t.device}>
+            <SettingSection title={translate('device')}>
               <SettingItem
                 icon="bluetooth-connect"
-                label={t.autoConnect}
+                label={translate('autoConnect')}
                 rightComponent={
                   <Switch
                     value={autoConnectEnabled}
@@ -381,26 +256,26 @@ export default function SettingsScreen({ navigation }) {
               />
               <SettingItem
                 icon="timer"
-                label={t.connectionTimeout}
+                label={translate('connectionTimeout')}
                 value="30 seconds"
-                onPress={() => Alert.alert('Timeout', 'Connection timeout settings coming soon')}
+                onPress={() => showAppAlert(translate('timeoutTitle'), translate('timeoutMsg'))}
               />
             </SettingSection>
 
             {/* Measurement Units Section */}
-            <SettingSection title={t.measurement}>
+            <SettingSection title={translate('measurement')}>
               <SettingItem
                 icon="thermometer"
-                label={t.temperature}
-                value={temperatureUnit === 'celsius' ? t.celsius : t.fahrenheit}
+                label={translate('temperature')}
+                value={temperatureUnit === 'celsius' ? translate('celsius') : translate('fahrenheit')}
                 onPress={() => {
                   setTemperatureUnit(temperatureUnit === 'celsius' ? 'fahrenheit' : 'celsius');
                 }}
               />
               <SettingItem
                 icon="water"
-                label={t.moisture}
-                value={moistureUnit === 'percentage' ? t.percentage : t.decimal}
+                label={translate('moisture')}
+                value={moistureUnit === 'percentage' ? translate('percentage') : translate('decimal')}
                 onPress={() => {
                   setMoistureUnit(moistureUnit === 'percentage' ? 'decimal' : 'percentage');
                 }}
@@ -408,40 +283,40 @@ export default function SettingsScreen({ navigation }) {
             </SettingSection>
 
             {/* Data & Storage Section */}
-            <SettingSection title={t.data}>
+            <SettingSection title={translate('data')}>
               <SettingItem
                 icon="delete"
-                label={t.clearCache}
+                label={translate('clearCache')}
                 onPress={handleClearCache}
               />
               <SettingItem
                 icon="download"
-                label={t.exportData}
+                label={translate('exportData')}
                 onPress={handleExportData}
               />
             </SettingSection>
 
             {/* About Section */}
-            <SettingSection title={t.about}>
+            <SettingSection title={translate('about')}>
               <SettingItem
                 icon="information"
-                label={t.version}
+                label={translate('version')}
                 value="1.0.0"
                 onPress={() => {}}
               />
               <SettingItem
                 icon="file-document"
-                label={t.terms}
-                onPress={() => Alert.alert('Terms', 'Terms & Conditions coming soon')}
+                label={translate('terms')}
+                onPress={() => showAppAlert(translate('termsTitle'), translate('termsMsg'))}
               />
               <SettingItem
                 icon="shield-lock"
-                label={t.privacy}
-                onPress={() => Alert.alert('Privacy', 'Privacy Policy coming soon')}
+                label={translate('privacy')}
+                onPress={() => showAppAlert(translate('privacyTitle'), translate('privacyMsg'))}
               />
               <SettingItem
                 icon="help-circle"
-                label={t.help}
+                label={translate('help')}
                 onPress={() => navigation.navigate('Help')}
               />
             </SettingSection>
@@ -455,7 +330,7 @@ export default function SettingsScreen({ navigation }) {
                   activeOpacity={0.8}
                 >
                   <Icon name="logout" size={22} color="#E91E63" />
-                  <Text style={styles.logoutText}>{t.logout}</Text>
+                  <Text style={styles.logoutText}>{translate('logout')}</Text>
                 </TouchableOpacity>
               </View>
             )}

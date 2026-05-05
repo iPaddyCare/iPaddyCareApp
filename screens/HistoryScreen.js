@@ -7,105 +7,15 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
-  Alert,
   Animated,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
-
-// Language translations
-const translations = {
-  English: {
-    title: 'Test History',
-    subtitle: 'View all your test results',
-    noTests: 'No Tests Yet',
-    noTestsDesc: 'Start testing to see your results here',
-    filter: 'Filter',
-    all: 'All Tests',
-    seedQuality: 'Seed Quality',
-    moisture: 'Moisture',
-    soilPH: 'Soil pH',
-    pestDetection: 'Pest Detection',
-    date: 'Date',
-    time: 'Time',
-    result: 'Result',
-    viewDetails: 'View Details',
-    delete: 'Delete',
-    share: 'Share',
-    export: 'Export',
-    confirmDelete: 'Delete Test',
-    confirmDeleteMessage: 'Are you sure you want to delete this test?',
-    cancel: 'Cancel',
-    deleteConfirm: 'Delete',
-    testType: 'Test Type',
-    location: 'Location',
-    status: 'Status',
-    completed: 'Completed',
-    pending: 'Pending',
-    failed: 'Failed',
-  },
-  සිංහල: {
-    title: 'පරීක්ෂණ ඉතිහාසය',
-    subtitle: 'ඔබේ සියලුම පරීක්ෂණ ප්‍රතිඵල බලන්න',
-    noTests: 'තවමත් පරීක්ෂණ නොමැත',
-    noTestsDesc: 'ඔබේ ප්‍රතිඵල මෙහි දැකීමට පරීක්ෂණ ආරම්භ කරන්න',
-    filter: 'පෙරහන',
-    all: 'සියලුම පරීක්ෂණ',
-    seedQuality: 'බීජ ගුණත්වය',
-    moisture: 'තෙතමනය',
-    soilPH: 'පස් pH',
-    pestDetection: 'පළිබෝධ හඳුනාගැනීම',
-    date: 'දිනය',
-    time: 'වේලාව',
-    result: 'ප්‍රතිඵලය',
-    viewDetails: 'විස්තර බලන්න',
-    delete: 'මකන්න',
-    share: 'බෙදාගන්න',
-    export: 'නිර්යාත කරන්න',
-    confirmDelete: 'පරීක්ෂණය මකන්න',
-    confirmDeleteMessage: 'ඔබට මෙම පරීක්ෂණය මැකීමට අවශ්‍යද?',
-    cancel: 'අවලංගු කරන්න',
-    deleteConfirm: 'මකන්න',
-    testType: 'පරීක්ෂණ වර්ගය',
-    location: 'ස්ථානය',
-    status: 'තත්වය',
-    completed: 'සම්පූර්ණ',
-    pending: 'පොරොත්තුවෙන්',
-    failed: 'අසාර්ථක',
-  },
-  தமிழ்: {
-    title: 'சோதனை வரலாறு',
-    subtitle: 'உங்கள் அனைத்து சோதனை முடிவுகளையும் காண்க',
-    noTests: 'இன்னும் சோதனைகள் இல்லை',
-    noTestsDesc: 'உங்கள் முடிவுகளை இங்கே பார்க்க சோதனையைத் தொடங்குங்கள்',
-    filter: 'வடிகட்டு',
-    all: 'அனைத்து சோதனைகள்',
-    seedQuality: 'விதை தரம்',
-    moisture: 'ஈரப்பதம்',
-    soilPH: 'மண் pH',
-    pestDetection: 'பூச்சி கண்டறிதல்',
-    date: 'தேதி',
-    time: 'நேரம்',
-    result: 'முடிவு',
-    viewDetails: 'விவரங்களைக் காண்க',
-    delete: 'நீக்கு',
-    share: 'பகிர்',
-    export: 'ஏற்றுமதி',
-    confirmDelete: 'சோதனையை நீக்கவும்',
-    confirmDeleteMessage: 'இந்த சோதனையை நீக்க விரும்புகிறீர்களா?',
-    cancel: 'ரத்துசெய்',
-    deleteConfirm: 'நீக்கு',
-    testType: 'சோதனை வகை',
-    location: 'இடம்',
-    status: 'நிலை',
-    completed: 'முடிந்தது',
-    pending: 'நிலுவையில்',
-    failed: 'தோல்வி',
-  },
-};
 
 // Sample test history data
 const sampleTests = [
@@ -196,7 +106,7 @@ const FilterButton = ({ label, icon, isActive, onPress }) => (
   </TouchableOpacity>
 );
 
-const TestCard = ({ test, onViewDetails, onDelete, onShare, t }) => {
+const TestCard = ({ test, onViewDetails, onDelete, onShare, translate }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
@@ -213,11 +123,11 @@ const TestCard = ({ test, onViewDetails, onDelete, onShare, t }) => {
   const getStatusLabel = (status) => {
     switch (status) {
       case 'completed':
-        return t.completed;
+        return translate('completed');
       case 'pending':
-        return t.pending;
+        return translate('pending');
       case 'failed':
-        return t.failed;
+        return translate('failed');
       default:
         return status;
     }
@@ -265,7 +175,7 @@ const TestCard = ({ test, onViewDetails, onDelete, onShare, t }) => {
           activeOpacity={0.7}
         >
           <Icon name="eye" size={16} color="#0F5132" />
-          <Text style={styles.viewButtonText}>{t.viewDetails}</Text>
+          <Text style={styles.viewButtonText}>{translate('common.viewDetails')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.shareButton]}
@@ -287,9 +197,8 @@ const TestCard = ({ test, onViewDetails, onDelete, onShare, t }) => {
 };
 
 export default function HistoryScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('history');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [tests] = useState(sampleTests);
@@ -303,11 +212,11 @@ export default function HistoryScreen({ navigation }) {
   }, [fadeAnim]);
 
   const filters = [
-    { id: 'all', label: t.all, icon: '📋' },
-    { id: 'seedQuality', label: t.seedQuality, icon: '🌾' },
-    { id: 'moisture', label: t.moisture, icon: '💧' },
-    { id: 'soilPH', label: t.soilPH, icon: '🧪' },
-    { id: 'pestDetection', label: t.pestDetection, icon: '🐛' },
+    { id: 'all', label: translate('all'), icon: '📋' },
+    { id: 'seedQuality', label: translate('seedQuality'), icon: '🌾' },
+    { id: 'moisture', label: translate('moisture'), icon: '💧' },
+    { id: 'soilPH', label: translate('soilPH'), icon: '🧪' },
+    { id: 'pestDetection', label: translate('pestDetection'), icon: '🐛' },
   ];
 
   const filteredTests = selectedFilter === 'all'
@@ -330,22 +239,22 @@ export default function HistoryScreen({ navigation }) {
         navigation.navigate('PestDetection');
         break;
       default:
-        Alert.alert('Test Details', `View details for ${test.title}`);
+        showAppAlert(translate('testDetails'), `${translate('viewDetailsFor')} ${test.title}`);
     }
   };
 
   const handleDelete = (test) => {
-    Alert.alert(
-      t.confirmDelete,
-      t.confirmDeleteMessage,
+    showAppAlert(
+      translate('confirmDelete'),
+      translate('confirmDeleteMessage'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.deleteConfirm,
+          text: translate('deleteConfirm'),
           style: 'destructive',
           onPress: () => {
             // In a real app, delete from backend
-            Alert.alert('Deleted', 'Test has been deleted.');
+            showAppAlert(translate('deleted'), translate('deletedDesc'));
           },
         },
       ]
@@ -353,11 +262,11 @@ export default function HistoryScreen({ navigation }) {
   };
 
   const handleShare = (test) => {
-    Alert.alert('Share', `Share ${test.title} result`);
+    showAppAlert(translate('shareResult'), `${translate('shareResult')} ${test.title} ${translate('shareResultDesc')}`);
   };
 
   const handleExport = () => {
-    Alert.alert('Export', 'Export all test results to CSV/PDF');
+    showAppAlert(translate('exportTitle'), translate('exportDesc'));
   };
 
   return (
@@ -384,8 +293,8 @@ export default function HistoryScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
-                <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
+                <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
               </View>
               <TouchableOpacity
                 style={styles.exportButton}
@@ -399,7 +308,7 @@ export default function HistoryScreen({ navigation }) {
           <View style={styles.innerContent}>
             {/* Filter Buttons */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.filter}</Text>
+              <Text style={styles.sectionTitle}>{translate('common.filter')}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -421,9 +330,9 @@ export default function HistoryScreen({ navigation }) {
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <View style={styles.resultsHeader}>
                 <Text style={styles.sectionTitle}>
-                  {selectedFilter === 'all' ? t.all : filters.find(f => f.id === selectedFilter)?.label}
+                  {selectedFilter === 'all' ? translate('all') : filters.find(f => f.id === selectedFilter)?.label}
                 </Text>
-                <Text style={styles.resultsCount}>{filteredTests.length} {filteredTests.length === 1 ? 'test' : 'tests'}</Text>
+                <Text style={styles.resultsCount}>{filteredTests.length} {filteredTests.length === 1 ? translate('test') : translate('tests')}</Text>
               </View>
               {filteredTests.length > 0 ? (
                 <View style={styles.testsContainer}>
@@ -434,15 +343,15 @@ export default function HistoryScreen({ navigation }) {
                       onViewDetails={handleViewDetails}
                       onDelete={handleDelete}
                       onShare={handleShare}
-                      t={t}
+                      translate={translate}
                     />
                   ))}
                 </View>
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>📊</Text>
-                  <Text style={styles.emptyStateTitle}>{t.noTests}</Text>
-                  <Text style={styles.emptyStateText}>{t.noTestsDesc}</Text>
+                  <Text style={styles.emptyStateTitle}>{translate('noTests')}</Text>
+                  <Text style={styles.emptyStateText}>{translate('noTestsDesc')}</Text>
                 </View>
               )}
             </Animated.View>

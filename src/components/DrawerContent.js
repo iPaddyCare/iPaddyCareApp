@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,73 +9,23 @@ import {
   Alert,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-
-const translations = {
-  English: {
-    account: 'Account',
-    notLoggedIn: 'Not logged in',
-    login: 'Login',
-    logout: 'Logout',
-    home: 'Home',
-    marketplace: 'Marketplace',
-    myListings: 'My Listings',
-    settings: 'Settings',
-    testHistory: 'Test History',
-    help: 'Help & Support',
-    about: 'About',
-    inbox: 'Inbox',
-    approvals: 'Product Approvals',
-    version: 'Version 1.0.0',
-    logoutConfirm: 'Are you sure you want to logout?',
-    yes: 'Yes',
-    no: 'No',
-  },
-  සිංහල: {
-    account: 'ගිණුම',
-    notLoggedIn: 'පිවිසී නොමැත',
-    login: 'පිවිසෙන්න',
-    logout: 'ඉවත් වන්න',
-    home: 'මුල් පිටුව',
-    marketplace: 'වෙළඳපොළ',
-    myListings: 'මගේ ලැයිස්තු',
-    settings: 'සැකසුම්',
-    testHistory: 'පරීක්ෂණ ඉතිහාසය',
-    help: 'උදව් සහ සහාය',
-    about: 'මෙහි ගැන',
-    inbox: 'එන ලිපි',
-    approvals: 'නිෂ්පාදන අනුමත කිරීම්',
-    version: 'අනුවාදය 1.0.0',
-    logoutConfirm: 'ඔබට ඉවත් වීමට අවශ්‍යද?',
-    yes: 'ඔව්',
-    no: 'නැත',
-  },
-  தமிழ்: {
-    account: 'கணக்கு',
-    notLoggedIn: 'உள்நுழையவில்லை',
-    login: 'உள்நுழைக',
-    logout: 'வெளியேற',
-    home: 'முகப்பு',
-    marketplace: 'சந்தை',
-    myListings: 'எனது பட்டியல்கள்',
-    settings: 'அமைப்புகள்',
-    testHistory: 'சோதனை வரலாறு',
-    help: 'உதவி மற்றும் ஆதரவு',
-    about: 'பற்றி',
-    inbox: 'இன்பாக்ஸ்',
-    approvals: 'தயாரிப்பு அனுமதிகள்',
-    version: 'பதிப்பு 1.0.0',
-    logoutConfirm: 'நீங்கள் வெளியேற விரும்புகிறீர்களா?',
-    yes: 'ஆம்',
-    no: 'இல்லை',
-  },
-};
+import { getPendingProducts } from '../services/marketplaceService';
+import { useTranslation } from '../i18n/useTranslation';
 
 export default function DrawerContent({
   navigation: drawerNavigation,
   selectedLanguage = 'English',
 }) {
+  const translate = useTranslation('drawer');
   const { user, isAuthenticated, isOfficer, signOut } = useAuth();
-  const t = translations[selectedLanguage];
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    if (!isOfficer) return;
+    getPendingProducts()
+      .then((products) => setPendingCount(products.length))
+      .catch(() => setPendingCount(0));
+  }, [isOfficer]);
 
   const getRootNavigation = () => {
     let parentNav = drawerNavigation;
@@ -86,13 +36,13 @@ export default function DrawerContent({
   };
 
   const handleLogout = () => {
-    Alert.alert(t.logout, t.logoutConfirm, [
+    Alert.alert(translate('logout'), translate('logoutConfirm'), [
       {
-        text: t.no,
+        text: translate('common.no'),
         style: 'cancel',
       },
       {
-        text: t.yes,
+        text: translate('common.yes'),
         style: 'destructive',
         onPress: async () => {
           await signOut();
@@ -116,17 +66,17 @@ export default function DrawerContent({
   };
 
   const menuItems = [
-    { id: 'home', label: t.home, icon: '🏠', route: 'Home' },
+    { id: 'home', label: translate('home'), icon: '🏠', route: 'Home' },
     ...(isOfficer ? [
-      { id: 'inbox', label: t.inbox || 'Inbox', icon: '📬', route: 'OfficerInbox' },
-      { id: 'approvals', label: t.approvals || 'Approvals', icon: '✅', route: 'ProductApproval' },
+      { id: 'inbox', label: translate('common.inbox') || 'Inbox', icon: '📬', route: 'OfficerInbox' },
+      { id: 'approvals', label: translate('approvals') || 'Approvals', icon: '✅', route: 'ProductApproval' },
     ] : []),
-    { id: 'marketplace', label: t.marketplace, icon: '🛒', route: 'Marketplace' },
-    ...(!isOfficer ? [{ id: 'myListings', label: t.myListings, icon: '📦', route: 'MyListings', requireAuth: true }] : []),
-    { id: 'history', label: t.testHistory, icon: '📊', route: 'History' },
-    { id: 'settings', label: t.settings, icon: '⚙️', route: 'Settings' },
-    { id: 'help', label: t.help, icon: '❓', route: 'Help' },
-    { id: 'about', label: t.about, icon: 'ℹ️', route: 'About' },
+    { id: 'marketplace', label: translate('marketplace'), icon: '🛒', route: 'Marketplace' },
+    ...(!isOfficer ? [{ id: 'myListings', label: translate('common.myListings'), icon: '📦', route: 'MyListings', requireAuth: true }] : []),
+    { id: 'history', label: translate('testHistory'), icon: '📊', route: 'History' },
+    { id: 'settings', label: translate('settings'), icon: '⚙️', route: 'Settings' },
+    { id: 'help', label: translate('help'), icon: '❓', route: 'Help' },
+    { id: 'about', label: translate('about'), icon: 'ℹ️', route: 'About' },
   ];
 
   return (
@@ -173,12 +123,12 @@ export default function DrawerContent({
                   <Text style={[
                     styles.accountName,
                     (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
-                  ]}>{t.notLoggedIn}</Text>
+                  ]}>{translate('notLoggedIn')}</Text>
                   <TouchableOpacity onPress={handleLogin}>
                     <Text style={[
                       styles.loginLink,
                       (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
-                    ]}>{t.login}</Text>
+                    ]}>{translate('login')}</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -190,7 +140,7 @@ export default function DrawerContent({
               <Text style={[
                 styles.badgeText,
                 (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatinSmall
-              ]}>{t.account}</Text>
+              ]}>{translate('account')}</Text>
             </View>
           )}
         </View>
@@ -217,9 +167,9 @@ export default function DrawerContent({
                   styles.menuLabel,
                   (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
                 ]}>{item.label}</Text>
-                {item.id === 'approvals' && isOfficer && (
+                {item.id === 'approvals' && isOfficer && pendingCount > 0 && (
                   <View style={styles.menuBadge}>
-                    <Text style={styles.menuBadgeText}>3</Text>
+                    <Text style={styles.menuBadgeText}>{pendingCount}</Text>
                   </View>
                 )}
                 <Text style={styles.menuArrow}>→</Text>
@@ -236,13 +186,13 @@ export default function DrawerContent({
             <Text style={[
               styles.logoutText,
               (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatin
-            ]}>{t.logout}</Text>
+            ]}>{translate('logout')}</Text>
           </TouchableOpacity>
         )}
         <Text style={[
           styles.versionText,
           (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்') && styles.textNonLatinSmall
-        ]}>{t.version}</Text>
+        ]}>{translate('version')}</Text>
       </View>
     </View>
   );

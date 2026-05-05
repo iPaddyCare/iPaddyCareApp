@@ -10,40 +10,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 const { width } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    home: 'Home',
-    seedDetection: 'Seeds',
-    moisture: 'Moisture',
-    soilPH: 'Soil pH',
-    pestDetection: 'Pest',
-  },
-  සිංහල: {
-    home: 'මුල් පිටුව',
-    seedDetection: 'බීජ',
-    moisture: 'තෙතමනය',
-    soilPH: 'පස් pH',
-    pestDetection: 'පළිබෝධ',
-  },
-  தமிழ்: {
-    home: 'முகப்பு',
-    seedDetection: 'விதைகள்',
-    moisture: 'ஈரப்பதம்',
-    soilPH: 'மண் pH',
-    pestDetection: 'பூச்சி',
-  },
-};
-
 export default function BottomNavigation({ drawerNavigation }) {
   const navigation = useNavigation();
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('bottomNav');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   
   // Use drawerNavigation if provided, otherwise try to get it from navigation context
   const drawerNav = drawerNavigation || navigation.getParent() || navigation;
@@ -72,21 +46,21 @@ export default function BottomNavigation({ drawerNavigation }) {
   const navItems = [
     {
       id: 'SeedDetection',
-      label: t.seedDetection,
+      label: translate('seedDetection'),
       icon: 'seed',
       route: 'SeedDetection',
       color: '#4CAF50',
     },
     {
       id: 'MoistureDetector',
-      label: t.moisture,
+      label: translate('moisture'),
       icon: 'water',
       route: 'MoistureDetector',
       color: '#2196F3',
     },
     {
       id: 'Home',
-      label: t.home,
+      label: translate('home'),
       icon: 'home',
       route: 'Home',
       color: '#0F5132',
@@ -94,14 +68,14 @@ export default function BottomNavigation({ drawerNavigation }) {
     },
     {
       id: 'SoilPH',
-      label: t.soilPH,
+      label: translate('soilPH'),
       icon: 'test-tube',
       route: 'SoilPH',
       color: '#FF6D00',
     },
     {
       id: 'PestDetection',
-      label: t.pestDetection,
+      label: translate('pestDetection'),
       icon: 'bug',
       route: 'PestDetection',
       color: '#E91E63',
@@ -110,48 +84,36 @@ export default function BottomNavigation({ drawerNavigation }) {
 
   const handleNavigate = (targetRoute) => {
     if (targetRoute === currentRoute) return;
-    
+
     try {
-      // Use drawerNavigation if available, otherwise use navigation
       const nav = drawerNavigation || navigation;
-      
-      // For Home, reset the stack to Home to clear navigation history
-      if (targetRoute === 'Home') {
-        // Navigate through Drawer to Main stack, then reset to Home
-        nav.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [
-              {
-                name: 'Main',
-                state: {
-                  routes: [{ name: 'Home' }],
-                  index: 0,
-                },
+
+      // Reset the stack to the target route so it always works
+      // regardless of how deep the current stack is
+      nav.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'Main',
+              state: {
+                routes: [{ name: targetRoute }],
+                index: 0,
               },
-            ],
-          })
-        );
-      } else {
-        // For other routes, navigate through Drawer to Main stack, then to target route
-        nav.navigate('Main', {
-          screen: targetRoute,
-        });
-      }
+            },
+          ],
+        })
+      );
     } catch (e) {
       console.log('Navigation error:', e);
       // Fallback: try direct navigation
       try {
-        if (targetRoute === 'Home') {
-          navigation.dispatch(
-            CommonActions.reset({
-              index: 0,
-              routes: [{ name: 'Home' }],
-            })
-          );
-        } else {
-          navigation.navigate(targetRoute);
-        }
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: targetRoute }],
+          })
+        );
       } catch (e2) {
         console.log('Fallback navigation error:', e2);
       }

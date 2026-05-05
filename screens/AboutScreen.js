@@ -9,118 +9,19 @@ import {
   Dimensions,
   Animated,
   Linking,
-  Alert,
   Image,
   Platform,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
 const APP_VERSION = '1.0.0';
 const SUPPORT_EMAIL = 'ipaddycare@gmail.com';
 const WEBSITE_URL = 'https://ipaddycare.vercel.app/';
-
-// Language translations
-const translations = {
-  English: {
-    title: 'About',
-    appName: 'iPaddyCare',
-    tagline: 'Smart Agricultural Toolkit',
-    version: 'Version',
-    description: 'iPaddyCare is a comprehensive mobile application designed to help farmers and agricultural professionals manage paddy cultivation with advanced technology.',
-    features: 'Key Features',
-    feature1: 'Seed Quality Detection',
-    feature1Desc: 'AI-powered detection of seed varieties and wild seeds',
-    feature2: 'Moisture Monitoring',
-    feature2Desc: 'Real-time seed moisture measurement with ESP32 sensors',
-    feature3: 'Soil pH Testing',
-    feature3Desc: 'Instant soil pH analysis and recommendations',
-    feature4: 'Pest Detection',
-    feature4Desc: 'Camera-based pest and disease identification',
-    technology: 'Technology',
-    builtWith: 'Built with React Native',
-    aiPowered: 'AI-Powered Analysis',
-    iotIntegration: 'IoT Device Integration',
-    contact: 'Contact',
-    email: 'Email',
-    supportEmail: 'Support Email',
-    website: 'Website',
-    websiteUrl: 'ipaddycare.vercel.app',
-    developers: 'Developed By',
-    copyright: 'Copyright',
-    copyrightText: '© 2024 iPaddyCare. All rights reserved.',
-    privacyPolicy: 'Privacy Policy',
-    termsOfService: 'Terms of Service',
-    acknowledgments: 'Acknowledgments',
-    acknowledgmentsText: 'Special thanks to all the farmers and agricultural experts who contributed to making this app possible.',
-  },
-  සිංහල: {
-    title: 'මෙහි ගැන',
-    appName: 'අයිපැඩිකෙයා',
-    tagline: 'ස්මාර්ට් කෘෂිකර්ම මෙවලම්',
-    version: 'අනුවාදය',
-    description: 'අයිපැඩිකෙයා යනු කෘෂිකර්මවේදීන්ට සහ කෘෂිකර්ම වෘත්තිකයන්ට උසස් තාක්ෂණය සමඟ වී වගාව කළමනාකරණය කිරීමට උදව් කිරීම සඳහා නිර්මාණය කරන ලද සවිස්තරාත්මක ජංගම යෙදුමකි.',
-    features: 'ප්‍රධාන විශේෂාංග',
-    feature1: 'බීජ ගුණත්ව හඳුනාගැනීම',
-    feature1Desc: 'AI බලයෙන් බීජ වර්ග සහ වල් බීජ හඳුනාගැනීම',
-    feature2: 'තෙතමනය මුරකරණය',
-    feature2Desc: 'ESP32 සංවේදක සමඟ තත්‍ය කාලීන බීජ තෙතමනය මැනීම',
-    feature3: 'පස් pH පරීක්ෂණය',
-    feature3Desc: 'ක්ෂණික පස් pH විශ්ලේෂණය සහ නිර්දේශ',
-    feature4: 'පළිබෝධ හඳුනාගැනීම',
-    feature4Desc: 'කැමරා පදනම් කරගත් පළිබෝධ සහ රෝග හඳුනාගැනීම',
-    technology: 'තාක්ෂණය',
-    builtWith: 'React Native සමඟ නිර්මාණය කරන ලදී',
-    aiPowered: 'AI බලයෙන් විශ්ලේෂණය',
-    iotIntegration: 'IoT උපාංග අනුකලනය',
-    contact: 'සම්බන්ධ වන්න',
-    email: 'විද්‍යුත් තැපෑල',
-    supportEmail: 'සහාය විද්‍යුත් තැපෑල',
-    website: 'වෙබ් අඩවිය',
-    websiteUrl: 'ipaddycare.vercel.app',
-    developers: 'සංවර්ධනය කරන ලද්දේ',
-    copyright: 'ප්‍රකාශන හිමිකම',
-    copyrightText: '© 2024 අයිපැඩිකෙයා. සියලුම හිමිකම් ඇවිරිණි.',
-    privacyPolicy: 'රහස්‍යතා ප්‍රතිපත්තිය',
-    termsOfService: 'සේවා කොන්දේසි',
-    acknowledgments: 'ස්තූතිය',
-    acknowledgmentsText: 'මෙම යෙදුම හැකි කිරීමට දායක වූ සියලුම ගොවීන්ට සහ කෘෂිකර්ම විශේෂඥයන්ට විශේෂ ස්තූතිය.',
-  },
-  தமிழ்: {
-    title: 'பற்றி',
-    appName: 'ஐபாட்டிகேர்',
-    tagline: 'ஸ்மார்ட் விவசாய கருவித்தொகுப்பு',
-    version: 'பதிப்பு',
-    description: 'ஐபாட்டிகேர் என்பது விவசாயிகளுக்கும் விவசாய வல்லுநர்களுக்கும் மேம்பட்ட தொழில்நுட்பத்துடன் நெல் சாகுபடியை நிர்வகிக்க உதவும் விரிவான மொபைல் பயன்பாடாகும்.',
-    features: 'முக்கிய அம்சங்கள்',
-    feature1: 'விதை தர கண்டறிதல்',
-    feature1Desc: 'AI சக்தியால் விதை வகைகள் மற்றும் காட்டு விதைகளை கண்டறிதல்',
-    feature2: 'ஈரப்பதம் கண்காணிப்பு',
-    feature2Desc: 'ESP32 சென்சார்களுடன் நிகழ்நேர விதை ஈரப்பத அளவீடு',
-    feature3: 'மண் pH சோதனை',
-    feature3Desc: 'உடனடி மண் pH பகுப்பாய்வு மற்றும் பரிந்துரைகள்',
-    feature4: 'பூச்சி கண்டறிதல்',
-    feature4Desc: 'கேமரா அடிப்படையிலான பூச்சி மற்றும் நோய் அடையாளம்',
-    technology: 'தொழில்நுட்பம்',
-    builtWith: 'React Native உடன் கட்டப்பட்டது',
-    aiPowered: 'AI சக்தியால் பகுப்பாய்வு',
-    iotIntegration: 'IoT சாதன ஒருங்கிணைப்பு',
-    contact: 'தொடர்பு கொள்ளுங்கள்',
-    email: 'மின்னஞ்சல்',
-    supportEmail: 'ஆதரவு மின்னஞ்சல்',
-    website: 'வலைத்தளம்',
-    websiteUrl: 'ipaddycare.vercel.app',
-    developers: 'வளர்த்தவர்கள்',
-    copyright: 'பதிப்புரிமை',
-    copyrightText: '© 2024 ஐபாட்டிகேர். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.',
-    privacyPolicy: 'தனியுரிமை கொள்கை',
-    termsOfService: 'சேவை விதிமுறைகள்',
-    acknowledgments: 'நன்றி',
-    acknowledgmentsText: 'இந்த பயன்பாட்டை சாத்தியமாக்கிய அனைத்து விவசாயிகள் மற்றும் விவசாய நிபுணர்களுக்கும் சிறப்பு நன்றி.',
-  },
-};
 
 const InfoCard = ({ icon, title, subtitle, onPress, color = '#0F5132' }) => {
   return (
@@ -143,9 +44,8 @@ const InfoCard = ({ icon, title, subtitle, onPress, color = '#0F5132' }) => {
 };
 
 export default function AboutScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('about');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
 
   React.useEffect(() => {
@@ -157,8 +57,8 @@ export default function AboutScreen({ navigation }) {
   }, [fadeAnim]);
 
   const handleSendEmail = async () => {
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('About iPaddyCare')}`;
-    
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(translate('aboutSubject'))}`;
+
     if (Platform.OS === 'ios') {
       // On iOS, check if we can open the URL first
       try {
@@ -172,10 +72,10 @@ export default function AboutScreen({ navigation }) {
               // But we can't really detect this reliably, so we'll just try
             }, 100);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              translate('common.email'),
+              `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+              [{ text: translate('common.ok') }]
             );
           }
         } else {
@@ -183,10 +83,10 @@ export default function AboutScreen({ navigation }) {
           try {
             await Linking.openURL(emailUrl);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              translate('common.email'),
+              `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+              [{ text: translate('common.ok') }]
             );
           }
         }
@@ -195,10 +95,10 @@ export default function AboutScreen({ navigation }) {
         try {
           await Linking.openURL(emailUrl);
         } catch (openErr) {
-          Alert.alert(
-            'Email',
-            `Please send email to: ${SUPPORT_EMAIL}`,
-            [{ text: 'OK' }]
+          showAppAlert(
+            translate('common.email'),
+            `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+            [{ text: translate('common.ok') }]
           );
         }
       }
@@ -207,10 +107,10 @@ export default function AboutScreen({ navigation }) {
       try {
         await Linking.openURL(emailUrl);
       } catch (err) {
-        Alert.alert(
-          'Email',
-          `Please send email to: ${SUPPORT_EMAIL}`,
-          [{ text: 'OK' }]
+        showAppAlert(
+          translate('common.email'),
+          `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+          [{ text: translate('common.ok') }]
         );
       }
     }
@@ -218,7 +118,7 @@ export default function AboutScreen({ navigation }) {
 
   const handleOpenWebsite = () => {
     Linking.openURL(WEBSITE_URL).catch((err) => {
-      Alert.alert('Error', 'Unable to open website.');
+      showAppAlert(translate('common.error'), translate('unableToOpenWebsite'));
     });
   };
 
@@ -247,7 +147,7 @@ export default function AboutScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -264,91 +164,91 @@ export default function AboutScreen({ navigation }) {
                     resizeMode="contain"
                   />
                 </View>
-                <Text style={styles.appName}>{t.appName}</Text>
-                <Text style={styles.appTagline}>{t.tagline}</Text>
+                <Text style={styles.appName}>{translate('appName')}</Text>
+                <Text style={styles.appTagline}>{translate('tagline')}</Text>
                 <View style={styles.versionBadge}>
-                  <Text style={styles.versionText}>{t.version} {APP_VERSION}</Text>
+                  <Text style={styles.versionText}>{translate('version')} {APP_VERSION}</Text>
                 </View>
               </View>
             </Animated.View>
 
             {/* Description */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.descriptionText}>{t.description}</Text>
+              <Text style={styles.descriptionText}>{translate('description')}</Text>
             </Animated.View>
 
             {/* Features Section */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.features}</Text>
+              <Text style={styles.sectionTitle}>{translate('features')}</Text>
               <View style={styles.featuresGrid}>
                 <View style={styles.featureItem}>
                   <View style={[styles.featureIcon, { backgroundColor: '#E8F5E8' }]}>
                     <Text style={styles.featureEmoji}>🌾</Text>
                   </View>
-                  <Text style={styles.featureTitle}>{t.feature1}</Text>
-                  <Text style={styles.featureDesc}>{t.feature1Desc}</Text>
+                  <Text style={styles.featureTitle}>{translate('feature1')}</Text>
+                  <Text style={styles.featureDesc}>{translate('feature1Desc')}</Text>
                 </View>
                 <View style={styles.featureItem}>
                   <View style={[styles.featureIcon, { backgroundColor: '#E3F2FD' }]}>
                     <Text style={styles.featureEmoji}>💧</Text>
                   </View>
-                  <Text style={styles.featureTitle}>{t.feature2}</Text>
-                  <Text style={styles.featureDesc}>{t.feature2Desc}</Text>
+                  <Text style={styles.featureTitle}>{translate('feature2')}</Text>
+                  <Text style={styles.featureDesc}>{translate('feature2Desc')}</Text>
                 </View>
                 <View style={styles.featureItem}>
                   <View style={[styles.featureIcon, { backgroundColor: '#FFF3E0' }]}>
                     <Text style={styles.featureEmoji}>🧪</Text>
                   </View>
-                  <Text style={styles.featureTitle}>{t.feature3}</Text>
-                  <Text style={styles.featureDesc}>{t.feature3Desc}</Text>
+                  <Text style={styles.featureTitle}>{translate('feature3')}</Text>
+                  <Text style={styles.featureDesc}>{translate('feature3Desc')}</Text>
                 </View>
                 <View style={styles.featureItem}>
                   <View style={[styles.featureIcon, { backgroundColor: '#FCE4EC' }]}>
                     <Text style={styles.featureEmoji}>🐛</Text>
                   </View>
-                  <Text style={styles.featureTitle}>{t.feature4}</Text>
-                  <Text style={styles.featureDesc}>{t.feature4Desc}</Text>
+                  <Text style={styles.featureTitle}>{translate('feature4')}</Text>
+                  <Text style={styles.featureDesc}>{translate('feature4Desc')}</Text>
                 </View>
               </View>
             </Animated.View>
 
             {/* Technology Section */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.technology}</Text>
+              <Text style={styles.sectionTitle}>{translate('technology')}</Text>
               <InfoCard
                 icon="code-tags"
-                title={t.builtWith}
-                subtitle="Cross-platform mobile framework"
+                title={translate('builtWith')}
+                subtitle={translate('crossPlatformDesc')}
                 color="#2196F3"
               />
               <InfoCard
                 icon="brain"
-                title={t.aiPowered}
-                subtitle="Machine learning & AI integration"
+                title={translate('aiPowered')}
+                subtitle={translate('mlAiDesc')}
                 color="#9C27B0"
               />
               <InfoCard
                 icon="chip"
-                title={t.iotIntegration}
-                subtitle="ESP32 & Bluetooth support"
+                title={translate('iotIntegration')}
+                subtitle={translate('esp32Desc')}
                 color="#FF6D00"
               />
             </Animated.View>
 
             {/* Contact Section */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.contact}</Text>
+              <Text style={styles.sectionTitle}>{translate('contact')}</Text>
               <InfoCard
                 icon="email"
-                title={t.supportEmail}
+                title={translate('supportEmail')}
                 subtitle={SUPPORT_EMAIL}
                 onPress={handleSendEmail}
                 color="#0F5132"
               />
               <InfoCard
                 icon="web"
-                title={t.website}
-                subtitle={t.websiteUrl}
+                title={translate('website')}
+                subtitle={translate('websiteUrl')}
                 onPress={handleOpenWebsite}
                 color="#607D8B"
               />
@@ -358,29 +258,29 @@ export default function AboutScreen({ navigation }) {
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <InfoCard
                 icon="shield-check"
-                title={t.privacyPolicy}
-                subtitle="View our privacy policy"
+                title={translate('privacyPolicy')}
+                subtitle={translate('privacyPolicyDesc')}
                 color="#4CAF50"
               />
               <InfoCard
                 icon="file-document"
-                title={t.termsOfService}
-                subtitle="Read terms and conditions"
+                title={translate('termsOfService')}
+                subtitle={translate('termsDesc')}
                 color="#FF9800"
               />
             </Animated.View>
 
             {/* Acknowledgments */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.acknowledgments}</Text>
+              <Text style={styles.sectionTitle}>{translate('acknowledgments')}</Text>
               <View style={styles.acknowledgmentCard}>
-                <Text style={styles.acknowledgmentText}>{t.acknowledgmentsText}</Text>
+                <Text style={styles.acknowledgmentText}>{translate('acknowledgmentsText')}</Text>
               </View>
             </Animated.View>
 
             {/* Copyright */}
             <Animated.View style={[styles.copyrightContainer, { opacity: fadeAnim }]}>
-              <Text style={styles.copyrightText}>{t.copyrightText}</Text>
+              <Text style={styles.copyrightText}>{translate('copyrightText')}</Text>
             </Animated.View>
           </View>
         </ScrollView>

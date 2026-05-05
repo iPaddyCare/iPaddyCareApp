@@ -5,89 +5,30 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Dimensions,
   StatusBar,
   Platform,
   ScrollView,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import SeedDetectionService from '../src/utils/seedDetectionService';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Live Seed Detection',
-    subtitle: 'Point camera at seeds for real-time detection',
-    back: 'Back',
-    detecting: 'Detecting...',
-    noDetection: 'No seeds detected',
-    detectedVariety: 'Detected Variety',
-    wildSeeds: 'Wild Seeds',
-    quality: 'Quality',
-    permissionDenied: 'Permission Denied',
-    cameraPermissionMessage: 'Camera permission is required for live detection',
-    error: 'Error',
-    tryAgain: 'Try Again',
-    yes: 'Yes',
-    no: 'No',
-    captureAndAnalyze: 'Capture & Analyze',
-    captureHint: 'Tap button below to capture & analyze',
-  },
-  සිංහල: {
-    title: 'සජීවී බීජ හඳුනාගැනීම',
-    subtitle: 'තත්‍ය කාලීන හඳුනාගැනීම සඳහා කැමරාව බීජ වෙත යොමු කරන්න',
-    back: 'ආපසු',
-    detecting: 'හඳුනාගනිමින්...',
-    noDetection: 'බීජ හඳුනාගෙන නොමැත',
-    detectedVariety: 'හඳුනාගත් වර්ගය',
-    wildSeeds: 'වල් බීජ',
-    quality: 'ගුණත්වය',
-    permissionDenied: 'අවසරය ප්‍රතික්ෂේප කරන ලදී',
-    cameraPermissionMessage: 'සජීවී හඳුනාගැනීම සඳහා කැමරා අවසරය අවශ්‍යයි',
-    error: 'දෝෂය',
-    tryAgain: 'නැවත උත්සාහ කරන්න',
-    yes: 'ඔව්',
-    no: 'නැත',
-    captureAndAnalyze: 'ග්‍රහණය කර විශ්ලේෂණය කරන්න',
-    captureHint: 'ග්‍රහණය කර විශ්ලේෂණය කිරීමට පහත බොත්තම තට්ටු කරන්න',
-  },
-  தமிழ்: {
-    title: 'நேரடி விதை கண்டறிதல்',
-    subtitle: 'நிகழ்நேர கண்டறிதலுக்காக கேமராவை விதைகளை நோக்கி பிடிக்கவும்',
-    back: 'பின்',
-    detecting: 'கண்டறிகிறது...',
-    noDetection: 'விதைகள் கண்டறியப்படவில்லை',
-    detectedVariety: 'கண்டறியப்பட்ட வகை',
-    wildSeeds: 'காட்டு விதைகள்',
-    quality: 'தரம்',
-    permissionDenied: 'அனுமதி மறுக்கப்பட்டது',
-    cameraPermissionMessage: 'நேரடி கண்டறிதலுக்கு கேமரா அனுமதி தேவை',
-    error: 'பிழை',
-    tryAgain: 'மீண்டும் முயற்சிக்கவும்',
-    yes: 'ஆம்',
-    no: 'இல்லை',
-    captureAndAnalyze: 'பிடித்து பகுப்பாய்வு செய்',
-    captureHint: 'பிடித்து பகுப்பாய்வு செய்ய கீழ் பொத்தானை தட்டவும்',
-  },
-};
-
 export default function SeedCameraScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('seedCamera');
   const insets = useSafeAreaInsets();
   const [detections, setDetections] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const camera = useRef(null);
   const device = useCameraDevice('back');
   const { hasPermission, requestPermission } = useCameraPermission();
-
-  const t = translations[selectedLanguage];
 
   useEffect(() => {
     if (!hasPermission) {
@@ -127,12 +68,12 @@ export default function SeedCameraScreen({ navigation }) {
         });
         setDetections(list);
       } else {
-        Alert.alert(t.error, result.error || t.noDetection);
+        showAppAlert(translate('common.error'), result.error || translate('noDetection'));
       }
     } catch (err) {
       console.error('Capture & analyze error:', err);
       const message = err.message || 'Failed to analyze photo';
-      Alert.alert(t.error, message);
+      showAppAlert(translate('common.error'), message);
     } finally {
       setIsProcessing(false);
     }
@@ -144,19 +85,19 @@ export default function SeedCameraScreen({ navigation }) {
         <StatusBar barStyle="light-content" backgroundColor="#000000" />
         <View style={styles.permissionContainer}>
           <Icon name="camera-off" size={64} color="#666" />
-          <Text style={styles.permissionTitle}>{t.permissionDenied}</Text>
-          <Text style={styles.permissionText}>{t.cameraPermissionMessage}</Text>
+          <Text style={styles.permissionTitle}>{translate('common.permissionDenied')}</Text>
+          <Text style={styles.permissionText}>{translate('cameraPermissionMessage')}</Text>
           <TouchableOpacity
             style={styles.permissionButton}
             onPress={requestPermission}
           >
-            <Text style={styles.permissionButtonText}>{t.tryAgain}</Text>
+            <Text style={styles.permissionButtonText}>{translate('tryAgain')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.backButtonPermission}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>{t.back}</Text>
+            <Text style={styles.backButtonText}>{translate('back')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -174,7 +115,7 @@ export default function SeedCameraScreen({ navigation }) {
             style={styles.backButtonPermission}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>{t.back}</Text>
+            <Text style={styles.backButtonText}>{translate('back')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -197,8 +138,8 @@ export default function SeedCameraScreen({ navigation }) {
           <Icon name="arrow-left" size={24} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
-          <Text style={styles.headerTitle}>{t.title}</Text>
-          <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+          <Text style={styles.headerTitle}>{translate('title')}</Text>
+          <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
         </View>
         <View style={styles.placeholder} />
       </View>
@@ -220,7 +161,7 @@ export default function SeedCameraScreen({ navigation }) {
           {isProcessing && (
             <View style={styles.processingIndicator}>
               <ActivityIndicator size="small" color="#FFFFFF" />
-              <Text style={styles.processingText}>{t.detecting}</Text>
+              <Text style={styles.processingText}>{translate('detecting')}</Text>
             </View>
           )}
 
@@ -228,15 +169,15 @@ export default function SeedCameraScreen({ navigation }) {
           {!isProcessing && detections.length === 0 && (
             <View style={styles.noDetectionContainer}>
               <Icon name="seed-off" size={48} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.noDetectionText}>{t.noDetection}</Text>
-              <Text style={styles.captureHint}>{t.captureHint}</Text>
+              <Text style={styles.noDetectionText}>{translate('noDetection')}</Text>
+              <Text style={styles.captureHint}>{translate('captureHint')}</Text>
               <TouchableOpacity
                 style={styles.captureButton}
                 onPress={handleCaptureAndAnalyze}
                 activeOpacity={0.8}
               >
                 <Icon name="camera" size={28} color="#FFFFFF" />
-                <Text style={styles.captureButtonText}>{t.captureAndAnalyze}</Text>
+                <Text style={styles.captureButtonText}>{translate('captureAndAnalyze')}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -281,7 +222,7 @@ export default function SeedCameraScreen({ navigation }) {
                 activeOpacity={0.8}
               >
                 <Icon name="camera" size={28} color="#FFFFFF" />
-                <Text style={styles.captureButtonText}>{t.captureAndAnalyze}</Text>
+                <Text style={styles.captureButtonText}>{translate('captureAndAnalyze')}</Text>
               </TouchableOpacity>
             </View>
           )}

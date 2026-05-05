@@ -10,207 +10,113 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Animated,
-  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { sendMessage, subscribeToMessages, markAsRead } from '../src/services/messagingService';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    typeMessage: 'Type a message...',
-    send: 'Send',
-    online: 'Online',
-    offline: 'Offline',
-    shareTestHistory: 'Share Test History',
-    selectTests: 'Select tests to share',
-    sendTestHistory: 'Send Test History',
-    testHistoryShared: 'Test History Shared',
-    testHistorySharedDesc: 'Test history has been shared',
-    noMessages: 'No messages yet',
-    noMessagesDesc: 'Start the conversation by sending a message',
-    attachment: 'Attachment',
-    sending: 'Sending...',
-  },
-  සිංහල: {
-    typeMessage: 'පණිවිඩයක් ටයිප් කරන්න...',
-    send: 'යවන්න',
-    online: 'සබැඳි',
-    offline: 'අසබැඳි',
-    shareTestHistory: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්න',
-    selectTests: 'බෙදාගැනීමට පරීක්ෂණ තෝරන්න',
-    sendTestHistory: 'පරීක්ෂණ ඉතිහාසය යවන්න',
-    testHistoryShared: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්නා ලදී',
-    testHistorySharedDesc: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්නා ලදී',
-    noMessages: 'තවමත් පණිවිඩ නොමැත',
-    noMessagesDesc: 'පණිවිඩයක් යවමින් සංවාදය ආරම්භ කරන්න',
-    attachment: 'ඇමුණුම',
-    sending: 'යවමින්...',
-  },
-  தமிழ்: {
-    typeMessage: 'செய்தியைத் தட்டச்சு செய்யவும்...',
-    send: 'அனுப்ப',
-    online: 'ஆன்லைன்',
-    offline: 'ஆஃப்லைன்',
-    shareTestHistory: 'சோதனை வரலாற்றைப் பகிரவும்',
-    selectTests: 'பகிர்வதற்கு சோதனைகளைத் தேர்ந்தெடுக்கவும்',
-    sendTestHistory: 'சோதனை வரலாற்றை அனுப்ப',
-    testHistoryShared: 'சோதனை வரலாறு பகிரப்பட்டது',
-    testHistorySharedDesc: 'சோதனை வரலாறு பகிரப்பட்டது',
-    noMessages: 'இன்னும் செய்திகள் இல்லை',
-    noMessagesDesc: 'செய்தியை அனுப்புவதன் மூலம் உரையாடலைத் தொடங்குங்கள்',
-    attachment: 'இணைப்பு',
-    sending: 'அனுப்புகிறது...',
-  },
+const formatTime = (date) => {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date);
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 };
 
-// Sample messages (in a real app, this would come from backend)
-const sampleMessages = [
-  {
-    id: 1,
-    text: 'Hello! I need advice on seed quality for my paddy field.',
-    sender: 'user',
-    timestamp: '08:30 AM',
-    date: 'Today',
-  },
-  {
-    id: 2,
-    text: 'Hello! How can I help you with your agricultural needs today?',
-    sender: 'officer',
-    timestamp: '08:32 AM',
-    date: 'Today',
-  },
+const formatDate = (date, t) => {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return t?.today || 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return t?.yesterday || 'Yesterday';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
 
-];
-
-const MessageBubble = ({ message, isUser, t }) => (
+const MessageBubble = ({ message, isUser }) => (
   <View style={[styles.messageBubble, isUser ? styles.userMessage : styles.officerMessage]}>
     <Text style={[styles.messageText, isUser && styles.userMessageText]}>
       {message.text}
     </Text>
     <Text style={[styles.messageTime, isUser && styles.userMessageTime]}>
-      {message.timestamp}
+      {formatTime(message.createdAt)}
     </Text>
   </View>
 );
 
 export default function MessageScreen({ route, navigation }) {
-  const { selectedLanguage } = useLanguage();
-  const { user, isAuthenticated } = useAuth();
+  const translate = useTranslation('message');
+  const { user, isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
-  const [fadeAnim] = useState(new Animated.Value(0));
   const [messageText, setMessageText] = useState('');
-  const [messages, setMessages] = useState(sampleMessages);
+  const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
+  const [loading, setLoading] = useState(true);
   const scrollViewRef = useRef(null);
 
-  const officer = route?.params?.officer || {
-    id: 1,
-    name: 'Dr. Kamal Perera',
-    title: 'Senior Agricultural Officer',
-    status: 'online',
-    image: '👨‍🌾',
-  };
+  const conversationId = route?.params?.conversationId;
+  const officer = route?.params?.officer || {};
+  // For officer inbox, the "other party" is the farmer
+  const farmerName = route?.params?.farmerName || '';
 
-  React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+  const senderRole = isOfficer ? 'officer' : 'farmer';
+
+  // Subscribe to real-time messages
+  useEffect(() => {
+    if (!conversationId) {
+      setLoading(false);
+      return;
+    }
+
+    const unsubscribe = subscribeToMessages(conversationId, (msgs) => {
+      setMessages(msgs);
+      setLoading(false);
+    });
+
+    // Mark as read
+    if (user) {
+      markAsRead(conversationId, senderRole).catch(console.error);
+    }
+
+    return () => unsubscribe();
+  }, [conversationId]);
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (!messageText.trim()) return;
+  const handleSendMessage = async () => {
+    if (!messageText.trim() || !conversationId) return;
 
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please login to send messages.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('Login') },
-        ]
-      );
+      showAppAlert(translate('common.loginRequired'), translate('loginRequiredMsg'), [
+        { text: translate('cancel'), style: 'cancel' },
+        { text: translate('loginBtn'), onPress: () => navigation.navigate('Login') },
+      ]);
       return;
     }
 
-    setSending(true);
-    const newMessage = {
-      id: messages.length + 1,
-      text: messageText.trim(),
-      sender: 'user',
-      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      date: 'Today',
-    };
-
-    // Add user message
-    setMessages([...messages, newMessage]);
+    const text = messageText.trim();
     setMessageText('');
+    setSending(true);
 
-    // Simulate officer response (in a real app, this would come from backend)
-    setTimeout(() => {
-      const officerResponse = {
-        id: messages.length + 2,
-        text: 'Thank you for your message. I will get back to you shortly.',
-        sender: 'officer',
-        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-        date: 'Today',
-      };
-      setMessages(prev => [...prev, officerResponse]);
+    try {
+      await sendMessage(conversationId, text, user.uid, senderRole);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      showAppAlert(translate('common.error'), translate('failedToSend'));
+      setMessageText(text);
+    } finally {
       setSending(false);
-    }, 1500);
-  };
-
-  const handleShareTestHistory = () => {
-    if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please login to share test history.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('Login') },
-        ]
-      );
-      return;
     }
-
-    // Navigate to test history selection or show selection modal
-    Alert.alert(
-      t.shareTestHistory,
-      t.selectTests,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: t.sendTestHistory,
-          onPress: () => {
-            // In a real app, select tests and send
-            const testHistoryMessage = {
-              id: messages.length + 1,
-              text: '📊 Test History Shared: 6 tests',
-              sender: 'user',
-              timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-              date: 'Today',
-            };
-            setMessages(prev => [...prev, testHistoryMessage]);
-            Alert.alert(t.testHistoryShared, t.testHistorySharedDesc);
-          },
-        },
-      ]
-    );
   };
 
   return (
@@ -237,23 +143,22 @@ export default function MessageScreen({ route, navigation }) {
             <View style={styles.headerInfo}>
               <View style={styles.officerImageContainer}>
                 <View style={styles.officerImagePlaceholder}>
-                  <Text style={styles.officerImageEmoji}>{officer.image}</Text>
+                  <Text style={styles.officerImageEmoji}>👨‍🌾</Text>
                 </View>
                 {officer.status === 'online' && (
                   <View style={styles.onlineIndicator} />
                 )}
               </View>
               <View style={styles.headerText}>
-                <Text style={styles.officerName}>{officer.name}</Text>
-                <Text style={styles.officerTitle}>{officer.title}</Text>
+                <Text style={styles.officerName}>
+                  {isOfficer ? (farmerName || 'Farmer') : (officer.name || 'Officer')}
+                </Text>
+                <Text style={styles.officerTitle}>
+                  {isOfficer ? 'Farmer' : (officer.title || 'Agricultural Officer')}
+                </Text>
               </View>
             </View>
-            <TouchableOpacity
-              style={styles.moreButton}
-              onPress={handleShareTestHistory}
-            >
-              <Icon name="share-variant" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
+            <View style={styles.moreButton} />
           </View>
 
           {/* Messages */}
@@ -266,19 +171,25 @@ export default function MessageScreen({ route, navigation }) {
             ]}
             showsVerticalScrollIndicator={false}
           >
-            {messages.length > 0 ? (
+            {loading ? (
+              <View style={styles.emptyState}>
+                <ActivityIndicator size="large" color="#0F5132" />
+              </View>
+            ) : messages.length > 0 ? (
               messages.map((message, index) => {
-                const isUser = message.sender === 'user';
-                const showDate = index === 0 || messages[index - 1].date !== message.date;
+                const isMe = message.senderId === user?.uid;
+                const msgDate = formatDate(message.createdAt, t);
+                const prevDate = index > 0 ? formatDate(messages[index - 1].createdAt, t) : '';
+                const showDate = index === 0 || msgDate !== prevDate;
                 return (
                   <View key={message.id}>
                     {showDate && (
                       <View style={styles.dateSeparator}>
-                        <Text style={styles.dateText}>{message.date}</Text>
+                        <Text style={styles.dateText}>{msgDate}</Text>
                       </View>
                     )}
-                    <View style={[styles.messageRow, isUser && styles.userMessageRow]}>
-                      <MessageBubble message={message} isUser={isUser} t={t} />
+                    <View style={[styles.messageRow, isMe && styles.userMessageRow]}>
+                      <MessageBubble message={message} isUser={isMe} />
                     </View>
                   </View>
                 );
@@ -286,29 +197,23 @@ export default function MessageScreen({ route, navigation }) {
             ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateIcon}>💬</Text>
-                <Text style={styles.emptyStateTitle}>{t.noMessages}</Text>
-                <Text style={styles.emptyStateText}>{t.noMessagesDesc}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('noMessages')}</Text>
+                <Text style={styles.emptyStateText}>{translate('noMessagesDesc')}</Text>
               </View>
             )}
             {sending && (
               <View style={styles.sendingIndicator}>
-                <Text style={styles.sendingText}>{t.sending}</Text>
+                <Text style={styles.sendingText}>{translate('sending')}</Text>
               </View>
             )}
           </ScrollView>
 
           {/* Input Area */}
           <View style={styles.inputContainer}>
-            <TouchableOpacity
-              style={styles.attachButton}
-              onPress={handleShareTestHistory}
-              activeOpacity={0.7}
-            >
-              <Icon name="paperclip" size={20} color="#666" />
-            </TouchableOpacity>
+            <View style={styles.attachButton} />
             <TextInput
               style={styles.messageInput}
-              placeholder={t.typeMessage}
+              placeholder={translate('typeMessage')}
               placeholderTextColor="#999"
               value={messageText}
               onChangeText={setMessageText}

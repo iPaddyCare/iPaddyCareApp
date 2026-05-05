@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   Dimensions,
   Switch,
-  Alert,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import PredictionService from '../src/utils/predictionService';
 import NotificationService from '../src/utils/notificationService';
 import MeteosourceService from '../src/utils/meteosourceService';
@@ -22,197 +23,9 @@ import DryingScheduleApiService from '../src/utils/dryingScheduleApiService';
 
 const { width } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Reading Results',
-    averageMoisture: 'Average Moisture',
-    readingSummary: 'Reading Summary',
-    readingsCount: 'Readings Collected',
-    duration: 'Duration',
-    seconds: 'seconds',
-    temperature: 'Temperature',
-    humidity: 'Humidity',
-    weather: 'Weather',
-    currentWeather: 'Current weather',
-    location: 'Location',
-    predictions: 'Predictions',
-    today: 'Today',
-    tomorrow: 'Tomorrow',
-    time: 'Time',
-    status: 'Status',
-    moisture: 'Moisture',
-    dry: 'Dry',
-    moderate: 'Moderate',
-    wet: 'Wet',
-    average: 'Average',
-    hours: 'hours',
-    hour: 'hour',
-    from: 'from',
-    goodMoisture: 'Good moisture level. No action needed.',
-    overDried: 'Over dried. Moisture level is too low.',
-    loadingPredictions: 'Loading predictions...',
-    predictionError: 'Failed to load predictions',
-    back: 'Back',
-    celsius: '°C',
-    percent: '%',
-    predictedMoisture: 'Predicted Moisture',
-    weatherAwareSchedule: 'Weather-Aware Drying Schedule',
-    scheduleStart: 'Schedule Start',
-    scheduleEnd: 'Schedule End',
-    enableNotifications: 'Enable Notifications',
-    notificationsEnabled: 'Notifications Enabled',
-    notificationsDisabled: 'Notifications Disabled',
-    sensorReadings: 'Sensor Readings',
-    capSensorValue: 'Capacitive Sensor Value',
-    sampleTemperature: 'Sample Temperature',
-    ambientTemperature: 'Ambient Temperature',
-    ambientHumidity: 'Ambient Humidity',
-    sampleWeight: 'Sample Weight',
-    bulkDensity: 'Bulk Density',
-    grams: 'g',
-    gPerCm3: 'g/cm³',
-    noSchedule: 'No drying schedule needed',
-    scheduleTime: 'Time',
-    scheduleDate: 'Date',
-    dryingTableDay: 'Day',
-    dryingTableDate: 'Date',
-    dryingTableTemp: 'Temp',
-    dryingTableWindow: 'Best time to dry',
-    dryingTableEstMoisture: 'Est. moisture',
-    daysToGoodMoisture: 'Est. {{count}} day(s) to good moisture (~12–14%)',
-    loadingForecast: 'Loading forecast...',
-    forecastError: 'Could not load forecast',
-    mm: 'mm',
-  },
-  සිංහල: {
-    title: 'කියවීමේ ප්‍රතිඵල',
-    averageMoisture: 'සාමාන්‍ය තෙතමනය',
-    readingSummary: 'කියවීමේ සාරාංශය',
-    readingsCount: 'එකතු කරන ලද කියවීම්',
-    duration: 'කාලය',
-    seconds: 'තත්පර',
-    temperature: 'උෂ්ණත්වය',
-    humidity: 'ආර්ද්‍රතාව',
-    weather: 'කාලගුණය',
-    currentWeather: 'වත්මන් කාලගුණය',
-    location: 'ස්ථානය',
-    predictions: 'අනාවැකි',
-    today: 'අද',
-    tomorrow: 'හෙට',
-    time: 'වේලාව',
-    status: 'තත්වය',
-    moisture: 'තෙතමනය',
-    dry: 'වියළි',
-    moderate: 'මධ්‍යම',
-    wet: 'තෙත්',
-    average: 'සාමාන්‍ය',
-    hours: 'පැය',
-    hour: 'පැය',
-    from: 'සිට',
-    goodMoisture: 'හොඳ තෙතමන මට්ටම. කිසිදු ක්‍රියාවක් අවශ්‍ය නොවේ.',
-    overDried: 'අධික වියළි. තෙතමන මට්ටම ඉතා අඩුය.',
-    loadingPredictions: 'අනාවැකි පූරණය වෙමින්...',
-    predictionError: 'අනාවැකි පූරණය කිරීමට අසමත් විය',
-    back: 'ආපසු',
-    celsius: '°C',
-    percent: '%',
-    predictedMoisture: 'අනාවැකි තෙතමනය',
-    weatherAwareSchedule: 'කාලගුණ දැනුවත් වියළීමේ කාලසටහන',
-    scheduleStart: 'කාලසටහන ආරම්භය',
-    scheduleEnd: 'කාලසටහන අවසානය',
-    enableNotifications: 'දැනුම්දීම් සක්‍රිය කරන්න',
-    notificationsEnabled: 'දැනුම්දීම් සක්‍රියයි',
-    notificationsDisabled: 'දැනුම්දීම් අක්‍රියයි',
-    sensorReadings: 'සංවේදක කියවීම්',
-    capSensorValue: 'ධාරිතා සංවේදක අගය',
-    sampleTemperature: 'නියමුන උෂ්ණත්වය',
-    ambientTemperature: 'පරිසර උෂ්ණත්වය',
-    ambientHumidity: 'පරිසර ආර්ද්‍රතාව',
-    sampleWeight: 'නියමුන බර',
-    bulkDensity: 'ස්කන්ධ ඝනත්වය',
-    grams: 'g',
-    gPerCm3: 'g/cm³',
-    noSchedule: 'වියළීමේ කාලසටහනක් අවශ්‍ය නොවේ',
-    scheduleTime: 'වේලාව',
-    scheduleDate: 'දිනය',
-    dryingTableDay: 'දිනය',
-    dryingTableDate: 'දිනය',
-    dryingTableTemp: 'උෂ්ණය',
-    dryingTableWindow: 'වියළීමට හොඳම කාලය',
-    dryingTableEstMoisture: 'ඇස්ත. තෙතමනය',
-    daysToGoodMoisture: 'හොඳ තෙතමනයට (~12–14%) ඇස්ත. {{count}} දින',
-    loadingForecast: 'කාලගුණය පූරණය වෙමින්...',
-    forecastError: 'කාලගුණය පූරණය කිරීමට අසමත් විය',
-    mm: 'මි.මි.',
-  },
-  தமிழ்: {
-    title: 'வாசிப்பு முடிவுகள்',
-    averageMoisture: 'சராசரி ஈரப்பதம்',
-    readingSummary: 'வாசிப்பு சுருக்கம்',
-    readingsCount: 'சேகரிக்கப்பட்ட வாசிப்புகள்',
-    duration: 'காலம்',
-    seconds: 'வினாடிகள்',
-    temperature: 'வெப்பநிலை',
-    humidity: 'ஈரப்பதம்',
-    weather: 'வானிலை',
-    currentWeather: 'தற்போதைய வானிலை',
-    location: 'இடம்',
-    predictions: 'கணிப்புகள்',
-    today: 'இன்று',
-    tomorrow: 'நாளை',
-    time: 'நேரம்',
-    status: 'நிலை',
-    moisture: 'ஈரப்பதம்',
-    dry: 'வறண்ட',
-    moderate: 'மிதமான',
-    wet: 'ஈரமான',
-    average: 'சராசரி',
-    hours: 'மணி',
-    hour: 'மணி',
-    from: 'இலிருந்து',
-    goodMoisture: 'நல்ல ஈரப்பத அளவு. எந்த நடவடிக்கையும் தேவையில்லை.',
-    overDried: 'அதிகமாக உலர்ந்தது. ஈரப்பத அளவு மிகவும் குறைவாக உள்ளது.',
-    loadingPredictions: 'கணிப்புகளை ஏற்றுகிறது...',
-    predictionError: 'கணிப்புகளை ஏற்ற முடியவில்லை',
-    back: 'பின்',
-    celsius: '°C',
-    percent: '%',
-    predictedMoisture: 'கணிக்கப்பட்ட ஈரப்பதம்',
-    weatherAwareSchedule: 'வானிலை அறிந்த உலர்த்தல் அட்டவணை',
-    scheduleStart: 'அட்டவணை தொடக்கம்',
-    scheduleEnd: 'அட்டவணை முடிவு',
-    enableNotifications: 'அறிவிப்புகளை இயக்கவும்',
-    notificationsEnabled: 'அறிவிப்புகள் இயக்கப்பட்டுள்ளன',
-    notificationsDisabled: 'அறிவிப்புகள் முடக்கப்பட்டுள்ளன',
-    sensorReadings: 'சென்சார் வாசிப்புகள்',
-    capSensorValue: 'கொள்ளளவு சென்சார் மதிப்பு',
-    sampleTemperature: 'மாதிரி வெப்பநிலை',
-    ambientTemperature: 'சுற்றுப்புற வெப்பநிலை',
-    ambientHumidity: 'சுற்றுப்புற ஈரப்பதம்',
-    sampleWeight: 'மாதிரி எடை',
-    bulkDensity: 'மொத்த அடர்த்தி',
-    grams: 'g',
-    gPerCm3: 'g/cm³',
-    noSchedule: 'உலர்த்தல் அட்டவணை தேவையில்லை',
-    scheduleTime: 'நேரம்',
-    scheduleDate: 'தேதி',
-    dryingTableDay: 'நாள்',
-    dryingTableDate: 'தேதி',
-    dryingTableTemp: 'வெப்பம்',
-    dryingTableWindow: 'உலர்த்த சிறந்த நேரம்',
-    dryingTableEstMoisture: 'மதி. ஈரப்பதம்',
-    daysToGoodMoisture: 'நல்ல ஈரப்பதத்திற்கு (~12–14%) மதி. {{count}} நாள்(கள்)',
-    loadingForecast: 'வானிலை ஏற்றுகிறது...',
-    forecastError: 'வானிலையை ஏற்ற முடியவில்லை',
-    mm: 'மி.மீ.',
-  },
-};
-
 export default function ReadingResultsScreen({ route, navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('readingResults');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const { readingData } = route.params || {};
   
   const [predictions, setPredictions] = useState(null);
@@ -470,9 +283,9 @@ export default function ReadingResultsScreen({ route, navigation }) {
       if (granted) {
         await scheduleNotifications();
       } else {
-        Alert.alert(
-          'Permission Required',
-          'Please enable notifications in your device settings to receive schedule reminders.'
+        showAppAlert(
+          translate('common.permissionRequired'),
+          translate('permissionRequiredMsg')
         );
         setNotificationsEnabled(false);
       }
@@ -507,14 +320,14 @@ export default function ReadingResultsScreen({ route, navigation }) {
       : true;
     
     if (day1Success && day2Success) {
-      Alert.alert(
-        'Notifications Scheduled',
-        'You will be notified when the drying schedule starts and ends for both days.'
+      showAppAlert(
+        translate('notificationsScheduled'),
+        translate('notificationsScheduledMsg')
       );
     } else {
-      Alert.alert(
-        'Error',
-        'Failed to schedule some notifications. Please try again.'
+      showAppAlert(
+        translate('common.error'),
+        translate('failedToSchedule')
       );
       setNotificationsEnabled(false);
     }
@@ -523,10 +336,9 @@ export default function ReadingResultsScreen({ route, navigation }) {
   const cancelNotifications = async () => {
     const success = await NotificationService.cancelAllNotifications();
     if (success) {
-      Alert.alert('Notifications Cancelled', 'Drying schedule notifications have been cancelled.');
+      showAppAlert(translate('notificationsCancelled'), translate('notificationsCancelledMsg'));
     }
   };
-
 
   if (!readingData) {
     return (
@@ -541,7 +353,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>{t.back}</Text>
+            <Text style={styles.backButtonText}>{translate('back')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -566,7 +378,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
             >
               <Icon name="arrow-left" size={24} color="#FFFFFF" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t.title}</Text>
+            <Text style={styles.headerTitle}>{translate('title')}</Text>
             <View style={styles.headerBackButton} />
           </View>
 
@@ -574,25 +386,24 @@ export default function ReadingResultsScreen({ route, navigation }) {
             {/* Predicted Moisture Card */}
             {predictedMoisture !== null && (
               <View style={styles.predictedMoistureCard}>
-                <Text style={styles.predictedMoistureLabel}>{t.predictedMoisture}</Text>
+                <Text style={styles.predictedMoistureLabel}>{translate('predictedMoisture')}</Text>
                 <Text style={styles.predictedMoistureValue}>
-                  {predictedMoisture.toFixed(2)}{t.percent}
+                  {predictedMoisture.toFixed(2)}{translate('percent')}
                 </Text>
               </View>
             )}
 
-
             {/* Sensor Readings Card */}
             <View style={styles.sensorReadingsCard}>
-              <Text style={styles.sensorReadingsTitle}>{t.sensorReadings}</Text>
+              <Text style={styles.sensorReadingsTitle}>{translate('sensorReadings')}</Text>
               <View style={styles.sensorReadingsGrid}>
                 {/* Capacitive Sensor Value */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="water" size={20} color="#2196F3" />
-                  <Text style={styles.sensorReadingLabel}>{t.capSensorValue}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('capSensorValue')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {readingData.averageCapSensor !== undefined && readingData.averageCapSensor !== null
-                      ? `${readingData.averageCapSensor.toFixed(1)}${t.percent}`
+                      ? `${readingData.averageCapSensor.toFixed(1)}${translate('percent')}`
                       : '--'}
                   </Text>
                 </View>
@@ -600,55 +411,55 @@ export default function ReadingResultsScreen({ route, navigation }) {
                 {/* Sample Temperature */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="thermometer" size={20} color="#FF9800" />
-                  <Text style={styles.sensorReadingLabel}>{t.sampleTemperature}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('sampleTemperature')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {readingData.averageSampleTemp !== undefined && readingData.averageSampleTemp !== null
-                      ? `${readingData.averageSampleTemp.toFixed(1)}${t.celsius}`
-                      : `--${t.celsius}`}
+                      ? `${readingData.averageSampleTemp.toFixed(1)}${translate('celsius')}`
+                      : `--${translate('celsius')}`}
                   </Text>
                 </View>
 
                 {/* Ambient Temperature */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="thermometer-lines" size={20} color="#F44336" />
-                  <Text style={styles.sensorReadingLabel}>{t.ambientTemperature}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('ambientTemperature')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {readingData.averageAmbientTemp !== undefined && readingData.averageAmbientTemp !== null
-                      ? `${readingData.averageAmbientTemp.toFixed(1)}${t.celsius}`
-                      : `--${t.celsius}`}
+                      ? `${readingData.averageAmbientTemp.toFixed(1)}${translate('celsius')}`
+                      : `--${translate('celsius')}`}
                   </Text>
                 </View>
 
                 {/* Ambient Humidity */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="water-percent" size={20} color="#9C27B0" />
-                  <Text style={styles.sensorReadingLabel}>{t.ambientHumidity}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('ambientHumidity')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {readingData.averageAmbientHumidity !== undefined && readingData.averageAmbientHumidity !== null
-                      ? `${readingData.averageAmbientHumidity.toFixed(1)}${t.percent}`
-                      : `--${t.percent}`}
+                      ? `${readingData.averageAmbientHumidity.toFixed(1)}${translate('percent')}`
+                      : `--${translate('percent')}`}
                   </Text>
                 </View>
 
                 {/* Sample Weight */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="scale-balance" size={20} color="#4CAF50" />
-                  <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('sampleWeight')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {readingData.averageSampleWeight !== undefined && readingData.averageSampleWeight !== null
-                      ? `${readingData.averageSampleWeight.toFixed(1)}${t.grams}`
-                      : `--${t.grams}`}
+                      ? `${readingData.averageSampleWeight.toFixed(1)}${translate('grams')}`
+                      : `--${translate('grams')}`}
                   </Text>
                 </View>
 
                 {/* Bulk Density (derived from sample weight / container volume) */}
                 <View style={styles.sensorReadingItem}>
                   <Icon name="cube-outline" size={20} color="#607D8B" />
-                  <Text style={styles.sensorReadingLabel}>{t.bulkDensity}</Text>
+                  <Text style={styles.sensorReadingLabel}>{translate('bulkDensity')}</Text>
                   <Text style={styles.sensorReadingValue}>
                     {(() => {
                       const density = calculateBulkDensity();
-                      return density != null ? `${density.toFixed(2)}${t.gPerCm3}` : `--${t.gPerCm3}`;
+                      return density != null ? `${density.toFixed(2)}${translate('gPerCm3')}` : `--${translate('gPerCm3')}`;
                     })()}
                   </Text>
                 </View>
@@ -657,18 +468,18 @@ export default function ReadingResultsScreen({ route, navigation }) {
 
             {/* Reading Summary */}
             <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>{t.readingSummary}</Text>
+              <Text style={styles.summaryTitle}>{translate('readingSummary')}</Text>
               <View style={styles.summaryRow}>
                 <View style={styles.summaryItem}>
                   <Icon name="counter" size={20} color="#666" />
-                  <Text style={styles.summaryLabel}>{t.readingsCount}</Text>
+                  <Text style={styles.summaryLabel}>{translate('readingsCount')}</Text>
                   <Text style={styles.summaryValue}>{readingData.readings.length}</Text>
                 </View>
                 <View style={styles.summaryItem}>
                   <Icon name="clock-outline" size={20} color="#666" />
-                  <Text style={styles.summaryLabel}>{t.duration}</Text>
+                  <Text style={styles.summaryLabel}>{translate('duration')}</Text>
                   <Text style={styles.summaryValue}>
-                    {readingData.duration} {t.seconds}
+                    {readingData.duration} {translate('seconds')}
                   </Text>
                 </View>
               </View>
@@ -677,29 +488,29 @@ export default function ReadingResultsScreen({ route, navigation }) {
             {/* Current weather – real data from Meteosource */}
             {(forecastData?.current || readingData.weather || loadingForecast) && (
               <View style={styles.weatherCard}>
-                <Text style={styles.weatherTitle}>{t.currentWeather}</Text>
+                <Text style={styles.weatherTitle}>{translate('currentWeather')}</Text>
                 {loadingForecast ? (
                   <View style={styles.weatherLoadingRow}>
                     <ActivityIndicator size="small" color="#0F5132" />
-                    <Text style={styles.weatherLoadingText}>{t.loadingForecast}</Text>
+                    <Text style={styles.weatherLoadingText}>{translate('loadingForecast')}</Text>
                   </View>
                 ) : forecastData?.current ? (
                   <>
                     <View style={styles.weatherRow}>
                       <View style={styles.weatherItem}>
-                        <Text style={styles.weatherLabel}>{t.location}</Text>
+                        <Text style={styles.weatherLabel}>{translate('common.location')}</Text>
                         <Text style={styles.weatherValue}>
                           {forecastData.placeName}{forecastData.country ? `, ${forecastData.country}` : ''}
                         </Text>
                       </View>
                       <View style={styles.weatherItem}>
-                        <Text style={styles.weatherLabel}>{t.temperature}</Text>
+                        <Text style={styles.weatherLabel}>{translate('temperature')}</Text>
                         <Text style={styles.weatherValue}>
                           {(() => {
                             const temp = forecastData.current.temperature;
                             const num = typeof temp === 'number' ? temp : parseFloat(temp);
                             return Number.isFinite(num) ? num.toFixed(1) : '—';
-                          })()}{t.celsius}
+                          })()}{translate('celsius')}
                         </Text>
                       </View>
                     </View>
@@ -708,7 +519,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
                     </Text>
                     {forecastData.current.humidity != null && (
                       <Text style={styles.weatherSubtext}>
-                        {t.humidity}: {forecastData.current.humidity}{t.percent}
+                        {translate('humidity')}: {forecastData.current.humidity}{translate('percent')}
                       </Text>
                     )}
                   </>
@@ -716,15 +527,15 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   <>
                     <View style={styles.weatherRow}>
                       <View style={styles.weatherItem}>
-                        <Text style={styles.weatherLabel}>{t.location}</Text>
+                        <Text style={styles.weatherLabel}>{translate('common.location')}</Text>
                         <Text style={styles.weatherValue}>
                           {readingData.weather.location?.city}, {readingData.weather.location?.country}
                         </Text>
                       </View>
                       <View style={styles.weatherItem}>
-                        <Text style={styles.weatherLabel}>{t.temperature}</Text>
+                        <Text style={styles.weatherLabel}>{translate('temperature')}</Text>
                         <Text style={styles.weatherValue}>
-                          {readingData.weather.temperature?.toFixed(1)}{t.celsius}
+                          {readingData.weather.temperature?.toFixed(1)}{translate('celsius')}
                         </Text>
                       </View>
                     </View>
@@ -738,26 +549,25 @@ export default function ReadingResultsScreen({ route, navigation }) {
 
             {/* Weather-Aware Drying Schedule (Meteosource forecast + table) */}
             <View style={styles.scheduleCard}>
-              <Text style={styles.scheduleTitle}>{t.weatherAwareSchedule}</Text>
-
+              <Text style={styles.scheduleTitle}>{translate('weatherAwareSchedule')}</Text>
               {loadingPredictions ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#0F5132" />
-                  <Text style={styles.loadingText}>{t.loadingPredictions}</Text>
+                  <Text style={styles.loadingText}>{translate('loadingPredictions')}</Text>
                 </View>
               ) : predictedMoisture != null && predictedMoisture < DryingScheduleService.GOOD_MOISTURE_MIN ? (
-                <Text style={[styles.noScheduleText, { color: '#C62828' }]}>{t.overDried}</Text>
+                <Text style={[styles.noScheduleText, { color: '#C62828' }]}>{translate('overDried')}</Text>
               ) : predictedMoisture != null && predictedMoisture >= DryingScheduleService.GOOD_MOISTURE_MIN && predictedMoisture <= DryingScheduleService.GOOD_MOISTURE_MAX ? (
-                <Text style={styles.noScheduleText}>{t.goodMoisture}</Text>
+                <Text style={styles.noScheduleText}>{translate('goodMoisture')}</Text>
               ) : loadingForecast ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#0F5132" />
-                  <Text style={styles.loadingText}>{t.loadingForecast}</Text>
+                  <Text style={styles.loadingText}>{translate('loadingForecast')}</Text>
                 </View>
               ) : forecastError ? (
                 <View style={styles.loadingContainer}>
                   <Icon name="weather-cloudy-alert" size={32} color="#999" />
-                  <Text style={[styles.loadingText, { color: '#666' }]}>{t.forecastError}</Text>
+                  <Text style={[styles.loadingText, { color: '#666' }]}>{translate('forecastError')}</Text>
                   <Text style={styles.scheduleSubtext}>{forecastError}</Text>
                 </View>
               ) : dryingSchedule?.rows?.length > 0 ? (
@@ -767,17 +577,17 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   ) : null}
                   {dryingSchedule.daysToTarget != null && dryingSchedule.daysToTarget > 0 && (
                     <Text style={styles.daysToTargetText}>
-                      {t.daysToGoodMoisture.replace('{{count}}', String(dryingSchedule.daysToTarget))}
+                      {translate('daysToGoodMoisture').replace('{{count}}', String(dryingSchedule.daysToTarget))}
                     </Text>
                   )}
                   <View style={styles.dryingTableScroll}>
                     <View style={styles.dryingTable}>
                       <View style={styles.dryingTableHeader}>
-                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDay]}>{t.dryingTableDay}</Text>
-                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDate]}>{t.dryingTableDate}</Text>
-                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColTemp]}>{t.dryingTableTemp}</Text>
-                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColWindow]}>{t.dryingTableWindow}</Text>
-                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColMoist]}>{t.dryingTableEstMoisture}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDay]}>{translate('dryingTableDay')}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDate]}>{translate('dryingTableDate')}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColTemp]}>{translate('dryingTableTemp')}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColWindow]}>{translate('dryingTableWindow')}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColMoist]}>{translate('dryingTableEstMoisture')}</Text>
                       </View>
                       {dryingSchedule.rows.map((row) => (
                         <View
@@ -792,25 +602,26 @@ export default function ReadingResultsScreen({ route, navigation }) {
                             {row.date}
                           </Text>
                           <Text style={[styles.dryingTableCell, styles.dryingTableColTemp]}>
-                            {row.tempMax != null ? `${Math.round(row.tempMax)}${t.celsius}` : '—'}
+                            {row.tempMax != null ? `${Math.round(row.tempMax)}${translate('celsius')}` : '—'}
                           </Text>
                           <Text style={[styles.dryingTableCell, styles.dryingTableColWindow]} numberOfLines={1}>
                             {row.bestWindow || '10:00–14:00'}
                           </Text>
                           <Text style={[styles.dryingTableCell, styles.dryingTableColMoist, row.reachedTarget && styles.dryingTableCellTarget]}>
-                            {row.estimatedMoistureEnd}{t.percent}
+                            {row.estimatedMoistureEnd}{translate('percent')}
                           </Text>
                         </View>
                       ))}
                     </View>
                   </View>
+
                   <View style={styles.notificationToggleContainer}>
                     <View style={styles.notificationToggleInfo}>
                       <Icon name="bell" size={20} color="#0F5132" />
                       <View style={styles.notificationToggleTextContainer}>
-                        <Text style={styles.notificationToggleLabel}>{t.enableNotifications}</Text>
+                        <Text style={styles.notificationToggleLabel}>{translate('enableNotifications')}</Text>
                         <Text style={styles.notificationToggleSubtext}>
-                          {notificationsEnabled ? t.notificationsEnabled : t.notificationsDisabled}
+                          {notificationsEnabled ? translate('notificationsEnabled') : translate('notificationsDisabled')}
                         </Text>
                       </View>
                     </View>
@@ -823,7 +634,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
                   </View>
                 </>
               ) : (
-                <Text style={styles.noScheduleText}>{t.noSchedule}</Text>
+                <Text style={styles.noScheduleText}>{translate('noSchedule')}</Text>
               )}
             </View>
           </View>

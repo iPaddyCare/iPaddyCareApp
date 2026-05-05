@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Linking,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { WebView } from 'react-native-webview';
 
@@ -132,7 +132,7 @@ export default function MapPickerScreen({ navigation, route }) {
   };
 
   const handleMapError = () => {
-    Alert.alert(
+    showAppAlert(
       'Map Unavailable',
       'Google Maps requires an API key. Would you like to enter coordinates manually instead?',
       [

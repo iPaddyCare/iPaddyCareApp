@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,200 +8,90 @@ import {
   StyleSheet,
   Dimensions,
   Image,
-  Alert,
   RefreshControl,
+  Modal,
+  Platform,
+  TextInput,
+  ActivityIndicator,
+  Pressable,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { getPendingProducts, updateProductStatus } from '../src/services/marketplaceService';
 
 const { width } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Product Approvals',
-    subtitle: 'Review and approve listings',
-    pending: 'Pending Approval',
-    approved: 'Approved',
-    declined: 'Declined',
-    noPending: 'No pending approvals',
-    noPendingDesc: 'All listings have been reviewed',
-    approve: 'Approve',
-    decline: 'Decline',
-    viewDetails: 'View Details',
-    productName: 'Product Name',
-    category: 'Category',
-    price: 'Price',
-    location: 'Location',
-    seller: 'Seller',
-    description: 'Description',
-    approveConfirm: 'Approve Listing',
-    approveMessage: 'Are you sure you want to approve this listing?',
-    declineConfirm: 'Decline Listing',
-    declineMessage: 'Are you sure you want to decline this listing?',
-    reason: 'Reason (Optional)',
-    reasonPlaceholder: 'Enter reason for decline...',
-    approvedSuccess: 'Listing Approved',
-    approvedMessage: 'The listing has been approved and is now visible in the marketplace.',
-    declinedSuccess: 'Listing Declined',
-    declinedMessage: 'The listing has been declined and removed.',
-    cancel: 'Cancel',
-    confirm: 'Confirm',
-    status: 'Status',
-    submitted: 'Submitted',
-    lastUpdated: 'Last Updated',
-  },
-  සිංහල: {
-    title: 'නිෂ්පාදන අනුමත කිරීම්',
-    subtitle: 'ලැයිස්තු සමාලෝචනය කර අනුමත කරන්න',
-    pending: 'අනුමත කිරීමට අපේක්ෂාවෙන්',
-    approved: 'අනුමත කරන ලදී',
-    declined: 'ප්‍රතික්ෂේප කරන ලදී',
-    noPending: 'අපේක්ෂිත අනුමත කිරීම් නොමැත',
-    noPendingDesc: 'සියලුම ලැයිස්තු සමාලෝචනය කර ඇත',
-    approve: 'අනුමත කරන්න',
-    decline: 'ප්‍රතික්ෂේප කරන්න',
-    viewDetails: 'විස්තර බලන්න',
-    productName: 'නිෂ්පාදන නම',
-    category: 'කාණ්ඩය',
-    price: 'මිල',
-    location: 'ස්ථානය',
-    seller: 'විකුණන්නා',
-    description: 'විස්තර',
-    approveConfirm: 'ලැයිස්තුව අනුමත කරන්න',
-    approveMessage: 'ඔබට මෙම ලැයිස්තුව අනුමත කිරීමට අවශ්‍යද?',
-    declineConfirm: 'ලැයිස්තුව ප්‍රතික්ෂේප කරන්න',
-    declineMessage: 'ඔබට මෙම ලැයිස්තුව ප්‍රතික්ෂේප කිරීමට අවශ්‍යද?',
-    reason: 'හේතුව (විකල්ප)',
-    reasonPlaceholder: 'ප්‍රතික්ෂේප කිරීමේ හේතුව ඇතුළත් කරන්න...',
-    approvedSuccess: 'ලැයිස්තුව අනුමත කරන ලදී',
-    approvedMessage: 'ලැයිස්තුව අනුමත කරන ලද අතර දැන් වෙළඳපොළේ දෘශ්‍යමාන වේ.',
-    declinedSuccess: 'ලැයිස්තුව ප්‍රතික්ෂේප කරන ලදී',
-    declinedMessage: 'ලැයිස්තුව ප්‍රතික්ෂේප කරන ලද අතර ඉවත් කරන ලදී.',
-    cancel: 'අවලංගු කරන්න',
-    confirm: 'තහවුරු කරන්න',
-    status: 'තත්වය',
-    submitted: 'ඉදිරිපත් කරන ලදී',
-    lastUpdated: 'අවසානයේ යාවත්කාලීන කරන ලදී',
-  },
-  தமிழ்: {
-    title: 'தயாரிப்பு அனுமதிகள்',
-    subtitle: 'பட்டியல்களை மதிப்பாய்வு செய்து அனுமதிக்கவும்',
-    pending: 'அனுமதிக்கப்படும்',
-    approved: 'அனுமதிக்கப்பட்டது',
-    declined: 'நிராகரிக்கப்பட்டது',
-    noPending: 'நிலுவையில் உள்ள அனுமதிகள் இல்லை',
-    noPendingDesc: 'அனைத்து பட்டியல்களும் மதிப்பாய்வு செய்யப்பட்டன',
-    approve: 'அனுமதி',
-    decline: 'நிராகரி',
-    viewDetails: 'விவரங்களைக் காண்க',
-    productName: 'தயாரிப்பு பெயர்',
-    category: 'வகை',
-    price: 'விலை',
-    location: 'இடம்',
-    seller: 'விற்பனையாளர்',
-    description: 'விளக்கம்',
-    approveConfirm: 'பட்டியலை அனுமதிக்கவும்',
-    approveMessage: 'இந்த பட்டியலை அனுமதிக்க விரும்புகிறீர்களா?',
-    declineConfirm: 'பட்டியலை நிராகரிக்கவும்',
-    declineMessage: 'இந்த பட்டியலை நிராகரிக்க விரும்புகிறீர்களா?',
-    reason: 'காரணம் (விருப்பமானது)',
-    reasonPlaceholder: 'நிராகரிப்பதற்கான காரணத்தை உள்ளிடவும்...',
-    approvedSuccess: 'பட்டியல் அனுமதிக்கப்பட்டது',
-    approvedMessage: 'பட்டியல் அனுமதிக்கப்பட்டு இப்போது சந்தையில் தெரியும்.',
-    declinedSuccess: 'பட்டியல் நிராகரிக்கப்பட்டது',
-    declinedMessage: 'பட்டியல் நிராகரிக்கப்பட்டு அகற்றப்பட்டது.',
-    cancel: 'ரத்துசெய்',
-    confirm: 'உறுதிப்படுத்த',
-    status: 'நிலை',
-    submitted: 'சமர்ப்பிக்கப்பட்டது',
-    lastUpdated: 'கடைசியாக புதுப்பிக்கப்பட்டது',
-  },
+const categoryEmojis = {
+  seeds: '🌾',
+  fertilizers: '🌱',
+  tools: '🔧',
+  pesticides: '🛡️',
+  herbicides: '🧪',
 };
 
-// Sample pending products (in a real app, this would come from backend)
-const samplePendingProducts = [
-  {
-    id: '1',
-    productName: 'Premium Paddy Seeds',
-    category: 'Seeds',
-    price: 2500,
-    location: 'Colombo',
-    seller: 'Kamal Perera',
-    sellerEmail: 'kamal@example.com',
-    description: 'High quality paddy seeds for cultivation',
-    image: '🌾',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '10:30 AM',
-  },
-  {
-    id: '2',
-    productName: 'NPK Fertilizer 50kg',
-    category: 'Fertilizers',
-    price: 3500,
-    location: 'Kandy',
-    seller: 'Samantha Silva',
-    sellerEmail: 'samantha@example.com',
-    description: 'Balanced NPK fertilizer for optimal paddy growth',
-    image: '🌱',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '11:15 AM',
-  },
-  {
-    id: '3',
-    productName: 'Smartphone Case', // Non-related item example
-    category: 'Other',
-    price: 500,
-    location: 'Galle',
-    seller: 'Priya Nadesan',
-    sellerEmail: 'priya@example.com',
-    description: 'Protective case for smartphone',
-    image: '📱',
-    status: 'pending',
-    submittedDate: '2024-01-15',
-    submittedTime: '12:00 PM',
-  },
-];
-
 export default function ProductApprovalScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('productApproval');
   const { isOfficer } = useAuth();
-  const t = translations[selectedLanguage];
-  const [pendingProducts, setPendingProducts] = useState(samplePendingProducts);
+  const [pendingProducts, setPendingProducts] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [declineModalProduct, setDeclineModalProduct] = useState(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [decliningSubmitting, setDecliningSubmitting] = useState(false);
 
-  useEffect(() => {
-    // In a real app, fetch pending products from backend
-  }, []);
+  const fetchPending = async () => {
+    try {
+      setLoading(true);
+      const data = await getPendingProducts();
+      setPendingProducts(data);
+    } catch (error) {
+      console.error('Error fetching pending products:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const onRefresh = React.useCallback(() => {
+  // Refetch pending products every time the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (isOfficer) {
+        fetchPending();
+      }
+    }, [isOfficer])
+  );
+
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    // In a real app, fetch pending products from backend
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+    await fetchPending();
+    setRefreshing(false);
   }, []);
 
   const handleApprove = (product) => {
-    Alert.alert(
-      t.approveConfirm,
-      t.approveMessage,
+    showAppAlert(
+      translate('approveConfirm'),
+      translate('approveMessage'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.approve,
-          onPress: () => {
-            // In a real app, send approval to backend
-            setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-            Alert.alert(t.approvedSuccess, t.approvedMessage);
-            setShowDetails(false);
-            setSelectedProduct(null);
+          text: translate('approve'),
+          onPress: async () => {
+            try {
+              await updateProductStatus(product.id, 'approved');
+              setPendingProducts(prev => prev.filter(p => p.id !== product.id));
+              showAppAlert(translate('approvedSuccess'), translate('approvedMessage'));
+              setShowDetails(false);
+              setSelectedProduct(null);
+            } catch (error) {
+              console.error('Error approving product:', error);
+              showAppAlert(translate('common.error'), translate('failedApprove'));
+            }
           },
         },
       ]
@@ -209,24 +99,28 @@ export default function ProductApprovalScreen({ navigation }) {
   };
 
   const handleDecline = (product) => {
-    Alert.alert(
-      t.declineConfirm,
-      t.declineMessage,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.decline,
-          style: 'destructive',
-          onPress: () => {
-            // In a real app, send decline to backend with reason
-            setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-            Alert.alert(t.declinedSuccess, t.declinedMessage);
-            setShowDetails(false);
-            setSelectedProduct(null);
-          },
-        },
-      ]
-    );
+    setDeclineModalProduct(product);
+    setDeclineReason('');
+  };
+
+  const submitDecline = async () => {
+    const product = declineModalProduct;
+    if (!product) return;
+    setDecliningSubmitting(true);
+    try {
+      await updateProductStatus(product.id, 'declined', declineReason);
+      setPendingProducts(prev => prev.filter(p => p.id !== product.id));
+      setDeclineModalProduct(null);
+      setDeclineReason('');
+      showAppAlert(translate('declinedSuccess'), translate('declinedMessage'));
+      setShowDetails(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error('Error declining product:', error);
+      showAppAlert(translate('common.error'), translate('failedDecline'));
+    } finally {
+      setDecliningSubmitting(false);
+    }
   };
 
   const handleViewDetails = (product) => {
@@ -250,15 +144,15 @@ export default function ProductApprovalScreen({ navigation }) {
               <Text style={styles.menuIcon}>☰</Text>
             </TouchableOpacity>
             <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>{t.title}</Text>
-              <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+              <Text style={styles.headerTitle}>{translate('title')}</Text>
+              <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
             </View>
             <View style={styles.headerRight} />
           </View>
           <View style={styles.emptyState}>
             <Icon name="shield-off" size={64} color="#CCC" />
-            <Text style={styles.emptyStateTitle}>Access Restricted</Text>
-            <Text style={styles.emptyStateText}>Only officers can access this screen.</Text>
+            <Text style={styles.emptyStateTitle}>{translate('common.accessRestricted')}</Text>
+            <Text style={styles.emptyStateText}>{translate('onlyOfficers')}</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -281,8 +175,8 @@ export default function ProductApprovalScreen({ navigation }) {
             <Text style={styles.menuIcon}>☰</Text>
           </TouchableOpacity>
           <View style={styles.headerText}>
-            <Text style={styles.headerTitle}>{t.title}</Text>
-            <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+            <Text style={styles.headerTitle}>{translate('title')}</Text>
+            <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
           </View>
           <View style={styles.headerRight}>
             {pendingProducts.length > 0 && (
@@ -306,7 +200,11 @@ export default function ProductApprovalScreen({ navigation }) {
               <View key={product.id} style={styles.productCard}>
                 <View style={styles.productHeader}>
                   <View style={styles.productIcon}>
-                    <Text style={styles.productIconText}>{product.image}</Text>
+                    {product.imageUrl ? (
+                      <Image source={{ uri: product.imageUrl }} style={styles.productThumbImage} />
+                    ) : (
+                      <Text style={styles.productIconText}>{categoryEmojis[product.category] || '📦'}</Text>
+                    )}
                   </View>
                   <View style={styles.productInfo}>
                     <Text style={styles.productName}>{product.productName}</Text>
@@ -317,7 +215,7 @@ export default function ProductApprovalScreen({ navigation }) {
                     </View>
                     <Text style={styles.productSeller}>👤 {product.seller}</Text>
                     <Text style={styles.productDate}>
-                      {t.submitted}: {product.submittedDate} at {product.submittedTime}
+                      {translate('submitted')}: {product.createdAt instanceof Date ? product.createdAt.toLocaleDateString() : ''}
                     </Text>
                   </View>
                 </View>
@@ -330,21 +228,21 @@ export default function ProductApprovalScreen({ navigation }) {
                     onPress={() => handleViewDetails(product)}
                   >
                     <Icon name="eye" size={18} color="#0F5132" />
-                    <Text style={styles.viewButtonText}>{t.viewDetails}</Text>
+                    <Text style={styles.viewButtonText}>{translate('common.viewDetails')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.approveButton}
                     onPress={() => handleApprove(product)}
                   >
                     <Icon name="check-circle" size={18} color="#FFFFFF" />
-                    <Text style={styles.approveButtonText}>{t.approve}</Text>
+                    <Text style={styles.approveButtonText}>{translate('approve')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.declineButton}
                     onPress={() => handleDecline(product)}
                   >
                     <Icon name="close-circle" size={18} color="#FFFFFF" />
-                    <Text style={styles.declineButtonText}>{t.decline}</Text>
+                    <Text style={styles.declineButtonText}>{translate('decline')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -352,86 +250,195 @@ export default function ProductApprovalScreen({ navigation }) {
           </ScrollView>
         ) : (
           <View style={styles.emptyState}>
-            <Icon name="check-circle-outline" size={64} color="#CCC" />
-            <Text style={styles.emptyStateTitle}>{t.noPending}</Text>
-            <Text style={styles.emptyStateText}>{t.noPendingDesc}</Text>
+            <View style={styles.emptyStateIconCircle}>
+              <Icon name="check-circle-outline" size={56} color="#0F5132" />
+            </View>
+            <Text style={styles.emptyStateTitle}>{translate('noPending')}</Text>
+            <Text style={styles.emptyStateText}>{translate('noPendingDesc')}</Text>
           </View>
         )}
 
         {/* Details Modal */}
-        {showDetails && selectedProduct && (
+        <Modal
+          visible={showDetails && !!selectedProduct}
+          transparent
+          animationType="slide"
+          onRequestClose={() => {
+            setShowDetails(false);
+            setSelectedProduct(null);
+          }}
+        >
           <View style={styles.modalOverlay}>
+            <TouchableOpacity
+              style={styles.modalDismissArea}
+              activeOpacity={1}
+              onPress={() => {
+                setShowDetails(false);
+                setSelectedProduct(null);
+              }}
+            />
             <View style={styles.modalContent}>
+              <View style={styles.modalDragHandle} />
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t.viewDetails}</Text>
+                <View style={styles.modalHeaderLeft}>
+                  <View style={styles.modalIconCircle}>
+                    {selectedProduct?.imageUrl ? (
+                      <Image source={{ uri: selectedProduct.imageUrl }} style={styles.modalThumbImage} />
+                    ) : (
+                      <Text style={{ fontSize: 24 }}>
+                        {categoryEmojis[selectedProduct?.category] || '📦'}
+                      </Text>
+                    )}
+                  </View>
+                  <View>
+                    <Text style={styles.modalTitle}>{selectedProduct?.productName}</Text>
+                    <View style={styles.modalStatusBadge}>
+                      <Icon name="clock-outline" size={12} color="#FF9800" />
+                      <Text style={styles.modalStatusText}>{translate('pending')}</Text>
+                    </View>
+                  </View>
+                </View>
                 <TouchableOpacity
+                  style={styles.modalCloseBtn}
                   onPress={() => {
                     setShowDetails(false);
                     setSelectedProduct(null);
                   }}
                 >
-                  <Icon name="close" size={24} color="#666" />
+                  <Icon name="close" size={20} color="#666" />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={styles.modalBody}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.productName}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.productName}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.category}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.category}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.price}:</Text>
-                  <Text style={styles.detailValue}>Rs. {selectedProduct.price.toLocaleString()}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.location}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.location}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.seller}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.seller}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Email:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.sellerEmail}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.description}:</Text>
-                  <Text style={styles.detailValue}>{selectedProduct.description}</Text>
-                </View>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>{t.status}:</Text>
-                  <Text style={[styles.detailValue, styles.pendingStatus]}>
-                    {t.pending}
+              {selectedProduct && (
+                <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
+                  <View style={styles.detailCard}>
+                    <View style={styles.detailRow}>
+                      <Icon name="tag-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{translate('category')}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.category}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="cash" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{translate('common.price')}</Text>
+                        <Text style={[styles.detailValue, { color: '#0F5132', fontWeight: '700' }]}>
+                          Rs. {selectedProduct.price.toLocaleString()}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="map-marker-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{translate('common.location')}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.location}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="account-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{translate('seller')}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.seller}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.detailDivider} />
+                    <View style={styles.detailRow}>
+                      <Icon name="email-outline" size={18} color="#0F5132" />
+                      <View style={styles.detailTextGroup}>
+                        <Text style={styles.detailLabel}>{translate('common.email')}</Text>
+                        <Text style={styles.detailValue}>{selectedProduct.sellerEmail}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View style={styles.descriptionCard}>
+                    <Text style={styles.descriptionLabel}>{translate('description')}</Text>
+                    <Text style={styles.descriptionValue}>{selectedProduct.description}</Text>
+                  </View>
+                  {selectedProduct.activeIngredient ? (
+                    <View style={styles.ingredientCard}>
+                      <Icon name="flask-outline" size={16} color="#0F5132" />
+                      <Text style={styles.ingredientText}>{selectedProduct.activeIngredient}</Text>
+                    </View>
+                  ) : null}
+                  <Text style={styles.submittedDate}>
+                    {translate('submitted')}: {selectedProduct.createdAt instanceof Date ? selectedProduct.createdAt.toLocaleDateString() : ''}
                   </Text>
-                </View>
-              </ScrollView>
+                </ScrollView>
+              )}
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.modalDeclineButton}
-                  onPress={() => {
-                    handleDecline(selectedProduct);
-                  }}
+                  onPress={() => handleDecline(selectedProduct)}
                 >
-                  <Icon name="close-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.modalDeclineButtonText}>{t.decline}</Text>
+                  <Icon name="close-circle" size={20} color="#E91E63" />
+                  <Text style={styles.modalDeclineButtonText}>{translate('decline')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.modalApproveButton}
-                  onPress={() => {
-                    handleApprove(selectedProduct);
-                  }}
+                  onPress={() => handleApprove(selectedProduct)}
                 >
                   <Icon name="check-circle" size={20} color="#FFFFFF" />
-                  <Text style={styles.modalApproveButtonText}>{t.approve}</Text>
+                  <Text style={styles.modalApproveButtonText}>{translate('approve')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
-        )}
+        </Modal>
+
+        {/* Decline-reason modal — captures an optional explanation that the seller
+            sees on their listing. Stored on the product as `declineReason`. */}
+        <Modal
+          visible={!!declineModalProduct}
+          transparent
+          animationType="fade"
+          onRequestClose={() => !decliningSubmitting && setDeclineModalProduct(null)}
+        >
+          <Pressable
+            style={styles.declineOverlay}
+            onPress={() => !decliningSubmitting && setDeclineModalProduct(null)}
+          >
+            <Pressable style={styles.declineCard} onPress={() => {}}>
+              <Text style={styles.declineTitle}>{translate('declineConfirm')}</Text>
+              <Text style={styles.declineMessage}>{translate('declineMessage')}</Text>
+              <Text style={styles.declineLabel}>{translate('reason')}</Text>
+              <TextInput
+                style={styles.declineInput}
+                value={declineReason}
+                onChangeText={setDeclineReason}
+                placeholder={translate('reasonPlaceholder')}
+                placeholderTextColor="#999"
+                multiline
+                maxLength={300}
+                autoFocus
+              />
+              <View style={styles.declineActions}>
+                <TouchableOpacity
+                  style={[styles.declineCancelBtn, decliningSubmitting && { opacity: 0.5 }]}
+                  onPress={() => !decliningSubmitting && setDeclineModalProduct(null)}
+                  disabled={decliningSubmitting}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.declineCancelText}>{translate('cancel')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.declineConfirmBtn, decliningSubmitting && { opacity: 0.7 }]}
+                  onPress={submitDecline}
+                  disabled={decliningSubmitting}
+                  activeOpacity={0.8}
+                >
+                  {decliningSubmitting ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.declineConfirmText}>{translate('decline')}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -535,6 +542,18 @@ const styles = StyleSheet.create({
   productIconText: {
     fontSize: 32,
   },
+  productThumbImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    resizeMode: 'cover',
+  },
+  modalThumbImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    resizeMode: 'cover',
+  },
   productInfo: {
     flex: 1,
   },
@@ -637,10 +656,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
   },
+  emptyStateIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E8F5E8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   emptyStateTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#666',
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#333',
     marginTop: 16,
     marginBottom: 8,
   },
@@ -650,56 +678,163 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
+    justifyContent: 'flex-end',
+  },
+  modalDismissArea: {
+    flex: 1,
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    width: width * 0.9,
-    maxHeight: '80%',
-    elevation: 8,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    maxHeight: '85%',
+    elevation: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+  },
+  modalDragHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#DDD',
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 8,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#F0F0F0',
+  },
+  modalHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  modalIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#F0F7F3',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1A1A1A',
   },
+  modalStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  modalStatusText: {
+    fontSize: 12,
+    color: '#FF9800',
+    fontWeight: '600',
+  },
+  modalCloseBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   modalBody: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 8,
     maxHeight: 400,
   },
+  detailCard: {
+    backgroundColor: '#F9FBF9',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8F0E8',
+  },
   detailRow: {
-    marginBottom: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 8,
+  },
+  detailTextGroup: {
+    flex: 1,
+  },
+  detailDivider: {
+    height: 1,
+    backgroundColor: '#E8F0E8',
+    marginLeft: 30,
   },
   detailLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    color: '#666',
-    marginBottom: 4,
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   detailValue: {
     fontSize: 15,
     color: '#1A1A1A',
+    marginTop: 1,
+  },
+  descriptionCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E8F0E8',
+  },
+  descriptionLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  descriptionValue: {
+    fontSize: 14,
+    color: '#444',
+    lineHeight: 22,
+  },
+  ingredientCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  ingredientText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0F5132',
+    fontStyle: 'italic',
+    flex: 1,
+  },
+  submittedDate: {
+    fontSize: 11,
+    color: '#AAA',
+    textAlign: 'center',
+    marginBottom: 8,
   },
   pendingStatus: {
     color: '#FF9800',
@@ -707,9 +842,11 @@ const styles = StyleSheet.create({
   },
   modalActions: {
     flexDirection: 'row',
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
     borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
+    borderTopColor: '#F0F0F0',
     gap: 12,
   },
   modalDeclineButton: {
@@ -717,30 +854,118 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#E91E63',
-    paddingVertical: 12,
-    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E91E63',
   },
   modalDeclineButtonText: {
-    color: '#FFFFFF',
+    color: '#E91E63',
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 6,
   },
   modalApproveButton: {
-    flex: 1,
+    flex: 1.5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0F5132',
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    elevation: 4,
+    shadowColor: '#0F5132',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   modalApproveButtonText: {
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 6,
+  },
+  declineOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  declineCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  declineTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 6,
+  },
+  declineMessage: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  declineLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#666',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  declineInput: {
+    minHeight: 80,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1A1A1A',
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  declineActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  declineCancelBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  declineCancelText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  declineConfirmBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#C62828',
+  },
+  declineConfirmText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 
