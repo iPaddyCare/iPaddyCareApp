@@ -15,123 +15,13 @@ import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import WeatherService from '../src/utils/weatherService';
 import { getConversations, getOfficers } from '../src/services/messagingService';
 import { getPendingProducts } from '../src/services/marketplaceService';
 
 const { width, height } = Dimensions.get('window');
-
-// Language translations
-const translations = {
-  English: {
-    welcomeTo: 'Welcome to',
-    appName: 'iPaddyCare',
-    tagline: 'Smart Agricultural Toolkit',
-    todaysOverview: "Today's Overview",
-    activeTests: 'Tests',
-    recommendations: 'Predicts',
-    officersOnline: 'Officers',
-    products: 'Products',
-    inbox: 'Inbox',
-    coreFeatures: 'Core Features',
-    quickActions: 'Quick Actions',
-    recentActivity: 'Recent Activity',
-    seedQualityDetection: 'Seed Quality Detection',
-    seedQualitySubtitle: 'AI-powered seed sorting',
-    seedQualityDesc: 'Detect seed varieties and wild seeds',
-    moistureMonitor: 'Seed Moisture Monitor',
-    moistureSubtitle: 'Portable field testing',
-    moistureDesc: 'Real-time moisture measurement',
-    soilPHTesting: 'Soil pH Testing',
-    soilPHSubtitle: 'Smart soil analysis',
-    soilPHDesc: 'Instant pH testing & recommendations',
-    pestDiseaseDetection: 'Pest & Disease Detection',
-    pestDiseaseSubtitle: 'Early detection system',
-    pestDiseaseDesc: 'Camera-based pest identification',
-    connectOfficer: 'Connect Officer',
-    marketplace: 'Marketplace',
-    testHistory: 'Test History',
-    settings: 'Settings',
-    soilPHCompleted: 'Soil pH Test Completed',
-    seedQualityAnalysis: 'Seed Quality Analysis',
-    hoursAgo: 'hours ago',
-    dayAgo: 'day ago',
-    phLevelDesc: 'pH level: 6.2 - Slightly acidic. Lime application recommended.',
-    purityDesc: 'Purity: 95.2% - Excellent quality seeds detected.'
-  },
-  සිංහල: {
-    welcomeTo: 'සාදරයෙන් පිළිගනිමු',
-    appName: 'අයිපැඩිකෙයා',
-    tagline: 'ස්මාර්ට් කෘෂිකර්ම මෙවලම්',
-    todaysOverview: 'අද දවසේ සාරාංශය',
-    activeTests: 'පරීක්ෂණ',
-    recommendations: 'අනාවැකි',
-    officersOnline: 'නිලධාරීන්',
-    products: 'නිෂ්පාදන',
-    inbox: 'එන ලිපි',
-    coreFeatures: 'ප්‍රධාන විශේෂාංග',
-    quickActions: 'ඉක්මන් ක්‍රියාමාර්ග',
-    recentActivity: 'මෑත ක්‍රියාකලාපය',
-    seedQualityDetection: 'බීජ ගුණත්ව හඳුනාගැනීම',
-    seedQualitySubtitle: 'AI බලයෙන් බීජ වර්ගීකරණය',
-    seedQualityDesc: 'බීජ වර්ග හඳුනාගෙන වල් බීජ හඳුනාගන්න',
-    moistureMonitor: 'බීජ තෙතමනය මුරකරු',
-    moistureSubtitle: 'පහසුකම් ක්ෂේත්‍ර පරීක්ෂණය',
-    moistureDesc: 'තත්‍ය කාලීන තෙතමනය මැනීම',
-    soilPHTesting: 'පස් pH පරීක්ෂණය',
-    soilPHSubtitle: 'ස්මාර්ට් පස් විශ්ලේෂණය',
-    soilPHDesc: 'ක්ෂණික pH පරීක්ෂණ සහ නිර්දේශ',
-    pestDiseaseDetection: 'පළිබෝධ සහ රෝග හඳුනාගැනීම',
-    pestDiseaseSubtitle: 'පූර්ව හඳුනාගැනීමේ පද්ධතිය',
-    pestDiseaseDesc: 'කැමරා පදනම් කරගත් පළිබෝධ හඳුනාගැනීම',
-    connectOfficer: 'නිලධාරීට සම්බන්ධ වන්න',
-    marketplace: 'වෙළඳපොළ',
-    testHistory: 'පරීක්ෂණ ඉතිහාසය',
-    settings: 'සැකසුම්',
-    soilPHCompleted: 'පස් pH පරීක්ෂණය සම්පූර්ණයි',
-    seedQualityAnalysis: 'බීජ ගුණත්ව විශ්ලේෂණය',
-    hoursAgo: 'පැය කට පෙර',
-    dayAgo: 'දින කට පෙර',
-    phLevelDesc: 'pH මට්ටම: 6.2 - සුලභ අම්ල. හුණු යෙදීම නිර්දේශ කරනු ලැබේ.',
-    purityDesc: 'සංශුද්ධතාව: 95.2% - විශිෂ්ට ගුණත්ව බීජ හඳුනාගෙන ඇත.'
-  },
-  தமிழ்: {
-    welcomeTo: 'உங்களை வரவேற்கிறோம்',
-    appName: 'ஐபாட்டிகேர்',
-    tagline: 'ஸ்மார்ட் விவசாய கருவித்தொகுப்பு',
-    todaysOverview: 'இன்றைய மேலோட்டம்',
-    activeTests: 'சோதனைகள்',
-    recommendations: 'கணிப்புகள்',
-    officersOnline: 'அதிகாரிகள்',
-    products: 'தயாரிப்புகள்',
-    inbox: 'இன்பாக்ஸ்',
-    coreFeatures: 'முக்கிய அம்சங்கள்',
-    quickActions: 'விரைவு நடவடிக்கைகள்',
-    recentActivity: 'சமீபத்திய செயல்பாடு',
-    seedQualityDetection: 'விதை தர கண்டறிதல்',
-    seedQualitySubtitle: 'AI சக்தியால் விதை வகைப்படுத்தல்',
-    seedQualityDesc: 'விதை வகைகள் மற்றும் காட்டு விதைகளை கண்டறியவும்',
-    moistureMonitor: 'விதை ஈரப்பத கண்காணிப்பு',
-    moistureSubtitle: 'கையடக்க வயல் சோதனை',
-    moistureDesc: 'நிகழ்நேர ஈரப்பத அளவீடு',
-    soilPHTesting: 'மண் pH சோதனை',
-    soilPHSubtitle: 'ஸ்மார்ட் மண் பகுப்பாய்வு',
-    soilPHDesc: 'உடனடி pH சோதனை மற்றும் பரிந்துரைகள்',
-    pestDiseaseDetection: 'பூச்சி மற்றும் நோய் கண்டறிதல்',
-    pestDiseaseSubtitle: 'ஆரம்ப கண்டறிதல் அமைப்பு',
-    pestDiseaseDesc: 'கேமரா அடிப்படையிலான பூச்சி அடையாளம்',
-    connectOfficer: 'அதிகாரியுடன் இணைக்கவும்',
-    marketplace: 'சந்தைக்கிடம்',
-    testHistory: 'சோதனை வரலாறு',
-    settings: 'அமைப்புகள்',
-    soilPHCompleted: 'மண் pH சோதனை முடிவுற்றது',
-    seedQualityAnalysis: 'விதை தர பகுப்பாய்வு',
-    hoursAgo: 'மணி நேரம் முன்பு',
-    dayAgo: 'நாள் முன்பு',
-    phLevelDesc: 'pH அளவு: 6.2 - சற்று அமிலம். சுண்ணாம்பு பயன்பாடு பரிந்துரைக்கப்படுகிறது.',
-    purityDesc: 'தூய்மை: 95.2% - சிறந்த தர விதைகள் கண்டறியப்பட்டன.'
-  }
-};
 
 // Utility to bubble up to root navigator for cross-stack navigation
 const navigateToRootRoute = (navigation, routeName) => {
@@ -298,6 +188,7 @@ const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isA
 
 export default function HomeScreen({ navigation }) {
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const translate = useTranslation('home');
   const insets = useSafeAreaInsets();
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(50));
@@ -312,7 +203,6 @@ export default function HomeScreen({ navigation }) {
   });
 
   const languages = ['English', 'සිංහල', 'தமிழ்'];
-  const t = translations[selectedLanguage];
 
   useEffect(() => {
     Animated.parallel([
@@ -388,62 +278,62 @@ export default function HomeScreen({ navigation }) {
   const mainFeatures = [
     {
       id: 1,
-      title: t.seedQualityDetection,
-      subtitle: t.seedQualitySubtitle,
+      title: translate('seedQualityDetection'),
+      subtitle: translate('seedQualitySubtitle'),
       icon: '🌾',
       primaryColor: '#00C851',
       secondaryColor: '#007E33',
       accentColor: '#E8F5E8',
-      description: t.seedQualityDesc,
+      description: translate('seedQualityDesc'),
       route: 'SeedDetection'
     },
     {
       id: 2,
-      title: t.moistureMonitor,
-      subtitle: t.moistureSubtitle,
+      title: translate('moistureMonitor'),
+      subtitle: translate('moistureSubtitle'),
       icon: '💧',
       primaryColor: '#2196F3',
       secondaryColor: '#0D47A1',
       accentColor: '#E3F2FD',
-      description: t.moistureDesc,
+      description: translate('moistureDesc'),
       route: 'MoistureDetector'
     },
     {
       id: 3,
-      title: t.soilPHTesting,
-      subtitle: t.soilPHSubtitle,
+      title: translate('soilPHTesting'),
+      subtitle: translate('soilPHSubtitle'),
       icon: '🧪',
       primaryColor: '#FF6D00',
       secondaryColor: '#E65100',
       accentColor: '#FFF3E0',
-      description: t.soilPHDesc,
+      description: translate('soilPHDesc'),
       route: 'SoilPH'
     },
     {
       id: 4,
-      title: t.pestDiseaseDetection,
-      subtitle: t.pestDiseaseSubtitle,
+      title: translate('pestDiseaseDetection'),
+      subtitle: translate('pestDiseaseSubtitle'),
       icon: '🐛',
       primaryColor: '#E91E63',
       secondaryColor: '#AD1457',
       accentColor: '#FCE4EC',
-      description: t.pestDiseaseDesc,
+      description: translate('pestDiseaseDesc'),
       route: 'PestDetection'
     }
   ];
 
   const quickActions = isOfficer
     ? [
-        { title: t.inbox, icon: '📬', color: '#E91E63', lightColor: '#FCE4EC', route: 'OfficerInbox' },
-        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
-        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
-        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+        { title: translate('common.inbox'), icon: '📬', color: '#E91E63', lightColor: '#FCE4EC', route: 'OfficerInbox' },
+        { title: translate('marketplace'), icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: translate('testHistory'), icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: translate('settings'), icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
       ]
     : [
-        { title: t.connectOfficer, icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
-        { title: t.marketplace, icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
-        { title: t.testHistory, icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
-        { title: t.settings, icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
+        { title: translate('connectOfficer'), icon: '👥', color: '#EC4899', lightColor: '#FDF2F8', route: 'Officers' },
+        { title: translate('marketplace'), icon: '🛒', color: '#F59E0B', lightColor: '#FFFBEB', route: 'Marketplace' },
+        { title: translate('testHistory'), icon: '📊', color: '#3B82F6', lightColor: '#EFF6FF', route: 'History' },
+        { title: translate('settings'), icon: '⚙️', color: '#10B981', lightColor: '#ECFDF5', route: 'Settings' }
       ];
 
   const handleLanguageChange = () => {
@@ -487,13 +377,13 @@ export default function HomeScreen({ navigation }) {
             </TouchableOpacity>
 
           <View style={styles.headerText}>
-            <Text style={styles.welcomeText}>{t.welcomeTo}</Text>
+            <Text style={styles.welcomeText}>{translate('welcomeTo')}</Text>
               <Text style={[
                 styles.appName,
                 // Reduce font size for Sinhala and Tamil appName on Android
                 (Platform.OS === 'android' && (selectedLanguage === 'සිංහල' || selectedLanguage === 'தமிழ்')) && styles.appNameNonLatin,
-              ]}>{t.appName}</Text>
-            <Text style={styles.tagline}>{t.tagline}</Text>
+              ]}>{translate('appName')}</Text>
+            <Text style={styles.tagline}>{translate('tagline')}</Text>
           </View>
 
           {/* Language Selector */}
@@ -543,7 +433,7 @@ export default function HomeScreen({ navigation }) {
             transform: [{ scale: scaleAnim }]
           }
         ]}>
-          <Text style={styles.dashboardTitle}>{t.todaysOverview}</Text>
+          <Text style={styles.dashboardTitle}>{translate('todaysOverview')}</Text>
           <View style={styles.statsRow}>
             {isOfficer ? (
               <>
@@ -557,7 +447,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>🧪</Text>
                   </View>
                   <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <Text style={styles.statLabel}>{translate('activeTests')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.statItem}
@@ -568,7 +458,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>📦</Text>
                   </View>
                   <Text style={styles.statValue}>{dashboardStats.pendingProducts}</Text>
-                  <Text style={styles.statLabel}>{t.products}</Text>
+                  <Text style={styles.statLabel}>{translate('products')}</Text>
                   {dashboardStats.pendingProducts > 0 && <View style={[styles.statIndicator, { backgroundColor: '#2196F3' }]} />}
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -580,7 +470,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>📬</Text>
                   </View>
                   <Text style={styles.statValue}>{dashboardStats.inboxCount}</Text>
-                  <Text style={styles.statLabel}>{t.inbox}</Text>
+                  <Text style={styles.statLabel}>{translate('common.inbox')}</Text>
                   {dashboardStats.inboxCount > 0 && <View style={[styles.statIndicator, { backgroundColor: '#E91E63' }]} />}
                 </TouchableOpacity>
               </>
@@ -596,7 +486,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>🧪</Text>
                   </View>
                   <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>{t.activeTests}</Text>
+                  <Text style={styles.statLabel}>{translate('activeTests')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.statItem}
@@ -609,7 +499,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>💡</Text>
                   </View>
                   <Text style={styles.statValue}>0</Text>
-                  <Text style={styles.statLabel}>{t.recommendations}</Text>
+                  <Text style={styles.statLabel}>{translate('recommendations')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.statItem}
@@ -620,7 +510,7 @@ export default function HomeScreen({ navigation }) {
                     <Text style={styles.statEmoji}>👥</Text>
                   </View>
                   <Text style={styles.statValue}>{dashboardStats.officersOnline}</Text>
-                  <Text style={styles.statLabel}>{t.officersOnline}</Text>
+                  <Text style={styles.statLabel}>{translate('officersOnline')}</Text>
                   {dashboardStats.officersOnline > 0 && <View style={[styles.statIndicator, { backgroundColor: '#9C27B0' }]} />}
                 </TouchableOpacity>
               </>
@@ -637,7 +527,7 @@ export default function HomeScreen({ navigation }) {
               transform: [{ translateX: slideAnim }]
             }
           ]}>
-            {t.coreFeatures}
+            {translate('coreFeatures')}
           </Animated.Text>
           {mainFeatures.map((feature, index) => (
             <FeatureCard
@@ -662,7 +552,7 @@ export default function HomeScreen({ navigation }) {
               transform: [{ translateX: slideAnim }]
             }
           ]}>
-            {t.quickActions}
+            {translate('quickActions')}
           </Animated.Text>
           <View style={styles.quickActionsGrid}>
             {quickActions.map((action, index) => (
@@ -689,7 +579,7 @@ export default function HomeScreen({ navigation }) {
               transform: [{ translateX: slideAnim }]
             }
           ]}>
-            {t.recentActivity}
+            {translate('recentActivity')}
           </Animated.Text>
 
           <Animated.View style={[
@@ -704,12 +594,12 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.activityEmoji}>🧪</Text>
               </View>
               <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>{t.soilPHCompleted}</Text>
-                <Text style={styles.activityTime}>2 {t.hoursAgo}</Text>
+                <Text style={styles.activityTitle}>{translate('soilPHCompleted')}</Text>
+                <Text style={styles.activityTime}>2 {translate('hoursAgo')}</Text>
               </View>
               <View style={[styles.activityStatus, { backgroundColor: '#00C851' }]} />
             </View>
-            <Text style={styles.activityDescription}>{t.phLevelDesc}</Text>
+            <Text style={styles.activityDescription}>{translate('phLevelDesc')}</Text>
           </Animated.View>
 
           <Animated.View style={[
@@ -724,12 +614,12 @@ export default function HomeScreen({ navigation }) {
                 <Text style={styles.activityEmoji}>🌾</Text>
               </View>
               <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>{t.seedQualityAnalysis}</Text>
-                <Text style={styles.activityTime}>1 {t.dayAgo}</Text>
+                <Text style={styles.activityTitle}>{translate('seedQualityAnalysis')}</Text>
+                <Text style={styles.activityTime}>1 {translate('dayAgo')}</Text>
               </View>
               <View style={[styles.activityStatus, { backgroundColor: '#2196F3' }]} />
             </View>
-            <Text style={styles.activityDescription}>{t.purityDesc}</Text>
+            <Text style={styles.activityDescription}>{translate('purityDesc')}</Text>
           </Animated.View>
         </View>
 

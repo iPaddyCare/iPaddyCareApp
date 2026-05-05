@@ -20,258 +20,13 @@ import LocationService from '../src/utils/locationService';
 import RiceVarietyApiService from '../src/utils/riceVarietyApiService';
 import BluetoothPermissionService from '../src/utils/bluetoothPermissionService';
 import BleScanServiceEsp32 from '../src/utils/BleScanServiceEsp32';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Soil Analysis',
-    subtitle: 'Smart soil analysis and rice variety prediction',
-    connected: 'Connected to ESP32 Sensor',
-    noDevice: 'No Device Connected',
-    connect: 'Connect',
-    connectDevice: 'Connect Device',
-    readValues: 'Read Values',
-    disconnect: 'Disconnect',
-    location: 'Location',
-    locationNotAvailable: 'Location not available',
-    connectionError: 'Connection Error',
-    errorHint: 'Make sure your ESP32 sensor is powered on and Bluetooth is enabled.',
-    retry: 'Retry',
-    fetching: 'Fetching data from sensor...',
-    permissionRequired: 'Permission Required',
-    permissionMessage: 'Bluetooth permissions are required to connect to sensors. Please grant permissions in app settings.',
-    cancel: 'Cancel',
-    openSettings: 'Open Settings',
-    error: 'Error',
-    readSensorFirst: 'Please read sensor values first',
-    validationError: 'Validation Error',
-    predictionError: 'Prediction Error',
-    predictFailed: 'Failed to predict rice variety',
-    phLevel: 'pH Level',
-    acidic: 'Acidic',
-    alkaline: 'Alkaline',
-    neutral: 'Neutral',
-    moisture: 'Moisture',
-    ec: 'EC (dS/m)',
-    temperature: 'Temperature',
-    waterDepth: 'Water Depth',
-    lastUpdated: 'Last Updated',
-    additionalInfo: 'Additional Information',
-    previousCrop: 'Previous Crop',
-    cropRice: 'Rice',
-    cropVegetable: 'Vegetable',
-    cropMaize: 'Maize',
-    cropFallow: 'Fallow',
-    cropLegume: 'Legume',
-    season: 'Season',
-    maha: 'Maha',
-    yala: 'Yala',
-    soilZone: 'Soil Zone',
-    zoneDry: 'Dry',
-    zoneIntermediate: 'Intermediate',
-    zoneWet: 'Wet',
-    waterDepthCm: 'Water Depth (cm)',
-    enterWaterDepth: 'Enter water depth',
-    notSet: 'Not set',
-    soilTexture: 'Soil Texture',
-    textureLoamy: 'Loamy',
-    textureSandy: 'Sandy',
-    textureClayey: 'Clayey',
-    formSummary: 'Form Data Summary',
-    predictRiceVariety: 'Predict Rice Variety',
-    predictionResults: 'Prediction Results',
-    bestVariety: 'Best Recommended Variety',
-    expectedYield: 'Expected Yield',
-    topRecommendations: 'Top Recommendations',
-    noDeviceTitle: 'No Device Connected',
-    noDeviceText: 'Connect to an ESP32 sensor to view soil pH data',
-    deviceConnected: 'Device Connected',
-    pressReadValues: 'Press "Read Values" to fetch valid sensor data from ESP32',
-    zeroValuesFiltered: '(Zero values will be filtered out)',
-    selected: 'Selected',
-    entered: 'Entered',
-    kgHa: 'kg/ha',
-    waitingForData: 'Waiting for valid sensor data (filtering zero values)...',
-    waitingForSensorData: 'Waiting for sensor data...',
-    allZerosRetry: 'All sensor values are zero. Click "Read Values" again to retry.',
-    gatheringData: 'Gathering data',
-    of: 'of',
-    readings: 'readings',
-    gatheringProgress: 'Gathering sensor readings...',
-    step: 'Step',
-    moveSensorToOtherPlace: 'Move the sensor to another place, then tap "Read Values" for the next step.',
-    stepAverage: 'Step average',
-    finalAverage: 'Final average (40 readings)',
-  },
-  සිංහල: {
-    title: 'මිරිදිය pH පරීක්ෂණය',
-    subtitle: 'බුද්ධිමත් පස් විශ්ලේෂණය සහ වී ප්‍රභේද අනාවැකිය',
-    connected: 'ESP32 සංවේදකයට සම්බන්ධ වී ඇත',
-    noDevice: 'උපාංගයක් සම්බන්ධ නොවීය',
-    connect: 'සම්බන්ධ වන්න',
-    connectDevice: 'උපාංගය සම්බන්ධ කරන්න',
-    readValues: 'අගයන් කියවන්න',
-    disconnect: 'බිඳින්න',
-    location: 'ස්ථානය',
-    locationNotAvailable: 'ස්ථානය ලබා ගත නොහැක',
-    connectionError: 'සම්බන්ධතා දෝෂය',
-    errorHint: 'ඔබේ ESP32 සංවේදකය බලයට සම්බන්ධ කර ඇති බවට සහ Bluetooth සක්‍රිය කර ඇති බවට වග බලා ගන්න.',
-    retry: 'නැවත උත්සාහ කරන්න',
-    fetching: 'සංවේදකයෙන් දත්ත ලබා ගනිමින්...',
-    permissionRequired: 'අවසරය අවශ්‍යයි',
-    permissionMessage: 'සංවේදක සම්බන්ධ කිරීමට Bluetooth අවසර අවශ්‍යයි. කරුණාකර යෙදුම් සැකසුම්වල අවසර ලබා දෙන්න.',
-    cancel: 'අවලංගු කරන්න',
-    openSettings: 'සැකසුම් අරින්න',
-    error: 'දෝෂය',
-    readSensorFirst: 'කරුණාකර පළමුව සංවේදක අගයන් කියවන්න',
-    validationError: 'සත්‍යාපන දෝෂය',
-    predictionError: 'අනාවැකි දෝෂය',
-    predictFailed: 'වී ප්‍රභේද අනාවැකිය ලබා ගත නොහැකි විය',
-    phLevel: 'pH මට්ටම',
-    acidic: 'අම්ලික',
-    alkaline: 'ක්ෂාර',
-    neutral: 'උදාසීන',
-    moisture: 'ආර්ද්‍රතාව',
-    ec: 'EC (dS/m)',
-    temperature: 'උෂ්ණත්වය',
-    waterDepth: 'ජල ගැඹුර',
-    lastUpdated: 'අවසන් වරට යාවත්කාලීන කරන ලදී',
-    additionalInfo: 'අමතර තොරතුරු',
-    previousCrop: 'පෙර බෝගය',
-    cropRice: 'වී',
-    cropVegetable: 'එළවළු',
-    cropMaize: 'බඩ ඉරිඟු',
-    cropFallow: 'හිස්',
-    cropLegume: 'පර්යන්ත',
-    season: 'ඍතුව',
-    maha: 'මහ',
-    yala: 'යල',
-    soilZone: 'පස් කලාපය',
-    zoneDry: 'වියළි',
-    zoneIntermediate: 'මධ්‍යම',
-    zoneWet: 'තෙත්',
-    waterDepthCm: 'ජල ගැඹුර (සෙ.මී.)',
-    enterWaterDepth: 'ජල ගැඹුර ඇතුළත් කරන්න',
-    notSet: 'සකසා නැත',
-    soilTexture: 'පස් වයිනය',
-    textureLoamy: 'ලොම්',
-    textureSandy: 'වැලි',
-    textureClayey: 'මැටි',
-    formSummary: 'පෝරම් දත්ත සාරාංශය',
-    predictRiceVariety: 'වී ප්‍රභේද අනාවැකිය',
-    predictionResults: 'අනාවැකි ප්‍රතිඵල',
-    bestVariety: 'හොඳම නිර්දේශිත ප්‍රභේදය',
-    expectedYield: 'අපේක්ෂිත අස්වැන්න',
-    topRecommendations: 'ඉහළ නිර්දේශ',
-    noDeviceTitle: 'උපාංගයක් සම්බන්ධ නොවීය',
-    noDeviceText: 'මිරිදිය pH දත්ත බැලීමට ESP32 සංවේදකයකට සම්බන්ධ වන්න',
-    deviceConnected: 'උපාංගය සම්බන්ධ වී ඇත',
-    pressReadValues: 'වලංගු සංවේදක දත්ත ලබා ගැනීමට "අගයන් කියවන්න" ඔබන්න',
-    zeroValuesFiltered: '(ශුන්‍ය අගයන් පෙරහන ලැබේ)',
-    selected: 'තෝරා ඇත',
-    entered: 'ඇතුළත් කළා',
-    kgHa: 'කි.ග්‍රෑ./හෙක්.',
-    waitingForData: 'වලංගු සංවේදක දත්ත බලා සිටිමින් (ශුන්‍ය අගයන් පෙරහන ලැබේ)...',
-    waitingForSensorData: 'සංවේදක දත්ත බලා සිටිමින්...',
-    allZerosRetry: 'සියලු සංවේදක අගයන් ශුන්‍යයි. නැවත උත්සාහ කිරීමට "අගයන් කියවන්න" ඔබන්න.',
-    gatheringData: 'දත්ත එකතු කිරීම',
-    of: 'යි',
-    readings: 'කියවීම්',
-    gatheringProgress: 'සංවේදක කියවීම් එකතු කරමින්...',
-    step: 'පියවර',
-    moveSensorToOtherPlace: 'සංවේදකය වෙනත් ස්ථානයකට ගෙන යන්න, ඊළඟ පියවර සඳහා "අගයන් කියවන්න" ඔබන්න.',
-    stepAverage: 'පියවර සාමාන්‍යය',
-    finalAverage: 'අවසාන සාමාන්‍යය (කියවීම් 40)',
-  },
-  தமிழ்: {
-    title: 'மண் pH சோதனை',
-    subtitle: 'ஸ்மார்ட் மண் பகுப்பாய்வு மற்றும் நெல் வகை கணிப்பு',
-    connected: 'ESP32 சென்சாருடன் இணைக்கப்பட்டது',
-    noDevice: 'சாதனம் இணைக்கப்படவில்லை',
-    connect: 'இணைக்கவும்',
-    connectDevice: 'சாதனத்தை இணைக்கவும்',
-    readValues: 'மதிப்புகளைப் படிக்கவும்',
-    disconnect: 'துண்டிக்கவும்',
-    location: 'இடம்',
-    locationNotAvailable: 'இடம் கிடைக்கவில்லை',
-    connectionError: 'இணைப்பு பிழை',
-    errorHint: 'உங்கள் ESP32 சென்சார் இயக்கத்தில் உள்ளது மற்றும் Bluetooth இயக்கப்பட்டுள்ளது என்பதை உறுதிப்படுத்தவும்.',
-    retry: 'மீண்டும் முயற்சிக்கவும்',
-    fetching: 'சென்சாரிலிருந்து தரவு பெறப்படுகிறது...',
-    permissionRequired: 'அனுமதி தேவை',
-    permissionMessage: 'சென்சார்களுடன் இணைக்க Bluetooth அனுமதிகள் தேவை. தயவுசெய்து பயன்பாட்டு அமைப்புகளில் அனுமதிகளை வழங்கவும்.',
-    cancel: 'ரத்து',
-    openSettings: 'அமைப்புகளைத் திறக்கவும்',
-    error: 'பிழை',
-    readSensorFirst: 'தயவுசெய்து முதலில் சென்சார் மதிப்புகளைப் படிக்கவும்',
-    validationError: 'சரிபார்ப்பு பிழை',
-    predictionError: 'கணிப்பு பிழை',
-    predictFailed: 'நெல் வகையை கணிக்க முடியவில்லை',
-    phLevel: 'pH அளவு',
-    acidic: 'அமில',
-    alkaline: 'கார',
-    neutral: 'நடுநிலை',
-    moisture: 'ஈரப்பதம்',
-    ec: 'EC (dS/m)',
-    temperature: 'வெப்பநிலை',
-    waterDepth: 'நீர் ஆழம்',
-    lastUpdated: 'கடைசியாக புதுப்பிக்கப்பட்டது',
-    additionalInfo: 'கூடுதல் தகவல்',
-    previousCrop: 'முந்தைய பயிர்',
-    cropRice: 'நெல்',
-    cropVegetable: 'காய்கறி',
-    cropMaize: 'மக்காச்சோளம்',
-    cropFallow: 'வீடு',
-    cropLegume: 'பருப்பு',
-    season: 'பருவம்',
-    maha: 'மகா',
-    yala: 'யாலா',
-    soilZone: 'மண் மண்டலம்',
-    zoneDry: 'வறண்ட',
-    zoneIntermediate: 'இடைநிலை',
-    zoneWet: 'ஈரமான',
-    waterDepthCm: 'நீர் ஆழம் (செ.மீ.)',
-    enterWaterDepth: 'நீர் ஆழத்தை உள்ளிடவும்',
-    notSet: 'அமைக்கப்படவில்லை',
-    soilTexture: 'மண் அமைப்பு',
-    textureLoamy: 'களிமண்',
-    textureSandy: 'மணல்',
-    textureClayey: 'களிமண்',
-    formSummary: 'படிவ தரவு சுருக்கம்',
-    predictRiceVariety: 'நெல் வகையை கணிக்கவும்',
-    predictionResults: 'கணிப்பு முடிவுகள்',
-    bestVariety: 'சிறந்த பரிந்துரைக்கப்பட்ட வகை',
-    expectedYield: 'எதிர்பார்க்கப்படும் மகசூல்',
-    topRecommendations: 'முதன்மை பரிந்துரைகள்',
-    noDeviceTitle: 'சாதனம் இணைக்கப்படவில்லை',
-    noDeviceText: 'மண் pH தரவைக் காண ESP32 சென்சாருடன் இணைக்கவும்',
-    deviceConnected: 'சாதனம் இணைக்கப்பட்டது',
-    pressReadValues: 'செல்லுபடியான சென்சார் தரவைப் பெற "மதிப்புகளைப் படிக்கவும்" என்பதை அழுத்தவும்',
-    zeroValuesFiltered: '(பூஜ்ய மதிப்புகள் வடிகட்டப்படும்)',
-    selected: 'தேர்ந்தெடுக்கப்பட்டது',
-    entered: 'உள்ளிடப்பட்டது',
-    kgHa: 'கி.கி/ஹெக்.',
-    waitingForData: 'செல்லுபடியான சென்சார் தரவைக் காத்திருக்கிறது (பூஜ்ய மதிப்புகள் வடிகட்டப்படுகின்றன)...',
-    waitingForSensorData: 'சென்சார் தரவைக் காத்திருக்கிறது...',
-    allZerosRetry: 'அனைத்து சென்சார் மதிப்புகளும் பூஜ்யம். மீண்டும் முயற்சிக்க "மதிப்புகளைப் படிக்கவும்" என்பதை அழுத்தவும்.',
-    gatheringData: 'தரவை சேகரித்தல்',
-    of: 'இல்',
-    readings: 'வாசிப்புகள்',
-    gatheringProgress: 'சென்சார் வாசிப்புகளை சேகரிக்கிறது...',
-    step: 'படி',
-    moveSensorToOtherPlace: 'சென்சாரை மற்றொரு இடத்திற்கு நகர்த்தி, அடுத்த படிக்கு "மதிப்புகளைப் படிக்கவும்" என்பதை தட்டவும்.',
-    stepAverage: 'படி சராசரி',
-    finalAverage: 'இறுதி சராசரி (40 வாசிப்புகள்)',
-  },
-};
-
 export default function SoilPHScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('soilPH');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(false);
   const [reading, setReading] = useState(false);
@@ -409,7 +164,7 @@ export default function SoilPHScreen({ navigation }) {
 
     if (!device) {
       setConnected(false);
-      setError(t.noDevice);
+      setError(translate('noDevice'));
       setSensorData(null);
       setZeroValueCount(0);
       return;
@@ -464,7 +219,7 @@ export default function SoilPHScreen({ navigation }) {
           setGatheringCount(0);
           setLiveGatheringData(null);
           if (gatheringReadingsRef.current.length < 1) {
-            setError(t.waitingForData);
+            setError(translate('waitingForData'));
           }
           return;
         }
@@ -549,7 +304,7 @@ export default function SoilPHScreen({ navigation }) {
       }
     } else {
       setConnected(true);
-      setError(t.waitingForSensorData);
+      setError(translate('waitingForSensorData'));
       setSensorData(null);
     }
     setLoading(false);
@@ -603,7 +358,6 @@ export default function SoilPHScreen({ navigation }) {
     return unsubscribe;
   }, [navigation]);
 
-
   // Handle refresh
   const onRefresh = async () => {
     setRefreshing(true);
@@ -618,11 +372,11 @@ export default function SoilPHScreen({ navigation }) {
       const permissionGranted = await BluetoothPermissionService.requestPermissions();
       if (!permissionGranted) {
         showAppAlert(
-          t.permissionRequired,
-          t.permissionMessage,
+          translate('common.permissionRequired'),
+          translate('permissionMessage'),
           [
-            { text: t.cancel, style: 'cancel' },
-            { text: t.openSettings, onPress: () => {
+            { text: translate('cancel'), style: 'cancel' },
+            { text: translate('openSettings'), onPress: () => {
               // On Android, you can open app settings
               // This is a placeholder - you might want to use Linking.openSettings()
             }},
@@ -650,12 +404,12 @@ export default function SoilPHScreen({ navigation }) {
 
   const handlePredict = async () => {
     if (!sensorData) {
-      showAppAlert(t.error, t.readSensorFirst);
+      showAppAlert(translate('common.error'), translate('readSensorFirst'));
       return;
     }
 
     if (!location) {
-      showAppAlert(t.error, t.locationNotAvailable);
+      showAppAlert(translate('common.error'), translate('locationNotAvailable'));
       return;
     }
 
@@ -672,7 +426,7 @@ export default function SoilPHScreen({ navigation }) {
     // Validate data
     const validation = RiceVarietyApiService.validateInput(apiData);
     if (!validation.isValid) {
-      showAppAlert(t.validationError, validation.errors.join('\n'));
+      showAppAlert(translate('validationError'), validation.errors.join('\n'));
       return;
     }
 
@@ -684,8 +438,8 @@ export default function SoilPHScreen({ navigation }) {
       setPredictionResult(result.data);
       setError(null);
     } else {
-      setError(result.error || t.predictFailed);
-      showAppAlert(t.predictionError, result.error || t.predictFailed);
+      setError(result.error || translate('predictFailed'));
+      showAppAlert(translate('predictionError'), result.error || translate('predictFailed'));
     }
     setPredicting(false);
   };
@@ -715,7 +469,7 @@ export default function SoilPHScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -733,7 +487,7 @@ export default function SoilPHScreen({ navigation }) {
                     </View>
                     <View style={styles.statusTextContainer}>
                       <Text style={[styles.statusText, styles.statusTextConnected]}>
-                        {t.connected}
+                        {translate('connected')}
                       </Text>
                       {connectedDevice && (
                         <Text style={styles.statusDeviceIp}>
@@ -754,13 +508,13 @@ export default function SoilPHScreen({ navigation }) {
                       ) : (
                         <>
                           <Icon name="refresh" size={18} color="white" />
-                          <Text style={styles.readValuesButtonText}>{t.readValues}</Text>
+                          <Text style={styles.readValuesButtonText}>{translate('readValues')}</Text>
                         </>
                       )}
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.disconnectButton} onPress={handleDisconnect}>
                       <Icon name="link-off" size={18} color="white" />
-                      <Text style={styles.disconnectButtonText}>{t.disconnect}</Text>
+                      <Text style={styles.disconnectButtonText}>{translate('disconnect')}</Text>
                     </TouchableOpacity>
                   </View>
                 </>
@@ -770,11 +524,11 @@ export default function SoilPHScreen({ navigation }) {
                     <Icon name="alert-circle" size={22} color="#F44336" />
                   </View>
                   <View style={styles.statusTextContainer}>
-                    <Text style={styles.statusText}>{t.noDevice}</Text>
+                    <Text style={styles.statusText}>{translate('noDevice')}</Text>
                   </View>
                   <TouchableOpacity style={styles.connectButton} onPress={handleConnectDevice}>
                     <Icon name="link" size={18} color="white" />
-                    <Text style={styles.connectButtonText}>{t.connect}</Text>
+                    <Text style={styles.connectButtonText}>{translate('common.connect')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -793,14 +547,14 @@ export default function SoilPHScreen({ navigation }) {
                   )}
                 </View>
                 <View style={styles.locationStatusTextContainer}>
-                  <Text style={styles.locationStatusTitle}>{t.location}</Text>
+                  <Text style={styles.locationStatusTitle}>{translate('common.location')}</Text>
                   {location ? (
                     <Text style={styles.locationStatusValue}>
                       {location.lat.toFixed(4)}, {location.lon.toFixed(4)}
                     </Text>
                   ) : (
                     <Text style={styles.locationStatusError}>
-                      {locationError || t.locationNotAvailable}
+                      {locationError || translate('locationNotAvailable')}
                     </Text>
                   )}
                 </View>
@@ -829,10 +583,10 @@ export default function SoilPHScreen({ navigation }) {
                 <View style={styles.gatheringHeader}>
                   <Icon name="chart-line" size={24} color="#0F5132" />
                   <Text style={styles.gatheringTitle}>
-                    {t.gatheringData} — {t.step} {currentStep} {t.of} {NUM_STEPS}
+                    {translate('gatheringData')} — {translate('step')} {currentStep} {translate('of')} {NUM_STEPS}
                   </Text>
                 </View>
-                <Text style={styles.gatheringProgressText}>{t.gatheringProgress}</Text>
+                <Text style={styles.gatheringProgressText}>{translate('gatheringProgress')}</Text>
                 <View style={styles.gatheringProgressBarContainer}>
                   <View style={styles.gatheringProgressBar}>
                     <View
@@ -843,7 +597,7 @@ export default function SoilPHScreen({ navigation }) {
                     />
                   </View>
                   <Text style={styles.gatheringCountText}>
-                    {gatheringCount} {t.of} {GATHER_COUNT} {t.readings}
+                    {gatheringCount} {translate('of')} {GATHER_COUNT} {translate('readings')}
                   </Text>
                 </View>
                 {liveGatheringData && (
@@ -855,22 +609,22 @@ export default function SoilPHScreen({ navigation }) {
                     </View>
                     <View style={styles.gatheringLiveItem}>
                       <Icon name="water" size={18} color="#2196F3" />
-                      <Text style={styles.gatheringLiveLabel}>{t.moisture}</Text>
+                      <Text style={styles.gatheringLiveLabel}>{translate('moisture')}</Text>
                       <Text style={styles.gatheringLiveValue}>{liveGatheringData.soil_moisture_pct.toFixed(1)}%</Text>
                     </View>
                     <View style={styles.gatheringLiveItem}>
                       <Icon name="flash" size={18} color="#9C27B0" />
-                      <Text style={styles.gatheringLiveLabel}>{t.ec}</Text>
+                      <Text style={styles.gatheringLiveLabel}>{translate('ec')}</Text>
                       <Text style={styles.gatheringLiveValue}>{liveGatheringData.EC_dS_m.toFixed(2)}</Text>
                     </View>
                     <View style={styles.gatheringLiveItem}>
                       <Icon name="thermometer" size={18} color="#FF9800" />
-                      <Text style={styles.gatheringLiveLabel}>{t.temperature}</Text>
+                      <Text style={styles.gatheringLiveLabel}>{translate('temperature')}</Text>
                       <Text style={styles.gatheringLiveValue}>{liveGatheringData.soil_temp_C.toFixed(1)}°C</Text>
                     </View>
                     <View style={styles.gatheringLiveItem}>
                       <Icon name="waves" size={18} color="#00BCD4" />
-                      <Text style={styles.gatheringLiveLabel}>{t.waterDepth}</Text>
+                      <Text style={styles.gatheringLiveLabel}>{translate('waterDepth')}</Text>
                       <Text style={styles.gatheringLiveValue}>{liveGatheringData.water_depth_cm.toFixed(1)} cm</Text>
                     </View>
                   </View>
@@ -884,17 +638,17 @@ export default function SoilPHScreen({ navigation }) {
                 <View style={styles.gatheringHeader}>
                   <Icon name="map-marker-radius" size={24} color="#0F5132" />
                   <Text style={styles.gatheringTitle}>
-                    {t.step} {currentStep} {t.of} {NUM_STEPS} — {t.stepAverage}
+                    {translate('step')} {currentStep} {translate('of')} {NUM_STEPS} — {translate('stepAverage')}
                   </Text>
                 </View>
-                <Text style={styles.gatheringProgressText}>{t.moveSensorToOtherPlace}</Text>
+                <Text style={styles.gatheringProgressText}>{translate('moveSensorToOtherPlace')}</Text>
                 {stepAverages.map((avg, idx) => (
                   <View key={idx} style={styles.stepAverageRow}>
                     <Text style={styles.stepAverageLabel}>
-                      {t.step} {idx + 1}:
+                      {translate('step')} {idx + 1}:
                     </Text>
                     <Text style={styles.stepAverageValue}>
-                      pH {avg.pH.toFixed(1)} · {t.moisture} {avg.soil_moisture_pct.toFixed(1)}% · EC {avg.EC_dS_m.toFixed(2)}
+                      pH {avg.pH.toFixed(1)} · {translate('moisture')} {avg.soil_moisture_pct.toFixed(1)}% · EC {avg.EC_dS_m.toFixed(2)}
                     </Text>
                   </View>
                 ))}
@@ -905,23 +659,23 @@ export default function SoilPHScreen({ navigation }) {
             {loading && !sensorData && !isGathering && (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#0F5132" />
-                <Text style={styles.loadingText}>{t.fetching}</Text>
+                <Text style={styles.loadingText}>{translate('fetching')}</Text>
               </View>
             )}
 
             {/* Error State */}
             {error && !loading && !connected && (
               <View style={styles.errorCard}>
-                <Text style={styles.errorTitle}>{t.connectionError}</Text>
+                <Text style={styles.errorTitle}>{translate('common.connectionError')}</Text>
                 <Text style={styles.errorText}>{error}</Text>
-                <Text style={styles.errorHint}>{t.errorHint}</Text>
+                <Text style={styles.errorHint}>{translate('errorHint')}</Text>
                 <View style={styles.errorActions}>
                   <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
-                    <Text style={styles.retryButtonText}>{t.retry}</Text>
+                    <Text style={styles.retryButtonText}>{translate('retry')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.connectDeviceButton} onPress={handleConnectDevice}>
                     <Icon name="link" size={20} color="white" />
-                    <Text style={styles.connectDeviceButtonText}>{t.connectDevice}</Text>
+                    <Text style={styles.connectDeviceButtonText}>{translate('connectDevice')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -939,7 +693,7 @@ export default function SoilPHScreen({ navigation }) {
                     ) : (
                       <>
                         <Icon name="refresh" size={18} color="white" />
-                        <Text style={styles.readValuesButtonText}>{t.readValues}</Text>
+                        <Text style={styles.readValuesButtonText}>{translate('readValues')}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -952,17 +706,17 @@ export default function SoilPHScreen({ navigation }) {
               <>
                 <View style={styles.finalAverageBadge}>
                   <Icon name="chart-areaspline" size={18} color="#0F5132" />
-                  <Text style={styles.finalAverageBadgeText}>{t.finalAverage}</Text>
+                  <Text style={styles.finalAverageBadgeText}>{translate('finalAverage')}</Text>
                 </View>
                 <View style={styles.phCard}>
                   <View style={styles.phHeader}>
                     <Icon name="test-tube" size={32} color="#FF9800" />
-                    <Text style={styles.phLabel}>{t.phLevel}</Text>
+                    <Text style={styles.phLabel}>{translate('phLevel')}</Text>
                   </View>
                   <Text style={styles.phValue}>{sensorData.pH.toFixed(1)}</Text>
                   <View style={styles.phStatusBadge}>
                     <Text style={styles.phStatusText}>
-                      {sensorData.pH < 6.5 ? t.acidic : sensorData.pH > 7.5 ? t.alkaline : t.neutral}
+                      {sensorData.pH < 6.5 ? translate('acidic') : sensorData.pH > 7.5 ? translate('alkaline') : translate('neutral')}
                     </Text>
                   </View>
                 </View>
@@ -970,28 +724,28 @@ export default function SoilPHScreen({ navigation }) {
                 <View style={styles.dataGrid}>
                   <View style={styles.dataCard}>
                     <Icon name="water" size={24} color="#2196F3" />
-                    <Text style={styles.dataLabel}>{t.moisture}</Text>
+                    <Text style={styles.dataLabel}>{translate('moisture')}</Text>
                     <Text style={styles.dataValue}>{sensorData.soil_moisture_pct.toFixed(1)}%</Text>
                   </View>
                   <View style={styles.dataCard}>
                     <Icon name="flash" size={24} color="#9C27B0" />
-                    <Text style={styles.dataLabel}>{t.ec}</Text>
+                    <Text style={styles.dataLabel}>{translate('ec')}</Text>
                     <Text style={styles.dataValue}>{sensorData.EC_dS_m.toFixed(2)}</Text>
                   </View>
                   <View style={styles.dataCard}>
                     <Icon name="thermometer" size={24} color="#FF9800" />
-                    <Text style={styles.dataLabel}>{t.temperature}</Text>
+                    <Text style={styles.dataLabel}>{translate('temperature')}</Text>
                     <Text style={styles.dataValue}>{sensorData.soil_temp_C.toFixed(1)}°C</Text>
                   </View>
                   <View style={styles.dataCard}>
                     <Icon name="waves" size={24} color="#00BCD4" />
-                    <Text style={styles.dataLabel}>{t.waterDepth}</Text>
+                    <Text style={styles.dataLabel}>{translate('waterDepth')}</Text>
                     <Text style={styles.dataValue}>{sensorData.water_depth_cm.toFixed(1)} cm</Text>
                   </View>
                 </View>
 
                 <View style={styles.timestampCard}>
-                  <Text style={styles.timestampLabel}>{t.lastUpdated}</Text>
+                  <Text style={styles.timestampLabel}>{translate('lastUpdated')}</Text>
                   <Text style={styles.timestampValue}>
                     {new Date(sensorData.timestamp).toLocaleString()}
                   </Text>
@@ -1002,127 +756,127 @@ export default function SoilPHScreen({ navigation }) {
             {/* Form Section */}
             {sensorData && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.additionalInfo}</Text>
+                <Text style={styles.sectionTitle}>{translate('additionalInfo')}</Text>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>{t.previousCrop}</Text>
+                  <Text style={styles.label}>{translate('previousCrop')}</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
                       selectedValue={formData.prev_crop}
                       onValueChange={(value) => setFormData({ ...formData, prev_crop: value })}
                       style={styles.picker}
                     >
-                      <Picker.Item label={t.cropRice} value="rice" />
-                      <Picker.Item label={t.cropVegetable} value="vegetable" />
-                      <Picker.Item label={t.cropLegume} value="legume" />
+                      <Picker.Item label={translate('cropRice')} value="rice" />
+                      <Picker.Item label={translate('cropVegetable')} value="vegetable" />
+                      <Picker.Item label={translate('cropLegume')} value="legume" />
                     </Picker>
                     <View style={styles.pickerValueOverlay} pointerEvents="none">
                       <Text style={styles.pickerValueText}>
-                        {formData.prev_crop === 'rice' ? t.cropRice : formData.prev_crop === 'vegetable' ? t.cropVegetable : formData.prev_crop === 'fallow' ? t.cropFallow : t.cropLegume}
+                        {formData.prev_crop === 'rice' ? translate('cropRice') : formData.prev_crop === 'vegetable' ? translate('cropVegetable') : formData.prev_crop === 'fallow' ? translate('cropFallow') : translate('cropLegume')}
                       </Text>
                     </View>
                   </View>
                 </View>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>{t.season}</Text>
+                  <Text style={styles.label}>{translate('season')}</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
                       selectedValue={formData.season}
                       onValueChange={(value) => setFormData({ ...formData, season: value })}
                       style={styles.picker}
                     >
-                      <Picker.Item label={t.maha} value="Maha" />
-                      <Picker.Item label={t.yala} value="Yala" />
+                      <Picker.Item label={translate('maha')} value="Maha" />
+                      <Picker.Item label={translate('yala')} value="Yala" />
                     </Picker>
                     <View style={styles.pickerValueOverlay} pointerEvents="none">
-                      <Text style={styles.pickerValueText}>{formData.season === 'Maha' ? t.maha : t.yala}</Text>
+                      <Text style={styles.pickerValueText}>{formData.season === 'Maha' ? translate('maha') : translate('yala')}</Text>
                     </View>
                   </View>
                 </View>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>{t.soilZone}</Text>
+                  <Text style={styles.label}>{translate('soilZone')}</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
                       selectedValue={formData.soil_zone}
                       onValueChange={(value) => setFormData({ ...formData, soil_zone: value })}
                       style={styles.picker}
                     >
-                      <Picker.Item label={t.zoneDry} value="Dry" />
-                      <Picker.Item label={t.zoneIntermediate} value="Intermediate" />
-                      <Picker.Item label={t.zoneWet} value="Wet" />
+                      <Picker.Item label={translate('zoneDry')} value="Dry" />
+                      <Picker.Item label={translate('zoneIntermediate')} value="Intermediate" />
+                      <Picker.Item label={translate('zoneWet')} value="Wet" />
                     </Picker>
                     <View style={styles.pickerValueOverlay} pointerEvents="none">
                       <Text style={styles.pickerValueText}>
-                        {formData.soil_zone === 'Dry' ? t.zoneDry : formData.soil_zone === 'Intermediate' ? t.zoneIntermediate : t.zoneWet}
+                        {formData.soil_zone === 'Dry' ? translate('zoneDry') : formData.soil_zone === 'Intermediate' ? translate('zoneIntermediate') : translate('zoneWet')}
                       </Text>
                     </View>
                   </View>
                 </View>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>{t.waterDepthCm}</Text>
+                  <Text style={styles.label}>{translate('waterDepthCm')}</Text>
                   <View style={styles.textInputRow}>
                     <TextInput
                       style={styles.textInput}
                       value={String(formData.water_depth_cm ?? '')}
-                      placeholder={t.enterWaterDepth}
+                      placeholder={translate('enterWaterDepth')}
                       keyboardType="numeric"
                       onChangeText={(value) => setFormData({ ...formData, water_depth_cm: value })}
                     />
                   </View>
                   <Text style={styles.selectedValue}>
-                    {t.entered}: {formData.water_depth_cm ? `${formData.water_depth_cm} cm` : t.notSet}
+                    {translate('entered')}: {formData.water_depth_cm ? `${formData.water_depth_cm} cm` : translate('notSet')}
                   </Text>
                 </View>
 
                 <View style={styles.formGroup}>
-                  <Text style={styles.label}>{t.soilTexture}</Text>
+                  <Text style={styles.label}>{translate('soilTexture')}</Text>
                   <View style={styles.pickerContainer}>
                     <Picker
                       selectedValue={formData.texture}
                       onValueChange={(value) => setFormData({ ...formData, texture: value })}
                       style={styles.picker}
                     >
-                      <Picker.Item label={t.textureLoamy} value="loamy" />
-                      <Picker.Item label={t.textureSandy} value="sandy" />
-                      <Picker.Item label={t.textureClayey} value="clayey" />
+                      <Picker.Item label={translate('textureLoamy')} value="loamy" />
+                      <Picker.Item label={translate('textureSandy')} value="sandy" />
+                      <Picker.Item label={translate('textureClayey')} value="clayey" />
                     </Picker>
                     <View style={styles.pickerValueOverlay} pointerEvents="none">
                       <Text style={styles.pickerValueText}>
-                        {formData.texture === 'loamy' ? t.textureLoamy : formData.texture === 'sandy' ? t.textureSandy : t.textureClayey}
+                        {formData.texture === 'loamy' ? translate('textureLoamy') : formData.texture === 'sandy' ? translate('textureSandy') : translate('textureClayey')}
                       </Text>
                     </View>
                   </View>
                 </View>
 
                 <View style={styles.formSummaryCard}>
-                  <Text style={styles.formSummaryTitle}>{t.formSummary}</Text>
+                  <Text style={styles.formSummaryTitle}>{translate('formSummary')}</Text>
                   <View style={styles.formSummaryRow}>
-                    <Text style={styles.formSummaryLabel}>{t.previousCrop}:</Text>
+                    <Text style={styles.formSummaryLabel}>{translate('previousCrop')}:</Text>
                     <Text style={styles.formSummaryValue}>
-                      {formData.prev_crop === 'rice' ? t.cropRice : formData.prev_crop === 'vegetable' ? t.cropVegetable : formData.prev_crop === 'fallow' ? t.cropFallow : t.cropLegume}
+                      {formData.prev_crop === 'rice' ? translate('cropRice') : formData.prev_crop === 'vegetable' ? translate('cropVegetable') : formData.prev_crop === 'fallow' ? translate('cropFallow') : translate('cropLegume')}
                     </Text>
                   </View>
                   <View style={styles.formSummaryRow}>
-                    <Text style={styles.formSummaryLabel}>{t.season}:</Text>
-                    <Text style={styles.formSummaryValue}>{formData.season === 'Maha' ? t.maha : t.yala}</Text>
+                    <Text style={styles.formSummaryLabel}>{translate('season')}:</Text>
+                    <Text style={styles.formSummaryValue}>{formData.season === 'Maha' ? translate('maha') : translate('yala')}</Text>
                   </View>
                   <View style={styles.formSummaryRow}>
-                    <Text style={styles.formSummaryLabel}>{t.soilZone}:</Text>
+                    <Text style={styles.formSummaryLabel}>{translate('soilZone')}:</Text>
                     <Text style={styles.formSummaryValue}>
-                      {formData.soil_zone === 'Dry' ? t.zoneDry : formData.soil_zone === 'Intermediate' ? t.zoneIntermediate : t.zoneWet}
+                      {formData.soil_zone === 'Dry' ? translate('zoneDry') : formData.soil_zone === 'Intermediate' ? translate('zoneIntermediate') : translate('zoneWet')}
                     </Text>
                   </View>
                   <View style={styles.formSummaryRow}>
-                    <Text style={styles.formSummaryLabel}>{t.waterDepthCm}:</Text>
+                    <Text style={styles.formSummaryLabel}>{translate('waterDepthCm')}:</Text>
                     <Text style={styles.formSummaryValue}>{formData.water_depth_cm ? `${formData.water_depth_cm}` : '-'}</Text>
                   </View>
                   <View style={styles.formSummaryRow}>
-                    <Text style={styles.formSummaryLabel}>{t.soilTexture}:</Text>
+                    <Text style={styles.formSummaryLabel}>{translate('soilTexture')}:</Text>
                     <Text style={styles.formSummaryValue}>
-                      {formData.texture === 'loamy' ? t.textureLoamy : formData.texture === 'sandy' ? t.textureSandy : t.textureClayey}
+                      {formData.texture === 'loamy' ? translate('textureLoamy') : formData.texture === 'sandy' ? translate('textureSandy') : translate('textureClayey')}
                     </Text>
                   </View>
                 </View>
@@ -1137,7 +891,7 @@ export default function SoilPHScreen({ navigation }) {
                   ) : (
                     <>
                       <Icon name="brain" size={24} color="white" />
-                      <Text style={styles.predictButtonText}>{t.predictRiceVariety}</Text>
+                      <Text style={styles.predictButtonText}>{translate('predictRiceVariety')}</Text>
                     </>
                   )}
                 </TouchableOpacity>
@@ -1147,17 +901,17 @@ export default function SoilPHScreen({ navigation }) {
             {/* Prediction Results */}
             {predictionResult && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t.predictionResults}</Text>
+                <Text style={styles.sectionTitle}>{translate('predictionResults')}</Text>
                 <View style={styles.bestVarietyCard}>
                   <Icon name="trophy" size={32} color="#FFD700" />
-                  <Text style={styles.bestVarietyLabel}>{t.bestVariety}</Text>
+                  <Text style={styles.bestVarietyLabel}>{translate('bestVariety')}</Text>
                   <Text style={styles.bestVarietyName}>{predictionResult.best_variety}</Text>
                   <Text style={styles.expectedYield}>
-                    {t.expectedYield}: {predictionResult.expected_yield.toFixed(0)} {t.kgHa}
+                    {translate('expectedYield')}: {predictionResult.expected_yield.toFixed(0)} {translate('kgHa')}
                   </Text>
                 </View>
                 <View style={styles.recommendationsCard}>
-                  <Text style={styles.recommendationsTitle}>{t.topRecommendations}</Text>
+                  <Text style={styles.recommendationsTitle}>{translate('topRecommendations')}</Text>
                   {predictionResult.recommendations?.map((rec, index) => (
                     <View key={index} style={styles.recommendationItem}>
                       <View style={styles.rankBadge}>
@@ -1166,7 +920,7 @@ export default function SoilPHScreen({ navigation }) {
                       <View style={styles.recommendationInfo}>
                         <Text style={styles.recommendationVariety}>{rec.variety}</Text>
                         <Text style={styles.recommendationYield}>
-                          {rec.predicted_yield.toFixed(0)} {t.kgHa}
+                          {rec.predicted_yield.toFixed(0)} {translate('kgHa')}
                         </Text>
                       </View>
                     </View>
@@ -1179,11 +933,11 @@ export default function SoilPHScreen({ navigation }) {
             {!sensorData && !loading && !error && !connectedDevice && (
               <View style={styles.emptyState}>
                 <Icon name="bluetooth-off" size={64} color="#CCC" />
-                <Text style={styles.emptyStateTitle}>{t.noDeviceTitle}</Text>
-                <Text style={styles.emptyStateText}>{t.noDeviceText}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('noDeviceTitle')}</Text>
+                <Text style={styles.emptyStateText}>{translate('noDeviceText')}</Text>
                 <TouchableOpacity style={styles.emptyStateButton} onPress={handleConnectDevice}>
                   <Icon name="link" size={24} color="white" />
-                  <Text style={styles.emptyStateButtonText}>{t.connectDevice}</Text>
+                  <Text style={styles.emptyStateButtonText}>{translate('connectDevice')}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -1192,9 +946,9 @@ export default function SoilPHScreen({ navigation }) {
             {connected && connectedDevice && !sensorData && !loading && !error && currentStep === 0 && (
               <View style={styles.emptyState}>
                 <Icon name="bluetooth-connect" size={64} color="#4CAF50" />
-                <Text style={styles.emptyStateTitle}>{t.deviceConnected}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('deviceConnected')}</Text>
                 <Text style={styles.emptyStateText}>
-                  {t.pressReadValues}{'\n'}{t.zeroValuesFiltered}
+                  {translate('pressReadValues')}{'\n'}{translate('zeroValuesFiltered')}
                 </Text>
                 <TouchableOpacity style={styles.emptyStateButton} onPress={fetchData} disabled={loading}>
                   {loading ? (
@@ -1202,7 +956,7 @@ export default function SoilPHScreen({ navigation }) {
                   ) : (
                     <>
                       <Icon name="refresh" size={24} color="white" />
-                      <Text style={styles.emptyStateButtonText}>{t.readValues}</Text>
+                      <Text style={styles.emptyStateButtonText}>{translate('readValues')}</Text>
                     </>
                   )}
                 </TouchableOpacity>

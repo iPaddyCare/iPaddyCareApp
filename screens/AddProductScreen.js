@@ -18,6 +18,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Image } from 'react-native';
@@ -33,201 +35,6 @@ import PriceQuantitySheet from '../src/components/PriceQuantitySheet';
 const { width, height } = Dimensions.get('window');
 
 const UNIT_OPTIONS = ['kg', 'bags', 'litres', 'bundles', 'units'];
-
-const translations = {
-  English: {
-    title: 'Add Product',
-    subtitle: 'List your paddy product for sale',
-    productName: 'Product Name',
-    productNamePlaceholder: 'e.g., Premium Paddy Seeds',
-    category: 'Category',
-    selectCategory: 'Select Category',
-    price: 'Price',
-    pricePlaceholder: 'Enter price',
-    description: 'Description',
-    descriptionPlaceholder: 'Describe your product...',
-    location: 'Location',
-    locationPlaceholder: 'Select city',
-    contactInfo: 'Contact Information',
-    phone: 'Phone Number',
-    phonePlaceholder: 'Enter your phone number',
-    addImage: 'Add Product Image',
-    imageOptional: 'Optional',
-    submit: 'Submit Listing',
-    cancel: 'Cancel',
-    success: 'Product Submitted!',
-    successMessage: 'Your product has been submitted and is pending officer approval.',
-    pendingApprovalMessage: 'Your product has been submitted and is pending officer approval. You will be notified once it is approved.',
-    error: 'Error',
-    fillAllFields: 'Please fill all required fields',
-    invalidPrice: 'Please enter a valid price',
-    selectCategoryError: 'Please select a category',
-    invalidQuantity: 'Please enter a valid quantity',
-    requiredActiveIngredient: 'Active ingredient is required for pesticides/herbicides',
-    requiredTargetDiseases: 'Select at least one target disease/pest',
-    minName: 'Product name must be at least 3 characters',
-    minDescription: 'Description must be at least 10 characters',
-    maxPrice: 'Price cannot exceed Rs. 9,999,999',
-    invalidPhone: 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)',
-    activeIngredient: 'Active Ingredient / Chemical Composition',
-    activeIngredientHint: 'e.g., Mancozeb 64% + Metalaxyl 8% WP',
-    activeIngredientPlaceholder: 'Enter chemical composition',
-    targetDiseases: 'Target Diseases / Pests',
-    targetDiseasesHint: 'Select which diseases or pests this product treats',
-    selectDiseases: 'Select diseases / pests',
-    nSelected: '{0} selected',
-    suggest: 'Suggest',
-    priceAndQuantity: 'Price & Quantity',
-    quantityLabel: 'Quantity',
-    priceLabel: 'Price',
-    tapAddPhoto: 'Tap to add photo',
-    aiSuggestNoSignal: 'Fill in product name, active ingredient, or description first so we can suggest diseases.',
-    aiNotEnoughInfo: 'Not enough info',
-    aiUnavailable: 'AI unavailable',
-    aiUnavailableMsg: 'OpenAI key not configured. Add OPENAI_API_KEY to your .env file to enable suggestions.',
-    aiNoMatches: 'No confident matches',
-    aiNoMatchesMsg: 'The AI could not confidently match this product to any disease. Try adding more detail to the active ingredient or description.',
-    aiAlreadyTagged: 'Already tagged',
-    aiAlreadyTaggedMsg: 'The AI suggested only diseases you have already selected.',
-    aiSuggestionsAdded: 'Suggestions added',
-    aiAddedPrefix: 'Added: ',
-    aiSuggestionFailed: 'Suggestion failed',
-    aiCouldNotReach: 'Could not reach the AI service.',
-    accessRestricted: 'Access Restricted',
-    officersCannotList: 'Officers cannot list products in the marketplace.',
-    failedSubmit: 'Failed to submit product. Please try again.',
-    selectUnit: 'Select Unit',
-    selectDiseasesHeader: 'Select Diseases / Pests',
-  },
-  සිංහල: {
-    title: 'නිෂ්පාදනයක් එක් කරන්න',
-    subtitle: 'ඔබේ වී නිෂ්පාදනය විකිණීමට ලැයිස්තුගත කරන්න',
-    productName: 'නිෂ්පාදන නම',
-    productNamePlaceholder: 'උදා: විශේෂ වී බීජ',
-    category: 'කාණ්ඩය',
-    selectCategory: 'කාණ්ඩයක් තෝරන්න',
-    price: 'මිල',
-    pricePlaceholder: 'මිල ඇතුළත් කරන්න',
-    description: 'විස්තරය',
-    descriptionPlaceholder: 'ඔබේ නිෂ්පාදනය විස්තර කරන්න...',
-    location: 'ස්ථානය',
-    locationPlaceholder: 'දිස්ත්‍රික්කය තෝරන්න',
-    contactInfo: 'සම්බන්ධතා තොරතුරු',
-    phone: 'දුරකථන අංකය',
-    phonePlaceholder: 'ඔබේ දුරකථන අංකය ඇතුළත් කරන්න',
-    addImage: 'නිෂ්පාදන රූපය එක් කරන්න',
-    imageOptional: 'විකල්ප',
-    submit: 'ලැයිස්තුව ඉදිරිපත් කරන්න',
-    cancel: 'අවලංගු කරන්න',
-    success: 'නිෂ්පාදනය ඉදිරිපත් කරන ලදී!',
-    successMessage: 'ඔබේ නිෂ්පාදනය ඉදිරිපත් කරන ලද අතර නිලධාරී අනුමත කිරීමට අපේක්ෂාවෙන් පවතී.',
-    pendingApprovalMessage: 'ඔබේ නිෂ්පාදනය ඉදිරිපත් කරන ලද අතර නිලධාරී අනුමත කිරීමට අපේක්ෂාවෙන් පවතී. එය අනුමත කරන විට ඔබට දැනුම් දෙනු ලැබේ.',
-    error: 'දෝෂය',
-    fillAllFields: 'කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න',
-    invalidPrice: 'කරුණාකර වලංගු මිලක් ඇතුළත් කරන්න',
-    selectCategoryError: 'කරුණාකර කාණ්ඩයක් තෝරන්න',
-    invalidQuantity: 'කරුණාකර වලංගු ප්‍රමාණයක් ඇතුළත් කරන්න',
-    requiredActiveIngredient: 'කෘමිනාශක/වල් නාශක සඳහා ක්‍රියාකාරී අමිල අවශ්‍ය වේ',
-    requiredTargetDiseases: 'අවම වශයෙන් එක් ඉලක්ක රෝගයක්/පළිඹු වර්ගයක් තෝරන්න',
-    minName: 'නිෂ්පාදන නම අවම වශයෙන් අකුරු 3ක් විය යුතුය',
-    minDescription: 'විස්තරය අවම වශයෙන් අකුරු 10ක් විය යුතුය',
-    maxPrice: 'මිල රු. 9,999,999 ඉක්මවිය නොහැක',
-    invalidPhone: 'කරුණාකර වලංගු ශ්‍රී ලංකා දුරකථන අංකයක් ඇතුළත් කරන්න (උදා: 0771234567)',
-    activeIngredient: 'ක්‍රියාකාරී අමුද්‍රව්‍ය / රසායනික සංයුතිය',
-    activeIngredientHint: 'උදා: මැන්කොසෙබ් 64% + මෙටලැක්සිල් 8% WP',
-    activeIngredientPlaceholder: 'රසායනික සංයුතිය ඇතුළත් කරන්න',
-    targetDiseases: 'ඉලක්ක රෝග / කෘමීන්',
-    targetDiseasesHint: 'මෙම නිෂ්පාදනය ප්‍රතිකාර කරන රෝග හෝ කෘමීන් තෝරන්න',
-    selectDiseases: 'රෝග / කෘමීන් තෝරන්න',
-    nSelected: '{0} ක් තෝරා ඇත',
-    suggest: 'යෝජනා කරන්න',
-    priceAndQuantity: 'මිල සහ ප්‍රමාණය',
-    quantityLabel: 'ප්‍රමාණය',
-    priceLabel: 'මිල',
-    tapAddPhoto: 'ඡායාරූපය එක් කිරීමට ස්පර්ශ කරන්න',
-    aiSuggestNoSignal: 'යෝජනා කිරීමට පළමුව නිෂ්පාදන නම, ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරය පුරවන්න.',
-    aiNotEnoughInfo: 'ප්‍රමාණවත් තොරතුරු නැත',
-    aiUnavailable: 'AI ලබා ගත නොහැක',
-    aiUnavailableMsg: 'OpenAI යතුර වින්‍යාසගත කර නැත. යෝජනා සක්‍රීය කිරීමට .env ගොනුවට OPENAI_API_KEY එක් කරන්න.',
-    aiNoMatches: 'විශ්වාසනීය ගැළපීම් නැත',
-    aiNoMatchesMsg: 'AI හට මෙම නිෂ්පාදනය කිසිම රෝගයකට විශ්වාසනීයව ගැළපීමට නොහැකි විය. ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරයට වැඩිපුර තොරතුරු එක් කරන්න.',
-    aiAlreadyTagged: 'දැනටමත් ටැග් කර ඇත',
-    aiAlreadyTaggedMsg: 'AI විසින් යෝජනා කළේ ඔබ දැනටමත් තෝරාගෙන ඇති රෝග පමණි.',
-    aiSuggestionsAdded: 'යෝජනා එක් කරන ලදී',
-    aiAddedPrefix: 'එක් කරන ලදී: ',
-    aiSuggestionFailed: 'යෝජනා අසාර්ථකයි',
-    aiCouldNotReach: 'AI සේවාවට සම්බන්ධ වීමට නොහැකි විය.',
-    accessRestricted: 'ප්‍රවේශය සීමා කර ඇත',
-    officersCannotList: 'නිලධාරීන්ට වෙළඳපොළේ නිෂ්පාදන ලැයිස්තුගත කළ නොහැක.',
-    failedSubmit: 'නිෂ්පාදනය ඉදිරිපත් කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
-    selectUnit: 'ඒකකය තෝරන්න',
-    selectDiseasesHeader: 'රෝග / කෘමීන් තෝරන්න',
-  },
-  தமிழ்: {
-    title: 'தயாரிப்பைச் சேர்க்கவும்',
-    subtitle: 'உங்கள் நெல் தயாரிப்பை விற்பனைக்கு பட்டியலிடுங்கள்',
-    productName: 'தயாரிப்பு பெயர்',
-    productNamePlaceholder: 'எ.கா., பிரீமியம் நெல் விதைகள்',
-    category: 'வகை',
-    selectCategory: 'வகையைத் தேர்ந்தெடுக்கவும்',
-    price: 'விலை',
-    pricePlaceholder: 'விலையை உள்ளிடவும்',
-    description: 'விளக்கம்',
-    descriptionPlaceholder: 'உங்கள் தயாரிப்பை விவரிக்கவும்...',
-    location: 'இடம்',
-    locationPlaceholder: 'மாவட்டத்தைத் தேர்ந்தெடுக்கவும்',
-    contactInfo: 'தொடர்பு தகவல்',
-    phone: 'தொலைபேசி எண்',
-    phonePlaceholder: 'உங்கள் தொலைபேசி எண்ணை உள்ளிடவும்',
-    addImage: 'தயாரிப்பு படத்தைச் சேர்க்கவும்',
-    imageOptional: 'விருப்பமானது',
-    submit: 'பட்டியலை சமர்ப்பிக்கவும்',
-    cancel: 'ரத்துசெய்',
-    success: 'தயாரிப்பு சமர்ப்பிக்கப்பட்டது!',
-    successMessage: 'உங்கள் தயாரிப்பு சமர்ப்பிக்கப்பட்டு அதிகாரி அனுமதிக்காக நிலுவையில் உள்ளது.',
-    pendingApprovalMessage: 'உங்கள் தயாரிப்பு சமர்ப்பிக்கப்பட்டு அதிகாரி அனுமதிக்காக நிலுவையில் உள்ளது. அது அனுமதிக்கப்படும்போது உங்களுக்கு அறிவிக்கப்படும்.',
-    error: 'பிழை',
-    fillAllFields: 'தயவுசெய்து அனைத்து தேவையான புலங்களையும் நிரப்பவும்',
-    invalidPrice: 'தயவுசெய்து சரியான விலையை உள்ளிடவும்',
-    selectCategoryError: 'தயவுசெய்து வகையைத் தேர்ந்தெடுக்கவும்',
-    invalidQuantity: 'தயவுசெய்து சரியான அளவை உள்ளிடவும்',
-    requiredActiveIngredient: 'பூச்சிக்கொல்லிகள்/களைக்கொல்லிகளுக்கு செயலில் உள்ள பொருள் தேவை',
-    requiredTargetDiseases: 'குறைந்தது ஒரு இலக்கு நோய்/பூச்சியைத் தேர்ந்தெடுக்கவும்',
-    minName: 'தயாரிப்பு பெயர் குறைந்தது 3 எழுத்துகளாக இருக்க வேண்டும்',
-    minDescription: 'விளக்கம் குறைந்தது 10 எழுத்துகளாக இருக்க வேண்டும்',
-    maxPrice: 'விலை ரூ. 9,999,999 ஐ தாண்டக்கூடாது',
-    invalidPhone: 'தயவுசெய்து சரியான இலங்கை தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா., 0771234567)',
-    activeIngredient: 'செயலில் உள்ள பொருள் / இரசாயன கலவை',
-    activeIngredientHint: 'எ.கா., மான்கோசெப் 64% + மெட்டாலாக்சில் 8% WP',
-    activeIngredientPlaceholder: 'இரசாயன கலவையை உள்ளிடவும்',
-    targetDiseases: 'இலக்கு நோய்கள் / பூச்சிகள்',
-    targetDiseasesHint: 'இந்த தயாரிப்பு எந்த நோய்கள் அல்லது பூச்சிகளுக்கு சிகிச்சை அளிக்கிறது என்பதைத் தேர்ந்தெடுக்கவும்',
-    selectDiseases: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
-    nSelected: '{0} தேர்ந்தெடுக்கப்பட்டது',
-    suggest: 'பரிந்துரை',
-    priceAndQuantity: 'விலை & அளவு',
-    quantityLabel: 'அளவு',
-    priceLabel: 'விலை',
-    tapAddPhoto: 'புகைப்படத்தைச் சேர்க்க தொடவும்',
-    aiSuggestNoSignal: 'நாங்கள் நோய்களை பரிந்துரைக்க முதலில் தயாரிப்பு பெயர், செயலில் உள்ள பொருள் அல்லது விளக்கத்தை நிரப்பவும்.',
-    aiNotEnoughInfo: 'போதிய தகவல் இல்லை',
-    aiUnavailable: 'AI கிடைக்கவில்லை',
-    aiUnavailableMsg: 'OpenAI விசை உள்ளமைக்கப்படவில்லை. பரிந்துரைகளை இயக்க .env கோப்பில் OPENAI_API_KEY ஐச் சேர்க்கவும்.',
-    aiNoMatches: 'நம்பகமான பொருத்தங்கள் இல்லை',
-    aiNoMatchesMsg: 'இந்த தயாரிப்பை எந்த நோய்க்கும் நம்பகமாக பொருத்த AI ஆல் முடியவில்லை. செயலில் உள்ள பொருள் அல்லது விளக்கத்தில் கூடுதல் விவரங்களைச் சேர்க்க முயற்சிக்கவும்.',
-    aiAlreadyTagged: 'ஏற்கனவே குறிக்கப்பட்டது',
-    aiAlreadyTaggedMsg: 'AI நீங்கள் ஏற்கனவே தேர்ந்தெடுத்த நோய்களை மட்டுமே பரிந்துரைத்தது.',
-    aiSuggestionsAdded: 'பரிந்துரைகள் சேர்க்கப்பட்டன',
-    aiAddedPrefix: 'சேர்க்கப்பட்டது: ',
-    aiSuggestionFailed: 'பரிந்துரை தோல்வியடைந்தது',
-    aiCouldNotReach: 'AI சேவையை அடைய முடியவில்லை.',
-    accessRestricted: 'அணுகல் கட்டுப்படுத்தப்பட்டது',
-    officersCannotList: 'அதிகாரிகள் சந்தையில் தயாரிப்புகளை பட்டியலிட முடியாது.',
-    failedSubmit: 'தயாரிப்பை சமர்ப்பிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
-    selectUnit: 'அலகைத் தேர்ந்தெடுக்கவும்',
-    selectDiseasesHeader: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
-  },
-};
 
 const DISEASE_OPTIONS = [
   'Blast (Magnaporthe grisea)',
@@ -264,9 +71,9 @@ const categories = [
 
 export default function AddProductScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('addProduct');
   const { user, isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const scrollRef = useRef(null);
@@ -342,8 +149,8 @@ export default function AddProductScreen({ navigation }) {
   React.useEffect(() => {
     if (isOfficer) {
       showAppAlert(
-        t.accessRestricted,
-        t.officersCannotList,
+        translate('common.accessRestricted'),
+        translate('officersCannotList'),
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
       return;
@@ -400,14 +207,14 @@ export default function AddProductScreen({ navigation }) {
       formData.activeIngredient.trim() ||
       formData.description.trim();
     if (!hasSignal) {
-      showAppAlert(t.aiNotEnoughInfo, t.aiSuggestNoSignal);
+      showAppAlert(translate('aiNotEnoughInfo'), translate('aiSuggestNoSignal'));
       return;
     }
 
     if (!llmService.isInitialized()) {
       const ok = await llmService.loadFromStorage().catch(() => false);
       if (!ok) {
-        showAppAlert(t.aiUnavailable, t.aiUnavailableMsg);
+        showAppAlert(translate('aiUnavailable'), translate('aiUnavailableMsg'));
         return;
       }
     }
@@ -425,7 +232,7 @@ export default function AddProductScreen({ navigation }) {
       );
 
       if (suggested.length === 0) {
-        showAppAlert(t.aiNoMatches, t.aiNoMatchesMsg);
+        showAppAlert(translate('aiNoMatches'), translate('aiNoMatchesMsg'));
         return;
       }
 
@@ -433,7 +240,7 @@ export default function AddProductScreen({ navigation }) {
       const existing = new Set(formData.targetDiseases);
       const added = suggested.filter(d => !existing.has(d));
       if (added.length === 0) {
-        showAppAlert(t.aiAlreadyTagged, t.aiAlreadyTaggedMsg);
+        showAppAlert(translate('aiAlreadyTagged'), translate('aiAlreadyTaggedMsg'));
         return;
       }
 
@@ -442,10 +249,10 @@ export default function AddProductScreen({ navigation }) {
         targetDiseases: [...prev.targetDiseases, ...added],
       }));
       setFieldErrors(prev => ({ ...prev, targetDiseases: undefined }));
-      showAppAlert(t.aiSuggestionsAdded, `${t.aiAddedPrefix}${added.join(', ')}`);
+      showAppAlert(translate('aiSuggestionsAdded'), `${translate('aiAddedPrefix')}${added.join(', ')}`);
     } catch (err) {
       console.error('[AddProduct] disease suggestion failed:', err);
-      showAppAlert(t.aiSuggestionFailed, err?.message || t.aiCouldNotReach);
+      showAppAlert(translate('aiSuggestionFailed'), err?.message || translate('aiCouldNotReach'));
     } finally {
       setSuggestingDiseases(false);
     }
@@ -464,51 +271,51 @@ export default function AddProductScreen({ navigation }) {
     const errors = {};
 
     if (!formData.productName.trim()) {
-      errors.productName = t.fillAllFields;
+      errors.productName = translate('fillAllFields');
     } else if (formData.productName.trim().length < 3) {
-      errors.productName = t.minName;
+      errors.productName = translate('minName');
     }
 
     if (!formData.category) {
-      errors.category = t.selectCategoryError;
+      errors.category = translate('selectCategoryError');
     }
 
     if (showDiseaseField && formData.targetDiseases.length === 0) {
-      errors.targetDiseases = t.requiredTargetDiseases;
+      errors.targetDiseases = translate('requiredTargetDiseases');
     }
 
     if (showDiseaseField && !formData.activeIngredient.trim()) {
-      errors.activeIngredient = t.requiredActiveIngredient;
+      errors.activeIngredient = translate('requiredActiveIngredient');
     }
 
     const priceNum = parseFloat(formData.price);
     if (!formData.price.trim() || isNaN(priceNum) || priceNum <= 0) {
-      errors.price = t.invalidPrice;
+      errors.price = translate('invalidPrice');
     } else if (priceNum > 9999999) {
-      errors.price = t.maxPrice;
+      errors.price = translate('maxPrice');
     }
 
     const qtyNum = parseInt(formData.quantity, 10);
     if (!formData.quantity.trim() || isNaN(qtyNum) || qtyNum < 0) {
-      errors.quantity = t.invalidQuantity;
+      errors.quantity = translate('invalidQuantity');
     }
 
     if (!formData.description.trim()) {
-      errors.description = t.fillAllFields;
+      errors.description = translate('fillAllFields');
     } else if (formData.description.trim().length < 10) {
-      errors.description = t.minDescription;
+      errors.description = translate('minDescription');
     }
 
     if (!formData.location) {
-      errors.location = t.fillAllFields;
+      errors.location = translate('fillAllFields');
     }
 
     if (!formData.phone.trim()) {
-      errors.phone = t.fillAllFields;
+      errors.phone = translate('fillAllFields');
     } else {
       const phoneClean = formData.phone.replace(/\s/g, '');
       if (!/^0\d{9}$/.test(phoneClean)) {
-        errors.phone = t.invalidPhone;
+        errors.phone = translate('invalidPhone');
       }
     }
 
@@ -533,7 +340,7 @@ export default function AddProductScreen({ navigation }) {
     } catch (error) {
       setImageUploading(false);
       console.error('Error adding product:', error);
-      showAppAlert(t.error, t.failedSubmit);
+      showAppAlert(translate('common.error'), translate('failedSubmit'));
     } finally {
       setSubmitting(false);
     }
@@ -589,8 +396,8 @@ export default function AddProductScreen({ navigation }) {
                 <Icon name="arrow-left" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
-                <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
+                <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
               </View>
               <View style={styles.headerSpacer} />
             </View>
@@ -599,10 +406,10 @@ export default function AddProductScreen({ navigation }) {
           <View style={styles.innerContent}>
             {/* Product Name */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.productName}</Text>
+              <Text style={styles.label}>{translate('common.productName')}</Text>
               <TextInput
                 style={inputStyle('productName')}
-                placeholder={t.productNamePlaceholder}
+                placeholder={translate('productNamePlaceholder')}
                 placeholderTextColor="#999"
                 value={formData.productName}
                 onChangeText={(text) => setField('productName', text)}
@@ -614,14 +421,14 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Category */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.category}</Text>
+              <Text style={styles.label}>{translate('category')}</Text>
               <TouchableOpacity
                 style={selectorStyle('category')}
                 onPress={() => setShowCategoryPicker(!showCategoryPicker)}
                 activeOpacity={0.7}
               >
                 <Text style={[styles.categoryText, !formData.category && styles.categoryPlaceholder]}>
-                  {formData.category ? selectedCategoryLabel : t.selectCategory}
+                  {formData.category ? selectedCategoryLabel : translate('selectCategory')}
                 </Text>
                 <Icon name="chevron-down" size={24} color="#666" />
               </TouchableOpacity>
@@ -634,11 +441,11 @@ export default function AddProductScreen({ navigation }) {
                 Sits above Target Diseases so it can power the AI Suggest button below. */}
             {showDiseaseField && (
               <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                <Text style={styles.label}>{t.activeIngredient}</Text>
-                <Text style={styles.optionalLabel}>{t.activeIngredientHint}</Text>
+                <Text style={styles.label}>{translate('activeIngredient')}</Text>
+                <Text style={styles.optionalLabel}>{translate('activeIngredientHint')}</Text>
                 <TextInput
                   style={inputStyle('activeIngredient')}
-                  placeholder={t.activeIngredientPlaceholder}
+                  placeholder={translate('activeIngredientPlaceholder')}
                   placeholderTextColor="#999"
                   value={formData.activeIngredient}
                   onChangeText={(text) => setField('activeIngredient', text)}
@@ -655,8 +462,8 @@ export default function AddProductScreen({ navigation }) {
               <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
                 <View style={styles.suggestRow}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.label}>{t.targetDiseases}</Text>
-                    <Text style={styles.optionalLabel}>{t.targetDiseasesHint}</Text>
+                    <Text style={styles.label}>{translate('targetDiseases')}</Text>
+                    <Text style={styles.optionalLabel}>{translate('targetDiseasesHint')}</Text>
                   </View>
                   <TouchableOpacity
                     style={[styles.suggestBtn, suggestingDiseases && styles.suggestBtnDisabled]}
@@ -669,7 +476,7 @@ export default function AddProductScreen({ navigation }) {
                     ) : (
                       <>
                         <Icon name="auto-fix" size={16} color="#0F5132" />
-                        <Text style={styles.suggestBtnText}>{t.suggest}</Text>
+                        <Text style={styles.suggestBtnText}>{translate('suggest')}</Text>
                       </>
                     )}
                   </TouchableOpacity>
@@ -681,8 +488,8 @@ export default function AddProductScreen({ navigation }) {
                 >
                   <Text style={[styles.categoryText, formData.targetDiseases.length === 0 && styles.categoryPlaceholder]}>
                     {formData.targetDiseases.length > 0
-                      ? t.nSelected.replace('{0}', formData.targetDiseases.length)
-                      : t.selectDiseases}
+                      ? translate('nSelected').replace('{0}', formData.targetDiseases.length)
+                      : translate('selectDiseases')}
                   </Text>
                   <Icon name={showDiseasePicker ? 'chevron-up' : 'chevron-down'} size={24} color="#666" />
                 </TouchableOpacity>
@@ -710,7 +517,7 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Price + Quantity + Unit — tappable summary opens an alarm-style wheel sheet */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.priceAndQuantity}</Text>
+              <Text style={styles.label}>{translate('priceAndQuantity')}</Text>
               <TouchableOpacity
                 style={[
                   styles.priceQtySummary,
@@ -723,14 +530,14 @@ export default function AddProductScreen({ navigation }) {
                 activeOpacity={0.7}
               >
                 <View style={styles.priceQtyCol}>
-                  <Text style={styles.priceQtyHint}>{t.priceLabel}</Text>
+                  <Text style={styles.priceQtyHint}>{translate('priceLabel')}</Text>
                   <Text style={styles.priceQtyValue}>
                     Rs. {formData.price ? Number(formData.price).toLocaleString() : '—'}
                   </Text>
                 </View>
                 <View style={styles.priceQtyDivider} />
                 <View style={styles.priceQtyCol}>
-                  <Text style={styles.priceQtyHint}>{t.quantityLabel}</Text>
+                  <Text style={styles.priceQtyHint}>{translate('quantityLabel')}</Text>
                   <Text style={styles.priceQtyValue}>
                     {formData.quantity !== undefined && formData.quantity !== null && formData.quantity !== ''
                       ? `${formData.quantity} ${formData.unit}`
@@ -748,10 +555,10 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Description */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.description}</Text>
+              <Text style={styles.label}>{translate('description')}</Text>
               <TextInput
                 style={[inputStyle('description'), styles.textArea]}
-                placeholder={t.descriptionPlaceholder}
+                placeholder={translate('descriptionPlaceholder')}
                 placeholderTextColor="#999"
                 value={formData.description}
                 onChangeText={(text) => setField('description', text)}
@@ -767,7 +574,7 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Location — city picker */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.location}</Text>
+              <Text style={styles.label}>{translate('common.location')}</Text>
               <TouchableOpacity
                 style={selectorStyle('location')}
                 onPress={() => {
@@ -778,7 +585,7 @@ export default function AddProductScreen({ navigation }) {
               >
                 <Icon name="map-marker" size={18} color={formData.location ? '#0F5132' : '#999'} style={{ marginRight: 8 }} />
                 <Text style={[styles.categoryText, !formData.location && styles.categoryPlaceholder]}>
-                  {formData.location || t.locationPlaceholder}
+                  {formData.location || translate('locationPlaceholder')}
                 </Text>
                 <Icon name="chevron-down" size={24} color="#666" />
               </TouchableOpacity>
@@ -792,8 +599,8 @@ export default function AddProductScreen({ navigation }) {
               ref={phoneRowRef}
               style={[styles.section, { opacity: fadeAnim }]}
             >
-              <Text style={styles.sectionTitle}>{t.contactInfo}</Text>
-              <Text style={styles.label}>{t.phone}</Text>
+              <Text style={styles.sectionTitle}>{translate('contactInfo')}</Text>
+              <Text style={styles.label}>{translate('phone')}</Text>
               <PhoneInput
                 value={formData.phone}
                 onChangeText={(next) => setField('phone', next)}
@@ -817,7 +624,7 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Product Image */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.addImage} <Text style={styles.optionalLabel}>({t.imageOptional})</Text></Text>
+              <Text style={styles.label}>{translate('addImage')} <Text style={styles.optionalLabel}>({translate('imageOptional')})</Text></Text>
               <View style={styles.imagePickerWrapper}>
                 <TouchableOpacity
                   style={styles.imagePicker}
@@ -829,7 +636,7 @@ export default function AddProductScreen({ navigation }) {
                   ) : (
                     <View style={styles.imagePlaceholder}>
                       <Icon name="camera-plus" size={32} color="#0F5132" />
-                      <Text style={styles.imagePlaceholderText}>{t.tapAddPhoto}</Text>
+                      <Text style={styles.imagePlaceholderText}>{translate('tapAddPhoto')}</Text>
                     </View>
                   )}
                 </TouchableOpacity>
@@ -856,7 +663,7 @@ export default function AddProductScreen({ navigation }) {
               >
                 <Icon name={(submitting || imageUploading) ? 'loading' : 'check-circle'} size={24} color="#FFFFFF" />
                 <Text style={styles.submitButtonText}>
-                  {imageUploading ? 'Uploading image...' : submitting ? 'Submitting...' : t.submit}
+                  {imageUploading ? 'Uploading image...' : submitting ? 'Submitting...' : translate('submit')}
                 </Text>
               </TouchableOpacity>
             </Animated.View>
@@ -881,7 +688,7 @@ export default function AddProductScreen({ navigation }) {
           <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.sheetDragHandle} />
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{t.selectCategory}</Text>
+              <Text style={styles.sheetTitle}>{translate('selectCategory')}</Text>
               <TouchableOpacity
                 style={styles.sheetCloseBtn}
                 onPress={() => setShowCategoryPicker(false)}
@@ -933,7 +740,7 @@ export default function AddProductScreen({ navigation }) {
           <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.sheetDragHandle} />
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{t.selectUnit}</Text>
+              <Text style={styles.sheetTitle}>{translate('selectUnit')}</Text>
               <TouchableOpacity
                 style={styles.sheetCloseBtn}
                 onPress={() => setShowUnitPicker(false)}
@@ -985,7 +792,7 @@ export default function AddProductScreen({ navigation }) {
           <View style={[styles.sheet, styles.sheetTall, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <View style={styles.sheetDragHandle} />
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>{t.selectDiseasesHeader}</Text>
+              <Text style={styles.sheetTitle}>{translate('selectDiseasesHeader')}</Text>
               <TouchableOpacity
                 style={styles.sheetCloseBtn}
                 onPress={() => setShowDiseasePicker(false)}
@@ -1069,9 +876,9 @@ export default function AddProductScreen({ navigation }) {
             <View style={styles.successIconCircle}>
               <Icon name="check-bold" size={40} color="#FFFFFF" />
             </View>
-            <Text style={styles.successTitle}>{t.success}</Text>
+            <Text style={styles.successTitle}>{translate('success')}</Text>
             <Text style={styles.successMessage}>
-              {t.pendingApprovalMessage || t.successMessage}
+              {translate('pendingApprovalMessage') || translate('successMessage')}
             </Text>
             <View style={styles.successInfoRow}>
               <Icon name="clock-outline" size={16} color="#6B8F7B" />

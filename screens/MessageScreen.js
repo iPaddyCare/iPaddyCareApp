@@ -14,85 +14,13 @@ import {
 } from 'react-native';
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { sendMessage, subscribeToMessages, markAsRead } from '../src/services/messagingService';
 
 const { width, height } = Dimensions.get('window');
-
-// Language translations
-const translations = {
-  English: {
-    typeMessage: 'Type a message...',
-    send: 'Send',
-    online: 'Online',
-    offline: 'Offline',
-    shareTestHistory: 'Share Test History',
-    selectTests: 'Select tests to share',
-    sendTestHistory: 'Send Test History',
-    testHistoryShared: 'Test History Shared',
-    testHistorySharedDesc: 'Test history has been shared',
-    noMessages: 'No messages yet',
-    noMessagesDesc: 'Start the conversation by sending a message',
-    attachment: 'Attachment',
-    sending: 'Sending...',
-    loginRequired: 'Login Required',
-    loginRequiredMsg: 'Please login to send messages.',
-    cancel: 'Cancel',
-    loginBtn: 'Login',
-    error: 'Error',
-    failedToSend: 'Failed to send message. Please try again.',
-    today: 'Today',
-    yesterday: 'Yesterday',
-  },
-  සිංහල: {
-    typeMessage: 'පණිවිඩයක් ටයිප් කරන්න...',
-    send: 'යවන්න',
-    online: 'සබැඳි',
-    offline: 'අසබැඳි',
-    shareTestHistory: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්න',
-    selectTests: 'බෙදාගැනීමට පරීක්ෂණ තෝරන්න',
-    sendTestHistory: 'පරීක්ෂණ ඉතිහාසය යවන්න',
-    testHistoryShared: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්නා ලදී',
-    testHistorySharedDesc: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්නා ලදී',
-    noMessages: 'තවමත් පණිවිඩ නොමැත',
-    noMessagesDesc: 'පණිවිඩයක් යවමින් සංවාදය ආරම්භ කරන්න',
-    attachment: 'ඇමුණුම',
-    sending: 'යවමින්...',
-    loginRequired: 'පිවිසීම අවශ්‍යයි',
-    loginRequiredMsg: 'පණිවිඩ යැවීමට කරුණාකර පිවිසෙන්න.',
-    cancel: 'අවලංගු කරන්න',
-    loginBtn: 'පිවිසෙන්න',
-    error: 'දෝෂය',
-    failedToSend: 'පණිවිඩය යැවීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
-    today: 'අද',
-    yesterday: 'ඊයේ',
-  },
-  தமிழ்: {
-    typeMessage: 'செய்தியைத் தட்டச்சு செய்யவும்...',
-    send: 'அனுப்ப',
-    online: 'ஆன்லைன்',
-    offline: 'ஆஃப்லைன்',
-    shareTestHistory: 'சோதனை வரலாற்றைப் பகிரவும்',
-    selectTests: 'பகிர்வதற்கு சோதனைகளைத் தேர்ந்தெடுக்கவும்',
-    sendTestHistory: 'சோதனை வரலாற்றை அனுப்ப',
-    testHistoryShared: 'சோதனை வரலாறு பகிரப்பட்டது',
-    testHistorySharedDesc: 'சோதனை வரலாறு பகிரப்பட்டது',
-    noMessages: 'இன்னும் செய்திகள் இல்லை',
-    noMessagesDesc: 'செய்தியை அனுப்புவதன் மூலம் உரையாடலைத் தொடங்குங்கள்',
-    attachment: 'இணைப்பு',
-    sending: 'அனுப்புகிறது...',
-    loginRequired: 'உள்நுழைவு தேவை',
-    loginRequiredMsg: 'செய்திகளை அனுப்ப உள்நுழையவும்.',
-    cancel: 'ரத்து',
-    loginBtn: 'உள்நுழை',
-    error: 'பிழை',
-    failedToSend: 'செய்தியை அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
-    today: 'இன்று',
-    yesterday: 'நேற்று',
-  },
-};
 
 const formatTime = (date) => {
   if (!date) return '';
@@ -123,10 +51,9 @@ const MessageBubble = ({ message, isUser }) => (
 );
 
 export default function MessageScreen({ route, navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('message');
   const { user, isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [messageText, setMessageText] = useState('');
   const [messages, setMessages] = useState([]);
   const [sending, setSending] = useState(false);
@@ -170,9 +97,9 @@ export default function MessageScreen({ route, navigation }) {
     if (!messageText.trim() || !conversationId) return;
 
     if (!isAuthenticated) {
-      showAppAlert(t.loginRequired, t.loginRequiredMsg, [
-        { text: t.cancel, style: 'cancel' },
-        { text: t.loginBtn, onPress: () => navigation.navigate('Login') },
+      showAppAlert(translate('common.loginRequired'), translate('loginRequiredMsg'), [
+        { text: translate('cancel'), style: 'cancel' },
+        { text: translate('loginBtn'), onPress: () => navigation.navigate('Login') },
       ]);
       return;
     }
@@ -185,7 +112,7 @@ export default function MessageScreen({ route, navigation }) {
       await sendMessage(conversationId, text, user.uid, senderRole);
     } catch (error) {
       console.error('Error sending message:', error);
-      showAppAlert(t.error, t.failedToSend);
+      showAppAlert(translate('common.error'), translate('failedToSend'));
       setMessageText(text);
     } finally {
       setSending(false);
@@ -270,13 +197,13 @@ export default function MessageScreen({ route, navigation }) {
             ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateIcon}>💬</Text>
-                <Text style={styles.emptyStateTitle}>{t.noMessages}</Text>
-                <Text style={styles.emptyStateText}>{t.noMessagesDesc}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('noMessages')}</Text>
+                <Text style={styles.emptyStateText}>{translate('noMessagesDesc')}</Text>
               </View>
             )}
             {sending && (
               <View style={styles.sendingIndicator}>
-                <Text style={styles.sendingText}>{t.sending}</Text>
+                <Text style={styles.sendingText}>{translate('sending')}</Text>
               </View>
             )}
           </ScrollView>
@@ -286,7 +213,7 @@ export default function MessageScreen({ route, navigation }) {
             <View style={styles.attachButton} />
             <TextInput
               style={styles.messageInput}
-              placeholder={t.typeMessage}
+              placeholder={translate('typeMessage')}
               placeholderTextColor="#999"
               value={messageText}
               onChangeText={setMessageText}

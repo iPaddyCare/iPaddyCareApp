@@ -15,88 +15,16 @@ import {
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import BottomNavigation from '../src/components/BottomNavigation';
 import SeedDetectionService from '../src/utils/seedDetectionService';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Seed Quality Detection',
-    subtitle: 'AI-powered paddy seed variety detection',
-    description: 'Detect paddy seed varieties and identify wild seeds using AI technology',
-    uploadImage: 'Upload Image',
-    uploadImageDesc: 'Select an image from your gallery',
-    liveDetection: 'Live Detection',
-    liveDetectionDesc: 'Open camera for real-time detection',
-    selectImage: 'Selected Image',
-    processing: 'Click to Analyze',
-    detectionResult: 'Detection Result',
-    detectedVariety: 'Detected Variety',
-    wildSeedsDetected: 'Wild Seeds Detected',
-    qualityScore: 'Quality Score',
-    noImageSelected: 'No image selected',
-    selectImageFirst: 'Please select an image first',
-    permissionDenied: 'Permission Denied',
-    photoPermissionMessage: 'Photo library permission is required to select images',
-    error: 'Error',
-    tryAgain: 'Try Again',
-    analyzing: 'Analyzing seed quality...',
-    selectOption: 'Select Detection Method',
-  },
-  සිංහල: {
-    title: 'බීජ ගුණත්ව හඳුනාගැනීම',
-    subtitle: 'AI බලයෙන් වී බීජ වර්ග හඳුනාගැනීම',
-    description: 'AI තාක්ෂණය භාවිතා කරමින් වී බීජ වර්ග හඳුනාගෙන වල් බීජ හඳුනාගන්න',
-    uploadImage: 'රූපය උඩුගත කරන්න',
-    uploadImageDesc: 'ඔබේ ප්‍රදර්ශනයෙන් රූපයක් තෝරන්න',
-    liveDetection: 'සජීවී හඳුනාගැනීම',
-    liveDetectionDesc: 'තත්‍ය කාලීන හඳුනාගැනීම සඳහා කැමරාව විවෘත කරන්න',
-    selectImage: 'තෝරාගත් රූපය',
-    processing: 'විශ්ලේෂණය කරමින්...',
-    detectionResult: 'හඳුනාගැනීමේ ප්‍රතිඵලය',
-    detectedVariety: 'හඳුනාගත් වර්ගය',
-    wildSeedsDetected: 'වල් බීජ හඳුනාගෙන ඇත',
-    qualityScore: 'ගුණත්ව අගය',
-    noImageSelected: 'රූපයක් තෝරාගෙන නොමැත',
-    selectImageFirst: 'කරුණාකර මුලින්ම රූපයක් තෝරන්න',
-    permissionDenied: 'අවසරය ප්‍රතික්ෂේප කරන ලදී',
-    photoPermissionMessage: 'රූප තෝරාගැනීම සඳහා ඡායාරූප පුස්තකාල අවසරය අවශ්‍යයි',
-    error: 'දෝෂය',
-    tryAgain: 'නැවත උත්සාහ කරන්න',
-    analyzing: 'බීජ ගුණත්වය විශ්ලේෂණය කරමින්...',
-    selectOption: 'හඳුනාගැනීමේ ක්‍රමය තෝරන්න',
-  },
-  தமிழ்: {
-    title: 'விதை தர கண்டறிதல்',
-    subtitle: 'AI சக்தியால் நெல் விதை வகை கண்டறிதல்',
-    description: 'AI தொழில்நுட்பத்தைப் பயன்படுத்தி நெல் விதை வகைகளை கண்டறிந்து காட்டு விதைகளை அடையாளம் காணவும்',
-    uploadImage: 'படத்தை பதிவேற்றவும்',
-    uploadImageDesc: 'உங்கள் புகைப்படத்திலிருந்து ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
-    liveDetection: 'நேரடி கண்டறிதல்',
-    liveDetectionDesc: 'நிகழ்நேர கண்டறிதலுக்கு கேமராவைத் திறக்கவும்',
-    selectImage: 'தேர்ந்தெடுக்கப்பட்ட படம்',
-    processing: 'பகுப்பாய்வு செய்கிறது...',
-    detectionResult: 'கண்டறிதல் முடிவு',
-    detectedVariety: 'கண்டறியப்பட்ட வகை',
-    wildSeedsDetected: 'காட்டு விதைகள் கண்டறியப்பட்டன',
-    qualityScore: 'தர மதிப்பு',
-    noImageSelected: 'படம் தேர்ந்தெடுக்கப்படவில்லை',
-    selectImageFirst: 'தயவுசெய்து முதலில் படத்தைத் தேர்ந்தெடுக்கவும்',
-    permissionDenied: 'அனுமதி மறுக்கப்பட்டது',
-    photoPermissionMessage: 'படங்களைத் தேர்ந்தெடுக்க புகைப்பட நூலக அனுமதி தேவை',
-    error: 'பிழை',
-    tryAgain: 'மீண்டும் முயற்சிக்கவும்',
-    analyzing: 'விதை தரத்தை பகுப்பாய்வு செய்கிறது...',
-    selectOption: 'கண்டறிதல் முறையைத் தேர்ந்தெடுக்கவும்',
-  },
-};
-
 export default function SeedDetectionScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('seedDetection');
   const insets = useSafeAreaInsets();
   const [selectedImage, setSelectedImage] = useState(null);
   const [processing, setProcessing] = useState(false);
@@ -106,8 +34,6 @@ export default function SeedDetectionScreen({ navigation }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
-
-  const t = translations[selectedLanguage];
 
   useEffect(() => {
     Animated.parallel([
@@ -141,7 +67,7 @@ export default function SeedDetectionScreen({ navigation }) {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
-        showAppAlert(t.error, response.errorMessage || t.photoPermissionMessage);
+        showAppAlert(translate('common.error'), response.errorMessage || translate('photoPermissionMessage'));
       } else if (response.assets && response.assets[0]) {
         const asset = response.assets[0];
         const mime = asset.type || 'image/jpeg';
@@ -165,13 +91,13 @@ export default function SeedDetectionScreen({ navigation }) {
 
   const handleProcessImage = async () => {
     if (!selectedImage) {
-      showAppAlert(t.error, t.selectImageFirst);
+      showAppAlert(translate('common.error'), translate('selectImageFirst'));
       return;
     }
 
     const imageBase64 = selectedImage.imageBase64;
     if (!imageBase64) {
-      showAppAlert(t.error, t.selectImageFirst);
+      showAppAlert(translate('common.error'), translate('selectImageFirst'));
       return;
     }
 
@@ -193,11 +119,11 @@ export default function SeedDetectionScreen({ navigation }) {
           qualityScore,
         });
       } else {
-        showAppAlert(t.error, result.error || 'Detection failed');
+        showAppAlert(translate('common.error'), result.error || 'Detection failed');
       }
     } catch (err) {
       console.error('Process image error:', err);
-      showAppAlert(t.error, err.message || 'Detection failed');
+      showAppAlert(translate('common.error'), err.message || 'Detection failed');
     } finally {
       setProcessing(false);
     }
@@ -228,7 +154,7 @@ export default function SeedDetectionScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -256,8 +182,8 @@ export default function SeedDetectionScreen({ navigation }) {
                     <Icon name="image-plus" size={32} color="#4CAF50" />
                   </View>
                   <View style={styles.actionTextContainer}>
-                    <Text style={styles.actionTitle}>{t.uploadImage}</Text>
-                    <Text style={styles.actionDescription}>{t.uploadImageDesc}</Text>
+                    <Text style={styles.actionTitle}>{translate('uploadImage')}</Text>
+                    <Text style={styles.actionDescription}>{translate('uploadImageDesc')}</Text>
                   </View>
                   <Icon name="chevron-right" size={24} color="#999" />
                 </View>
@@ -274,8 +200,8 @@ export default function SeedDetectionScreen({ navigation }) {
                     <Icon name="camera" size={32} color="#2196F3" />
                   </View>
                   <View style={styles.actionTextContainer}>
-                    <Text style={styles.actionTitle}>{t.liveDetection}</Text>
-                    <Text style={styles.actionDescription}>{t.liveDetectionDesc}</Text>
+                    <Text style={styles.actionTitle}>{translate('liveDetection')}</Text>
+                    <Text style={styles.actionDescription}>{translate('liveDetectionDesc')}</Text>
                   </View>
                   <Icon name="chevron-right" size={24} color="#999" />
                 </View>
@@ -294,7 +220,7 @@ export default function SeedDetectionScreen({ navigation }) {
                 ]}
               >
                 <View style={styles.imageCardHeader}>
-                  <Text style={styles.imageCardTitle}>{t.selectImage}</Text>
+                  <Text style={styles.imageCardTitle}>{translate('selectImage')}</Text>
                   <TouchableOpacity
                     onPress={() => {
                       setSelectedImage(null);
@@ -313,10 +239,10 @@ export default function SeedDetectionScreen({ navigation }) {
                   {processing ? (
                     <View style={styles.processButtonContent}>
                       <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.processButtonText}>{t.analyzing}</Text>
+                      <Text style={styles.processButtonText}>{translate('analyzing')}</Text>
                     </View>
                   ) : (
-                    <Text style={styles.processButtonText}>{t.processing}</Text>
+                    <Text style={styles.processButtonText}>{translate('processing')}</Text>
                   )}
                 </TouchableOpacity>
               </Animated.View>
@@ -333,12 +259,12 @@ export default function SeedDetectionScreen({ navigation }) {
                   },
                 ]}
               >
-                <Text style={styles.resultTitle}>{t.detectionResult}</Text>
+                <Text style={styles.resultTitle}>{translate('detectionResult')}</Text>
                 <View style={styles.resultContent}>
                   <View style={styles.resultRow}>
                     <View style={styles.resultLabelContainer}>
                       <Icon name="seed" size={20} color="#4CAF50" />
-                      <Text style={styles.resultLabel}>{t.detectedVariety}</Text>
+                      <Text style={styles.resultLabel}>{translate('detectedVariety')}</Text>
                     </View>
                     <Text style={styles.resultValue}>{detectionResult.variety}</Text>
                   </View>
@@ -346,7 +272,7 @@ export default function SeedDetectionScreen({ navigation }) {
                   <View style={styles.resultRow}>
                     <View style={styles.resultLabelContainer}>
                       <Icon name={detectionResult.wildSeeds ? "alert-circle" : "check-circle"} size={20} color={detectionResult.wildSeeds ? "#F44336" : "#4CAF50"} />
-                      <Text style={styles.resultLabel}>{t.wildSeedsDetected}</Text>
+                      <Text style={styles.resultLabel}>{translate('wildSeedsDetected')}</Text>
                     </View>
                     <Text style={[styles.resultValue, detectionResult.wildSeeds && styles.wildSeedsTrue]}>
                       {detectionResult.wildSeeds ? 'Yes' : 'No'}
@@ -356,7 +282,7 @@ export default function SeedDetectionScreen({ navigation }) {
                   <View style={styles.resultRow}>
                     <View style={styles.resultLabelContainer}>
                       <Icon name="chart-line" size={20} color="#2196F3" />
-                      <Text style={styles.resultLabel}>{t.qualityScore}</Text>
+                      <Text style={styles.resultLabel}>{translate('qualityScore')}</Text>
                     </View>
                     <View style={styles.qualityContainer}>
                       <Text style={styles.resultValue}>{detectionResult.qualityScore}%</Text>
@@ -383,8 +309,8 @@ export default function SeedDetectionScreen({ navigation }) {
                 <View style={styles.emptyIconContainer}>
                   <Icon name="image-outline" size={64} color="#CCC" />
                 </View>
-                <Text style={styles.emptyStateTitle}>{t.noImageSelected}</Text>
-                <Text style={styles.emptyStateText}>{t.selectImageFirst}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('noImageSelected')}</Text>
+                <Text style={styles.emptyStateText}>{translate('selectImageFirst')}</Text>
               </Animated.View>
             )}
           </View>

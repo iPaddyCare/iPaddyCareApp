@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {
@@ -23,70 +24,6 @@ import {
 } from '../src/services/messagingService';
 
 const { width } = Dimensions.get('window');
-
-// Language translations
-const translations = {
-  English: {
-    inbox: 'Inbox',
-    messages: 'Messages',
-    noMessages: 'No messages yet',
-    noMessagesDesc: 'You will see messages from farmers here',
-    search: 'Search conversations...',
-    unread: 'Unread',
-    read: 'Read',
-    reply: 'Reply',
-    viewConversation: 'View Conversation',
-    user: 'User',
-    lastMessage: 'Last message',
-    newMessage: 'New',
-    today: 'Today',
-    yesterday: 'Yesterday',
-    markAsRead: 'Mark as Read',
-    delete: 'Delete',
-    error: 'Error',
-    failedDelete: 'Failed to delete conversation.',
-  },
-  සිංහල: {
-    inbox: 'එන ලිපි',
-    messages: 'පණිවිඩ',
-    noMessages: 'තවමත් පණිවිඩ නොමැත',
-    noMessagesDesc: 'ගොවීන්ගෙන් පණිවිඩ මෙහි දිස්වනු ඇත',
-    search: 'සංවාද සොයන්න...',
-    unread: 'නොකියවූ',
-    read: 'කියවූ',
-    reply: 'පිළිතුරු දෙන්න',
-    viewConversation: 'සංවාදය බලන්න',
-    user: 'පරිශීලක',
-    lastMessage: 'අවසාන පණිවිඩය',
-    newMessage: 'නව',
-    today: 'අද',
-    yesterday: 'ඊයේ',
-    markAsRead: 'කියවූ ලෙස සලකුණු කරන්න',
-    delete: 'මකන්න',
-    error: 'දෝෂය',
-    failedDelete: 'සංවාදය මැකීමට අසමත් විය.',
-  },
-  தமிழ்: {
-    inbox: 'இன்பாக்ஸ்',
-    messages: 'செய்திகள்',
-    noMessages: 'இன்னும் செய்திகள் இல்லை',
-    noMessagesDesc: 'விவசாயிகளிடமிருந்து செய்திகள் இங்கே தோன்றும்',
-    search: 'உரையாடல்களைத் தேடவும்...',
-    unread: 'படிக்காத',
-    read: 'படித்தது',
-    reply: 'பதிலளிக்க',
-    viewConversation: 'உரையாடலைக் காண்க',
-    user: 'பயனர்',
-    lastMessage: 'கடைசி செய்தி',
-    newMessage: 'புதிய',
-    today: 'இன்று',
-    yesterday: 'நேற்று',
-    markAsRead: 'படித்ததாகக் குறிக்க',
-    delete: 'நீக்கு',
-    error: 'பிழை',
-    failedDelete: 'உரையாடலை நீக்க முடியவில்லை.',
-  },
-};
 
 const formatDate = (date) => {
   if (!date) return '';
@@ -106,9 +43,8 @@ const formatTime = (date) => {
 };
 
 export default function OfficerInboxScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('officerInbox');
   const { user, isOfficer } = useAuth();
-  const t = translations[selectedLanguage];
   const [conversations, setConversations] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -178,12 +114,12 @@ export default function OfficerInboxScreen({ navigation }) {
 
   const handleDelete = (conversationId) => {
     showAppAlert(
-      t.delete,
+      translate('common.delete'),
       'Are you sure you want to delete this conversation?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: t.delete,
+          text: translate('common.delete'),
           style: 'destructive',
           onPress: async () => {
             try {
@@ -193,7 +129,7 @@ export default function OfficerInboxScreen({ navigation }) {
               );
             } catch (err) {
               console.error('Error deleting conversation:', err);
-              showAppAlert(t.error, t.failedDelete);
+              showAppAlert(translate('common.error'), translate('failedDelete'));
             }
           },
         },
@@ -203,8 +139,8 @@ export default function OfficerInboxScreen({ navigation }) {
 
   const getDateLabel = (date) => {
     const label = formatDate(date);
-    if (label === 'Today') return t.today;
-    if (label === 'Yesterday') return t.yesterday;
+    if (label === 'Today') return translate('common.today');
+    if (label === 'Yesterday') return translate('yesterday');
     return label;
   };
 
@@ -231,8 +167,8 @@ export default function OfficerInboxScreen({ navigation }) {
             <Icon name="menu" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <View style={styles.headerContent}>
-            <Text style={styles.headerTitle}>{t.inbox}</Text>
-            <Text style={styles.headerSubtitle}>{t.messages}</Text>
+            <Text style={styles.headerTitle}>{translate('common.inbox')}</Text>
+            <Text style={styles.headerSubtitle}>{translate('messages')}</Text>
           </View>
           <View style={styles.headerRight} />
         </View>
@@ -247,7 +183,7 @@ export default function OfficerInboxScreen({ navigation }) {
           />
           <TextInput
             style={styles.searchInput}
-            placeholder={t.search}
+            placeholder={translate('search')}
             placeholderTextColor="#999"
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -365,7 +301,7 @@ export default function OfficerInboxScreen({ navigation }) {
                     {hasUnread && (
                       <View style={styles.newIndicator}>
                         <Text style={styles.newIndicatorText}>
-                          {t.newMessage}
+                          {translate('newMessage')}
                         </Text>
                       </View>
                     )}
@@ -377,8 +313,8 @@ export default function OfficerInboxScreen({ navigation }) {
         ) : (
           <View style={styles.emptyState}>
             <Icon name="email-outline" size={64} color="#CCC" />
-            <Text style={styles.emptyStateTitle}>{t.noMessages}</Text>
-            <Text style={styles.emptyStateText}>{t.noMessagesDesc}</Text>
+            <Text style={styles.emptyStateTitle}>{translate('noMessages')}</Text>
+            <Text style={styles.emptyStateText}>{translate('noMessagesDesc')}</Text>
           </View>
         )}
       </SafeAreaView>

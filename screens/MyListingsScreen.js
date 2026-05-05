@@ -19,7 +19,8 @@ import {
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getUserListings, deleteProduct, updateProduct } from '../src/services/marketplaceService';
@@ -58,222 +59,6 @@ const DISEASE_OPTIONS = [
   'Rice Leaf Hopper',
 ];
 
-const translations = {
-  English: {
-    title: 'My Listings',
-    subtitle: 'Manage your products',
-    noListings: 'No Listings Yet',
-    noListingsDesc: 'Start selling by adding your first product!',
-    addFirstProduct: 'Add Your First Product',
-    active: 'Active',
-    sold: 'Sold',
-    pending: 'Pending',
-    declined: 'Declined',
-    edit: 'Edit',
-    delete: 'Delete',
-    markSold: 'Mark as Sold',
-    viewDetails: 'View Details',
-    confirmDelete: 'Delete Listing',
-    confirmDeleteMessage: 'Are you sure you want to delete this listing?',
-    cancel: 'Cancel',
-    deleteConfirm: 'Delete',
-    soldConfirm: 'Mark as Sold',
-    soldMessage: 'This listing will be marked as sold.',
-    totalListings: 'Total Listings',
-    activeListings: 'Active',
-    soldListings: 'Sold',
-    declineReasonLabel: 'Decline reason:',
-    pendingBadge: 'pending review',
-    productName: 'Product Name',
-    activeIngredient: 'Active Ingredient / Chemical Composition',
-    targetDiseases: 'Target Diseases / Pests',
-    selectDiseases: 'Select diseases / pests',
-    suggest: 'Suggest',
-    nSelected: '{0} selected',
-    priceAndQuantity: 'Price & Quantity',
-    priceLabel: 'Price',
-    quantityLabel: 'Quantity',
-    description: 'Description',
-    location: 'Location',
-    selectCity: 'Select city',
-    phone: 'Phone',
-    saveChanges: 'Save Changes',
-    editTitle: 'Edit Listing',
-    error: 'Error',
-    pleaseFillFields: 'Please fill all required fields',
-    minName: 'Product name must be at least 3 characters',
-    minDescription: 'Description must be at least 10 characters',
-    invalidPriceMsg: 'Please enter a valid price',
-    maxPriceMsg: 'Price cannot exceed Rs. 9,999,999',
-    invalidPhoneMsg: 'Please enter a valid phone number (e.g., 0771234567)',
-    selectAtLeastOneDisease: 'Select at least one target disease/pest',
-    activeIngredientRequired: 'Active ingredient is required for pesticides/herbicides',
-    listingUpdated: 'Updated',
-    listingUpdatedMsg: 'Listing has been updated.',
-    failedUpdate: 'Failed to update listing.',
-    deleted: 'Deleted',
-    deletedMsg: 'Listing has been deleted.',
-    failedDelete: 'Failed to delete listing.',
-    soldUpdatedMsg: 'Listing marked as sold.',
-    aiNotEnoughInfo: 'Not enough info',
-    aiSuggestNoSignal: 'Fill in product name, active ingredient, or description first so we can suggest diseases.',
-    aiUnavailable: 'AI unavailable',
-    aiUnavailableMsg: 'OpenAI key not configured. Add OPENAI_API_KEY to your .env file to enable suggestions.',
-    aiNoMatches: 'No confident matches',
-    aiNoMatchesMsg: 'Try adding more detail to the active ingredient or description.',
-    aiAlreadyTagged: 'Already tagged',
-    aiAlreadyTaggedMsg: 'The AI suggested only diseases you have already selected.',
-    aiSuggestionsAdded: 'Suggestions added',
-    aiAddedPrefix: 'Added: ',
-    aiSuggestionFailed: 'Suggestion failed',
-    aiCouldNotReach: 'Could not reach the AI service.',
-    selectDiseasesHeader: 'Select Diseases / Pests',
-    done: 'Done',
-  },
-  සිංහල: {
-    title: 'මගේ ලැයිස්තු',
-    subtitle: 'ඔබේ නිෂ්පාදන කළමනාකරණය කරන්න',
-    noListings: 'තවමත් ලැයිස්තු නොමැත',
-    noListingsDesc: 'ඔබේ පළමු නිෂ්පාදනය එක් කිරීමෙන් විකිණීම ආරම්භ කරන්න!',
-    addFirstProduct: 'ඔබේ පළමු නිෂ්පාදනය එක් කරන්න',
-    active: 'ක්‍රියාකාරී',
-    sold: 'විකුණන ලදී',
-    pending: 'පොරොත්තුවෙන්',
-    declined: 'ප්‍රතික්ෂේප කරන ලදී',
-    edit: 'සංස්කරණය',
-    delete: 'මකන්න',
-    markSold: 'විකුණන ලදී ලෙස සලකුණු කරන්න',
-    viewDetails: 'විස්තර බලන්න',
-    confirmDelete: 'ලැයිස්තුව මකන්න',
-    confirmDeleteMessage: 'ඔබට මෙම ලැයිස්තුව මැකීමට අවශ්‍යද?',
-    cancel: 'අවලංගු කරන්න',
-    deleteConfirm: 'මකන්න',
-    soldConfirm: 'විකුණන ලදී ලෙස සලකුණු කරන්න',
-    soldMessage: 'මෙම ලැයිස්තුව විකුණන ලදී ලෙස සලකුණු කරනු ලැබේ.',
-    totalListings: 'සම්පූර්ණ ලැයිස්තු',
-    activeListings: 'ක්‍රියාකාරී',
-    soldListings: 'විකුණන ලදී',
-    declineReasonLabel: 'ප්‍රතික්ෂේප කිරීමේ හේතුව:',
-    pendingBadge: 'සමාලෝචනය',
-    productName: 'නිෂ්පාදන නම',
-    activeIngredient: 'ක්‍රියාකාරී අමුද්‍රව්‍ය / රසායනික සංයුතිය',
-    targetDiseases: 'ඉලක්ක රෝග / කෘමීන්',
-    selectDiseases: 'රෝග / කෘමීන් තෝරන්න',
-    suggest: 'යෝජනා කරන්න',
-    nSelected: '{0} ක් තෝරා ඇත',
-    priceAndQuantity: 'මිල සහ ප්‍රමාණය',
-    priceLabel: 'මිල',
-    quantityLabel: 'ප්‍රමාණය',
-    description: 'විස්තරය',
-    location: 'ස්ථානය',
-    selectCity: 'නගරය තෝරන්න',
-    phone: 'දුරකථන',
-    saveChanges: 'වෙනස්කම් සුරකින්න',
-    editTitle: 'ලැයිස්තුව සංස්කරණය කරන්න',
-    error: 'දෝෂය',
-    pleaseFillFields: 'කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න',
-    minName: 'නිෂ්පාදන නම අවම වශයෙන් අකුරු 3ක් විය යුතුය',
-    minDescription: 'විස්තරය අවම වශයෙන් අකුරු 10ක් විය යුතුය',
-    invalidPriceMsg: 'කරුණාකර වලංගු මිලක් ඇතුළත් කරන්න',
-    maxPriceMsg: 'මිල රු. 9,999,999 ඉක්මවිය නොහැක',
-    invalidPhoneMsg: 'කරුණාකර වලංගු දුරකථන අංකයක් ඇතුළත් කරන්න (උදා: 0771234567)',
-    selectAtLeastOneDisease: 'අවම වශයෙන් එක් ඉලක්ක රෝගයක්/කෘමියෙක් තෝරන්න',
-    activeIngredientRequired: 'කෘමිනාශක/වල් නාශක සඳහා ක්‍රියාකාරී අමුද්‍රව්‍ය අවශ්‍ය වේ',
-    listingUpdated: 'යාවත්කාලීන කරන ලදී',
-    listingUpdatedMsg: 'ලැයිස්තුව යාවත්කාලීන කර ඇත.',
-    failedUpdate: 'ලැයිස්තුව යාවත්කාලීන කිරීමට අසමත් විය.',
-    deleted: 'මකන ලදී',
-    deletedMsg: 'ලැයිස්තුව මකා ඇත.',
-    failedDelete: 'ලැයිස්තුව මැකීමට අසමත් විය.',
-    soldUpdatedMsg: 'ලැයිස්තුව විකුණන ලදී ලෙස සලකුණු කර ඇත.',
-    aiNotEnoughInfo: 'ප්‍රමාණවත් තොරතුරු නැත',
-    aiSuggestNoSignal: 'යෝජනා කිරීමට පළමුව නිෂ්පාදන නම, ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරය පුරවන්න.',
-    aiUnavailable: 'AI ලබා ගත නොහැක',
-    aiUnavailableMsg: 'OpenAI යතුර වින්‍යාසගත කර නැත. යෝජනා සක්‍රීය කිරීමට .env ගොනුවට OPENAI_API_KEY එක් කරන්න.',
-    aiNoMatches: 'විශ්වාසනීය ගැළපීම් නැත',
-    aiNoMatchesMsg: 'ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරයට වැඩිපුර තොරතුරු එක් කරන්න.',
-    aiAlreadyTagged: 'දැනටමත් ටැග් කර ඇත',
-    aiAlreadyTaggedMsg: 'AI විසින් යෝජනා කළේ ඔබ දැනටමත් තෝරාගෙන ඇති රෝග පමණි.',
-    aiSuggestionsAdded: 'යෝජනා එක් කරන ලදී',
-    aiAddedPrefix: 'එක් කරන ලදී: ',
-    aiSuggestionFailed: 'යෝජනා අසාර්ථකයි',
-    aiCouldNotReach: 'AI සේවාවට සම්බන්ධ වීමට නොහැකි විය.',
-    selectDiseasesHeader: 'රෝග / කෘමීන් තෝරන්න',
-    done: 'සිදු',
-  },
-  தமிழ்: {
-    title: 'எனது பட்டியல்கள்',
-    subtitle: 'உங்கள் தயாரிப்புகளை நிர்வகிக்கவும்',
-    noListings: 'இன்னும் பட்டியல்கள் இல்லை',
-    noListingsDesc: 'உங்கள் முதல் தயாரிப்பைச் சேர்ப்பதன் மூலம் விற்பனையைத் தொடங்குங்கள்!',
-    addFirstProduct: 'உங்கள் முதல் தயாரிப்பைச் சேர்க்கவும்',
-    active: 'செயலில்',
-    sold: 'விற்கப்பட்டது',
-    pending: 'நிலுவையில்',
-    declined: 'நிராகரிக்கப்பட்டது',
-    edit: 'திருத்து',
-    delete: 'நீக்கு',
-    markSold: 'விற்கப்பட்டதாகக் குறிக்கவும்',
-    viewDetails: 'விவரங்களைக் காண்க',
-    confirmDelete: 'பட்டியலை நீக்கவும்',
-    confirmDeleteMessage: 'இந்த பட்டியலை நீக்க விரும்புகிறீர்களா?',
-    cancel: 'ரத்துசெய்',
-    deleteConfirm: 'நீக்கு',
-    soldConfirm: 'விற்கப்பட்டதாகக் குறிக்கவும்',
-    soldMessage: 'இந்த பட்டியல் விற்கப்பட்டதாகக் குறிக்கப்படும்.',
-    totalListings: 'மொத்த பட்டியல்கள்',
-    activeListings: 'செயலில்',
-    soldListings: 'விற்கப்பட்டது',
-    declineReasonLabel: 'நிராகரிப்பு காரணம்:',
-    pendingBadge: 'மதிப்பாய்வு',
-    productName: 'தயாரிப்பு பெயர்',
-    activeIngredient: 'செயலில் உள்ள பொருள் / இரசாயன கலவை',
-    targetDiseases: 'இலக்கு நோய்கள் / பூச்சிகள்',
-    selectDiseases: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
-    suggest: 'பரிந்துரை',
-    nSelected: '{0} தேர்ந்தெடுக்கப்பட்டது',
-    priceAndQuantity: 'விலை & அளவு',
-    priceLabel: 'விலை',
-    quantityLabel: 'அளவு',
-    description: 'விளக்கம்',
-    location: 'இடம்',
-    selectCity: 'நகரத்தைத் தேர்ந்தெடுக்கவும்',
-    phone: 'தொலைபேசி',
-    saveChanges: 'மாற்றங்களைச் சேமி',
-    editTitle: 'பட்டியலைத் திருத்து',
-    error: 'பிழை',
-    pleaseFillFields: 'தயவுசெய்து அனைத்து தேவையான புலங்களையும் நிரப்பவும்',
-    minName: 'தயாரிப்பு பெயர் குறைந்தது 3 எழுத்துகளாக இருக்க வேண்டும்',
-    minDescription: 'விளக்கம் குறைந்தது 10 எழுத்துகளாக இருக்க வேண்டும்',
-    invalidPriceMsg: 'தயவுசெய்து சரியான விலையை உள்ளிடவும்',
-    maxPriceMsg: 'விலை ரூ. 9,999,999 ஐ தாண்டக்கூடாது',
-    invalidPhoneMsg: 'தயவுசெய்து சரியான தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா., 0771234567)',
-    selectAtLeastOneDisease: 'குறைந்தது ஒரு இலக்கு நோய்/பூச்சியைத் தேர்ந்தெடுக்கவும்',
-    activeIngredientRequired: 'பூச்சிக்கொல்லிகள்/களைக்கொல்லிகளுக்கு செயலில் உள்ள பொருள் தேவை',
-    listingUpdated: 'புதுப்பிக்கப்பட்டது',
-    listingUpdatedMsg: 'பட்டியல் புதுப்பிக்கப்பட்டது.',
-    failedUpdate: 'பட்டியலைப் புதுப்பிக்க முடியவில்லை.',
-    deleted: 'நீக்கப்பட்டது',
-    deletedMsg: 'பட்டியல் நீக்கப்பட்டது.',
-    failedDelete: 'பட்டியலை நீக்க முடியவில்லை.',
-    soldUpdatedMsg: 'பட்டியல் விற்கப்பட்டதாகக் குறிக்கப்பட்டது.',
-    aiNotEnoughInfo: 'போதிய தகவல் இல்லை',
-    aiSuggestNoSignal: 'நாங்கள் நோய்களை பரிந்துரைக்க முதலில் தயாரிப்பு பெயர், செயலில் உள்ள பொருள் அல்லது விளக்கத்தை நிரப்பவும்.',
-    aiUnavailable: 'AI கிடைக்கவில்லை',
-    aiUnavailableMsg: 'OpenAI விசை உள்ளமைக்கப்படவில்லை. பரிந்துரைகளை இயக்க .env கோப்பில் OPENAI_API_KEY ஐச் சேர்க்கவும்.',
-    aiNoMatches: 'நம்பகமான பொருத்தங்கள் இல்லை',
-    aiNoMatchesMsg: 'செயலில் உள்ள பொருள் அல்லது விளக்கத்தில் கூடுதல் விவரங்களைச் சேர்க்க முயற்சிக்கவும்.',
-    aiAlreadyTagged: 'ஏற்கனவே குறிக்கப்பட்டது',
-    aiAlreadyTaggedMsg: 'AI நீங்கள் ஏற்கனவே தேர்ந்தெடுத்த நோய்களை மட்டுமே பரிந்துரைத்தது.',
-    aiSuggestionsAdded: 'பரிந்துரைகள் சேர்க்கப்பட்டன',
-    aiAddedPrefix: 'சேர்க்கப்பட்டது: ',
-    aiSuggestionFailed: 'பரிந்துரை தோல்வியடைந்தது',
-    aiCouldNotReach: 'AI சேவையை அடைய முடியவில்லை.',
-    selectDiseasesHeader: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
-    done: 'முடிந்தது',
-  },
-};
-
 const categoryEmojis = {
   seeds: '🌾',
   fertilizers: '🌱',
@@ -282,7 +67,7 @@ const categoryEmojis = {
   herbicides: '🧪',
 };
 
-const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
+const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, translate }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'approved': return '#10B981';
@@ -295,10 +80,10 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'approved': return t.active;
-      case 'sold': return t.sold;
-      case 'pending': return t.pending;
-      case 'declined': return t.declined;
+      case 'approved': return translate('active');
+      case 'sold': return translate('sold');
+      case 'pending': return translate('pending');
+      case 'declined': return translate('declined');
       default: return status;
     }
   };
@@ -349,7 +134,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
           <View style={styles.declineReasonBanner}>
             <Icon name="alert-circle" size={14} color="#EF4444" />
             <Text style={styles.declineReasonText}>
-              {t.declineReasonLabel} {listing.declineReason}
+              {translate('declineReasonLabel')} {listing.declineReason}
             </Text>
           </View>
         ) : null}
@@ -362,7 +147,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
               activeOpacity={0.7}
             >
               <Icon name="pencil" size={16} color="#0F5132" />
-              <Text style={styles.editButtonText}>{t.edit}</Text>
+              <Text style={styles.editButtonText}>{translate('edit')}</Text>
             </TouchableOpacity>
           )}
           {listing.status === 'approved' && (
@@ -372,7 +157,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
               activeOpacity={0.7}
             >
               <Icon name="check-circle" size={16} color="#10B981" />
-              <Text style={styles.soldButtonText}>{t.markSold}</Text>
+              <Text style={styles.soldButtonText}>{translate('markSold')}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
@@ -381,7 +166,7 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
             activeOpacity={0.7}
           >
             <Icon name="delete" size={16} color="#EF4444" />
-            <Text style={styles.deleteButtonText}>{t.delete}</Text>
+            <Text style={styles.deleteButtonText}>{translate('common.delete')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -390,10 +175,9 @@ const ListingCard = ({ listing, onEdit, onDelete, onMarkSold, t }) => {
 };
 
 export default function MyListingsScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('myListings');
   const { isAuthenticated, user, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -480,13 +264,13 @@ export default function MyListingsScreen({ navigation }) {
       editData.activeIngredient?.trim() ||
       editData.description?.trim();
     if (!hasSignal) {
-      showAppAlert(t.aiNotEnoughInfo, t.aiSuggestNoSignal);
+      showAppAlert(translate('aiNotEnoughInfo'), translate('aiSuggestNoSignal'));
       return;
     }
     if (!llmService.isInitialized()) {
       const ok = await llmService.loadFromStorage().catch(() => false);
       if (!ok) {
-        showAppAlert(t.aiUnavailable, t.aiUnavailableMsg);
+        showAppAlert(translate('aiUnavailable'), translate('aiUnavailableMsg'));
         return;
       }
     }
@@ -502,23 +286,23 @@ export default function MyListingsScreen({ navigation }) {
         DISEASE_OPTIONS,
       );
       if (suggested.length === 0) {
-        showAppAlert(t.aiNoMatches, t.aiNoMatchesMsg);
+        showAppAlert(translate('aiNoMatches'), translate('aiNoMatchesMsg'));
         return;
       }
       const existing = new Set(editData.targetDiseases);
       const added = suggested.filter(d => !existing.has(d));
       if (added.length === 0) {
-        showAppAlert(t.aiAlreadyTagged, t.aiAlreadyTaggedMsg);
+        showAppAlert(translate('aiAlreadyTagged'), translate('aiAlreadyTaggedMsg'));
         return;
       }
       setEditData(prev => ({
         ...prev,
         targetDiseases: [...prev.targetDiseases, ...added],
       }));
-      showAppAlert(t.aiSuggestionsAdded, `${t.aiAddedPrefix}${added.join(', ')}`);
+      showAppAlert(translate('aiSuggestionsAdded'), `${translate('aiAddedPrefix')}${added.join(', ')}`);
     } catch (err) {
       console.error('[MyListings] disease suggestion failed:', err);
-      showAppAlert(t.aiSuggestionFailed, err?.message || t.aiCouldNotReach);
+      showAppAlert(translate('aiSuggestionFailed'), err?.message || translate('aiCouldNotReach'));
     } finally {
       setSuggestingEditDiseases(false);
     }
@@ -546,36 +330,36 @@ export default function MyListingsScreen({ navigation }) {
     const phone = (editData.phone || '').trim();
 
     if (!productName || !priceStr || !description || !location || !phone) {
-      showAppAlert(t.error, t.pleaseFillFields);
+      showAppAlert(translate('common.error'), translate('pleaseFillFields'));
       return;
     }
     if (productName.length < 3) {
-      showAppAlert(t.error, t.minName);
+      showAppAlert(translate('common.error'), translate('minName'));
       return;
     }
     if (description.length < 10) {
-      showAppAlert(t.error, t.minDescription);
+      showAppAlert(translate('common.error'), translate('minDescription'));
       return;
     }
     const priceNum = Number(priceStr);
     if (!Number.isFinite(priceNum) || priceNum <= 0) {
-      showAppAlert(t.error, t.invalidPriceMsg);
+      showAppAlert(translate('common.error'), translate('invalidPriceMsg'));
       return;
     }
     if (priceNum > 9_999_999) {
-      showAppAlert(t.error, t.maxPriceMsg);
+      showAppAlert(translate('common.error'), translate('maxPriceMsg'));
       return;
     }
     if (!/^0\d{9}$/.test(phone.replace(/\s/g, ''))) {
-      showAppAlert(t.error, t.invalidPhoneMsg);
+      showAppAlert(translate('common.error'), translate('invalidPhoneMsg'));
       return;
     }
     if (editShowDiseaseField && (!Array.isArray(editData.targetDiseases) || editData.targetDiseases.length === 0)) {
-      showAppAlert(t.error, t.selectAtLeastOneDisease);
+      showAppAlert(translate('common.error'), translate('selectAtLeastOneDisease'));
       return;
     }
     if (editShowDiseaseField && !(editData.activeIngredient || '').trim()) {
-      showAppAlert(t.error, t.activeIngredientRequired);
+      showAppAlert(translate('common.error'), translate('activeIngredientRequired'));
       return;
     }
 
@@ -596,10 +380,10 @@ export default function MyListingsScreen({ navigation }) {
       await updateProduct(editData.id, updatePayload);
       setListings(prev => prev.map(l => l.id === editData.id ? { ...l, ...updatePayload } : l));
       setEditModalVisible(false);
-      showAppAlert(t.listingUpdated, t.listingUpdatedMsg);
+      showAppAlert(translate('listingUpdated'), translate('listingUpdatedMsg'));
     } catch (error) {
       console.error('Error updating listing:', error);
-      showAppAlert(t.error, t.failedUpdate);
+      showAppAlert(translate('common.error'), translate('failedUpdate'));
     } finally {
       setEditSaving(false);
     }
@@ -607,21 +391,21 @@ export default function MyListingsScreen({ navigation }) {
 
   const handleDelete = (listing) => {
     showAppAlert(
-      t.confirmDelete,
-      t.confirmDeleteMessage,
+      translate('confirmDelete'),
+      translate('confirmDeleteMessage'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.deleteConfirm,
+          text: translate('deleteConfirm'),
           style: 'destructive',
           onPress: async () => {
             try {
               await deleteProduct(listing.id);
               setListings(prev => prev.filter(l => l.id !== listing.id));
-              showAppAlert(t.deleted, t.deletedMsg);
+              showAppAlert(translate('deleted'), translate('deletedMsg'));
             } catch (error) {
               console.error('Error deleting listing:', error);
-              showAppAlert(t.error, t.failedDelete);
+              showAppAlert(translate('common.error'), translate('failedDelete'));
             }
           },
         },
@@ -631,20 +415,20 @@ export default function MyListingsScreen({ navigation }) {
 
   const handleMarkSold = (listing) => {
     showAppAlert(
-      t.markSold,
-      t.soldMessage,
+      translate('markSold'),
+      translate('soldMessage'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.soldConfirm,
+          text: translate('soldConfirm'),
           onPress: async () => {
             try {
               await updateProduct(listing.id, { status: 'sold' });
               setListings(prev => prev.map(l => l.id === listing.id ? { ...l, status: 'sold' } : l));
-              showAppAlert(t.listingUpdated, t.soldUpdatedMsg);
+              showAppAlert(translate('listingUpdated'), translate('soldUpdatedMsg'));
             } catch (error) {
               console.error('Error updating listing:', error);
-              showAppAlert(t.error, t.failedUpdate);
+              showAppAlert(translate('common.error'), translate('failedUpdate'));
             }
           },
         },
@@ -669,8 +453,8 @@ export default function MyListingsScreen({ navigation }) {
               <Text style={styles.menuIcon}>☰</Text>
             </TouchableOpacity>
             <View style={styles.headerText}>
-              <Text style={styles.headerTitle}>{t.title}</Text>
-              <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+              <Text style={styles.headerTitle}>{translate('title')}</Text>
+              <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
             </View>
             <View style={styles.headerRight} />
           </View>
@@ -740,8 +524,8 @@ export default function MyListingsScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
-                <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
+                <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
               </View>
               {/* Add button with pending badge */}
               <TouchableOpacity
@@ -763,15 +547,15 @@ export default function MyListingsScreen({ navigation }) {
             <Animated.View style={[styles.statsContainer, { opacity: fadeAnim }]}>
               <View style={styles.statCard}>
                 <Text style={styles.statValue}>{listings.length}</Text>
-                <Text style={styles.statLabel}>{t.totalListings}</Text>
+                <Text style={styles.statLabel}>{translate('totalListings')}</Text>
               </View>
               <View style={[styles.statCard, styles.statCardActive]}>
                 <Text style={[styles.statValue, styles.statValueActive]}>{activeListingsCount}</Text>
-                <Text style={styles.statLabel}>{t.activeListings}</Text>
+                <Text style={styles.statLabel}>{translate('activeListings')}</Text>
               </View>
               <View style={[styles.statCard, styles.statCardSold]}>
                 <Text style={[styles.statValue, styles.statValueSold]}>{soldListingsCount}</Text>
-                <Text style={styles.statLabel}>{t.soldListings}</Text>
+                <Text style={styles.statLabel}>{translate('soldListings')}</Text>
               </View>
             </Animated.View>
 
@@ -780,7 +564,7 @@ export default function MyListingsScreen({ navigation }) {
               <Animated.View style={[styles.pendingNotice, { opacity: fadeAnim }]}>
                 <Icon name="clock-outline" size={16} color="#F59E0B" />
                 <Text style={styles.pendingNoticeText}>
-                  {pendingCount} listing{pendingCount > 1 ? 's' : ''} {t.pendingBadge}
+                  {pendingCount} listing{pendingCount > 1 ? 's' : ''} {translate('pendingBadge')}
                 </Text>
               </Animated.View>
             )}
@@ -798,21 +582,21 @@ export default function MyListingsScreen({ navigation }) {
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onMarkSold={handleMarkSold}
-                      t={t}
+                      translate={translate}
                     />
                   ))}
                 </View>
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>📦</Text>
-                  <Text style={styles.emptyStateTitle}>{t.noListings}</Text>
-                  <Text style={styles.emptyStateText}>{t.noListingsDesc}</Text>
+                  <Text style={styles.emptyStateTitle}>{translate('noListings')}</Text>
+                  <Text style={styles.emptyStateText}>{translate('noListingsDesc')}</Text>
                   <TouchableOpacity
                     style={styles.addProductButton}
                     onPress={handleAddProduct}
                   >
                     <Icon name="plus" size={20} color="#FFFFFF" />
-                    <Text style={styles.addProductButtonText}>{t.addFirstProduct}</Text>
+                    <Text style={styles.addProductButtonText}>{translate('addFirstProduct')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -835,7 +619,7 @@ export default function MyListingsScreen({ navigation }) {
             <View style={styles.modalContent}>
               <View style={styles.modalDragHandle} />
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{t.edit}</Text>
+                <Text style={styles.modalTitle}>{translate('edit')}</Text>
                 <TouchableOpacity
                   style={styles.modalCloseBtn}
                   onPress={() => setEditModalVisible(false)}
@@ -851,7 +635,7 @@ export default function MyListingsScreen({ navigation }) {
               >
                 {editData && (
                   <>
-                    <Text style={styles.modalLabel}>{t.productName}</Text>
+                    <Text style={styles.modalLabel}>{translate('common.productName')}</Text>
                     <TextInput
                       style={styles.modalInput}
                       value={editData.productName}
@@ -862,7 +646,7 @@ export default function MyListingsScreen({ navigation }) {
                         Sits above Target Diseases so it can power the AI Suggest button. */}
                     {editShowDiseaseField && (
                       <>
-                        <Text style={styles.modalLabel}>{t.activeIngredient}</Text>
+                        <Text style={styles.modalLabel}>{translate('activeIngredient')}</Text>
                         <TextInput
                           style={styles.modalInput}
                           value={editData.activeIngredient}
@@ -878,7 +662,7 @@ export default function MyListingsScreen({ navigation }) {
                       <>
                         <View style={styles.editSuggestRow}>
                           <Text style={[styles.modalLabel, { flex: 1, marginBottom: 0 }]}>
-                            {t.targetDiseases}
+                            {translate('targetDiseases')}
                           </Text>
                           <TouchableOpacity
                             style={[styles.editSuggestBtn, suggestingEditDiseases && { opacity: 0.6 }]}
@@ -891,7 +675,7 @@ export default function MyListingsScreen({ navigation }) {
                             ) : (
                               <>
                                 <Icon name="auto-fix" size={14} color="#0F5132" />
-                                <Text style={styles.editSuggestBtnText}>{t.suggest}</Text>
+                                <Text style={styles.editSuggestBtnText}>{translate('suggest')}</Text>
                               </>
                             )}
                           </TouchableOpacity>
@@ -903,8 +687,8 @@ export default function MyListingsScreen({ navigation }) {
                         >
                           <Text style={[styles.editLocationText, editData.targetDiseases.length === 0 && { color: '#999' }]}>
                             {editData.targetDiseases.length > 0
-                              ? t.nSelected.replace('{0}', editData.targetDiseases.length)
-                              : t.selectDiseases}
+                              ? translate('nSelected').replace('{0}', editData.targetDiseases.length)
+                              : translate('selectDiseases')}
                           </Text>
                           <Icon name="chevron-down" size={18} color="#666" />
                         </TouchableOpacity>
@@ -927,21 +711,21 @@ export default function MyListingsScreen({ navigation }) {
                     )}
 
                     {/* Price + Quantity + Unit — alarm-style wheel sheet */}
-                    <Text style={styles.modalLabel}>{t.priceAndQuantity}</Text>
+                    <Text style={styles.modalLabel}>{translate('priceAndQuantity')}</Text>
                     <TouchableOpacity
                       style={styles.editPriceQtySummary}
                       onPress={() => setShowEditPriceSheet(true)}
                       activeOpacity={0.7}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.editPriceQtyHint}>{t.priceLabel}</Text>
+                        <Text style={styles.editPriceQtyHint}>{translate('priceLabel')}</Text>
                         <Text style={styles.editPriceQtyValue}>
                           Rs. {editData.price ? Number(editData.price).toLocaleString() : '—'}
                         </Text>
                       </View>
                       <View style={styles.editPriceQtyDivider} />
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.editPriceQtyHint}>{t.quantityLabel}</Text>
+                        <Text style={styles.editPriceQtyHint}>{translate('quantityLabel')}</Text>
                         <Text style={styles.editPriceQtyValue}>
                           {editData.quantity !== undefined && editData.quantity !== null && editData.quantity !== ''
                             ? `${editData.quantity} ${editData.unit || 'kg'}`
@@ -951,7 +735,7 @@ export default function MyListingsScreen({ navigation }) {
                       <Icon name="chevron-down" size={20} color="#666" />
                     </TouchableOpacity>
 
-                    <Text style={styles.modalLabel}>{t.description}</Text>
+                    <Text style={styles.modalLabel}>{translate('description')}</Text>
                     <TextInput
                       style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
                       value={editData.description}
@@ -960,7 +744,7 @@ export default function MyListingsScreen({ navigation }) {
                     />
 
                     {/* Location — city picker */}
-                    <Text style={styles.modalLabel}>{t.location}</Text>
+                    <Text style={styles.modalLabel}>{translate('common.location')}</Text>
                     <TouchableOpacity
                       style={styles.editLocationSelector}
                       onPress={() => setShowEditCityPicker(true)}
@@ -968,12 +752,12 @@ export default function MyListingsScreen({ navigation }) {
                     >
                       <Icon name="map-marker" size={16} color={editData.location ? '#0F5132' : '#999'} />
                       <Text style={[styles.editLocationText, !editData.location && { color: '#999' }]}>
-                        {editData.location || t.selectCity}
+                        {editData.location || translate('selectCity')}
                       </Text>
                       <Icon name="chevron-down" size={18} color="#666" />
                     </TouchableOpacity>
 
-                    <Text style={styles.modalLabel}>{t.phone}</Text>
+                    <Text style={styles.modalLabel}>{translate('phone')}</Text>
                     <PhoneInput
                       value={editData.phone}
                       onChangeText={(next) => setEditData({ ...editData, phone: next })}
@@ -994,7 +778,7 @@ export default function MyListingsScreen({ navigation }) {
                   disabled={editSaving}
                 >
                   <Icon name={editSaving ? 'loading' : 'check'} size={18} color="#FFFFFF" />
-                  <Text style={styles.modalSaveText}>{editSaving ? '...' : t.saveChanges}</Text>
+                  <Text style={styles.modalSaveText}>{editSaving ? '...' : translate('saveChanges')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1028,7 +812,7 @@ export default function MyListingsScreen({ navigation }) {
             <View style={[styles.editSheet, styles.editSheetTall, { paddingBottom: Math.max(insets.bottom, 16) }]}>
               <View style={styles.editSheetHandle} />
               <View style={styles.editSheetHeader}>
-                <Text style={styles.editSheetTitle}>{t.selectDiseasesHeader}</Text>
+                <Text style={styles.editSheetTitle}>{translate('selectDiseasesHeader')}</Text>
                 <TouchableOpacity
                   style={styles.editSheetClose}
                   onPress={() => setShowEditDiseasePicker(false)}
@@ -1066,7 +850,7 @@ export default function MyListingsScreen({ navigation }) {
                 activeOpacity={0.7}
               >
                 <Text style={styles.editSheetDoneText}>
-                  {t.done} {editData?.targetDiseases?.length ? `(${editData.targetDiseases.length})` : ''}
+                  {translate('done')} {editData?.targetDiseases?.length ? `(${editData.targetDiseases.length})` : ''}
                 </Text>
               </TouchableOpacity>
             </View>

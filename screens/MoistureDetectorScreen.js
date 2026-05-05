@@ -18,186 +18,13 @@ import ESP32Service from '../src/utils/esp32Service';
 import BLEService from '../src/utils/bleService';
 import WeatherService from '../src/utils/weatherService';
 import PredictionService from '../src/utils/predictionService';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Seed Moisture Monitor',
-    subtitle: 'Real-time sensor data from ESP32',
-    connected: 'Connected to ESP32',
-    noDevice: 'No Device Connected',
-    connect: 'Connect',
-    connectDevice: 'Connect Device',
-    fetching: 'Fetching data from ESP32...',
-    connectionError: 'Connection Error',
-    errorHint: 'Make sure your ESP32 is powered on and connected to the same WiFi network.',
-    retry: 'Retry',
-    moistureLevel: 'Moisture Level',
-    temperature: 'Temperature',
-    humidity: 'Humidity',
-    lastUpdated: 'Last Updated',
-    noDeviceTitle: 'No Device Connected',
-    noDeviceText: 'Connect to an ESP32 device to view moisture data',
-    statusOverDried: 'Over Dried',
-    statusGood: 'Good',
-    statusNeedsDry: 'Needs to Dry',
-    recommendationOverDried: 'Moisture level is too low. Seeds are over dried.',
-    recommendationGood: 'Optimal moisture level (12-14%)',
-    recommendationNeedsDry: 'Moisture level is too high. Seeds need to dry.',
-    noDeviceConnected: 'No device connected',
-    startReading: 'Start Reading',
-    stopReading: 'Stop Reading',
-    readingInProgress: 'Reading in Progress',
-    readingProgress: 'Reading Progress',
-    readingsCollected: 'Readings Collected',
-    of: 'of',
-    seconds: 'seconds',
-    collectingReadings: 'Collecting readings...',
-    liveReading: 'Live Reading',
-    averageReading: 'Average Reading',
-    viewResults: 'View Results',
-    readingComplete: 'Reading Complete',
-    readingDuration: 'Reading Duration',
-    readingsCount: 'Readings Count',
-    capSensor: 'Capacitive Sensor',
-    sampleTemp: 'Sample Temperature',
-    ambientTemp: 'Ambient Temperature',
-    ambientHumidity: 'Ambient Humidity',
-    sampleWeight: 'Sample Weight',
-    location: 'Location',
-    weather: 'Weather',
-    celsius: '°C',
-    percent: '%',
-    grams: 'g',
-    connectionInstructions: 'How to Connect Device',
-    step1: 'Step 1: Add seeds to the device',
-    step2: 'Step 2: Grind seeds using the built-in hand grinder',
-    step3: 'Step 3: Turn on the Seed Moisture Detector device',
-    step4: 'Step 4: Connect to the device via WiFi or Bluetooth',
-    step5: 'Step 5: Tap "Start Reading" to begin measurement',
-    instructionsNote: 'Make sure the device is powered on and within range before connecting.',
-  },
-  සිංහල: {
-    title: 'බීජ තෙතමනය මුරකරු',
-    subtitle: 'ESP32 වෙතින් තත්‍ය කාලීන සංවේදක දත්ත',
-    connected: 'ESP32 වෙත සම්බන්ධ වී ඇත',
-    noDevice: 'උපාංගයක් සම්බන්ධ නොවීය',
-    connect: 'සම්බන්ධ වන්න',
-    connectDevice: 'උපාංගය සම්බන්ධ කරන්න',
-    fetching: 'ESP32 වෙතින් දත්ත ලබා ගනිමින්...',
-    connectionError: 'සම්බන්ධතා දෝෂය',
-    errorHint: 'ඔබේ ESP32 බලයට සම්බන්ධ කර ඇති බවට සහ එකම WiFi ජාලයට සම්බන්ධ වී ඇති බවට වග බලා ගන්න.',
-    retry: 'නැවත උත්සාහ කරන්න',
-    moistureLevel: 'තෙතමන මට්ටම',
-    temperature: 'උෂ්ණත්වය',
-    humidity: 'ආර්ද්‍රතාව',
-    lastUpdated: 'අවසන් වරට යාවත්කාලීන කරන ලදී',
-    noDeviceTitle: 'උපාංගයක් සම්බන්ධ නොවීය',
-    noDeviceText: 'තෙතමන දත්ත බැලීමට ESP32 උපාංගයකට සම්බන්ධ වන්න',
-    statusOverDried: 'අධික වියළි',
-    statusGood: 'හොඳ',
-    statusNeedsDry: 'වියළීම අවශ්‍ය',
-    recommendationOverDried: 'තෙතමන මට්ටම ඉතා අඩුය. බීජ වැඩියෙන් වියළී ඇත.',
-    recommendationGood: 'ප්‍රශස්ත තෙතමන මට්ටම (12-14%)',
-    recommendationNeedsDry: 'තෙතමන මට්ටම ඉහළය. බීජ වියළීම අවශ්‍යයි.',
-    noDeviceConnected: 'උපාංගයක් සම්බන්ධ නොවීය',
-    startReading: 'කියවීම ආරම්භ කරන්න',
-    stopReading: 'කියවීම නවත්වන්න',
-    readingInProgress: 'කියවීම සිදුවෙමින් පවතී',
-    readingProgress: 'කියවීමේ ප්‍රගතිය',
-    readingsCollected: 'එකතු කරන ලද කියවීම්',
-    of: 'යි',
-    seconds: 'තත්පර',
-    collectingReadings: 'කියවීම් එකතු කරමින්...',
-    liveReading: 'සජීවී කියවීම',
-    averageReading: 'සාමාන්‍ය කියවීම',
-    viewResults: 'ප්‍රතිඵල බලන්න',
-    readingComplete: 'කියවීම සම්පූර්ණයි',
-    readingDuration: 'කියවීමේ කාලය',
-    readingsCount: 'කියවීම් ගණන',
-    capSensor: 'ධාරිතා සංවේදකය',
-    sampleTemp: 'නියමුන උෂ්ණත්වය',
-    ambientTemp: 'පරිසර උෂ්ණත්වය',
-    ambientHumidity: 'පරිසර ආර්ද්‍රතාව',
-    sampleWeight: 'නියමුන බර',
-    location: 'ස්ථානය',
-    weather: 'කාලගුණය',
-    celsius: '°C',
-    percent: '%',
-    grams: 'g',
-    connectionInstructions: 'උපාංගය සම්බන්ධ කරන ආකාරය',
-    step1: 'පියවර 1: උපාංගයට බීජ එකතු කරන්න',
-    step2: 'පියවර 2: අතින් ක්‍රියාත්මක වන ග්‍රයින්ඩරය භාවිතා කර බීජ ග්‍රයින්ඩ් කරන්න',
-    step3: 'පියවර 3: බීජ තෙතමනය අනාවරකය උපාංගය සක්‍රිය කරන්න',
-    step4: 'පියවර 4: WiFi හෝ Bluetooth හරහා උපාංගයට සම්බන්ධ වන්න',
-    step5: 'පියවර 5: මිනුම ආරම්භ කිරීමට "කියවීම ආරම්භ කරන්න" ඔබන්න',
-    instructionsNote: 'සම්බන්ධ කිරීමට පෙර උපාංගය සක්‍රිය කර ඇති බවට සහ පරාසය තුළ ඇති බවට වග බලා ගන්න.',
-  },
-  தமிழ்: {
-    title: 'விதை ஈரப்பத கண்காணிப்பு',
-    subtitle: 'ESP32 இலிருந்து நிகழ்நேர சென்சார் தரவு',
-    connected: 'ESP32 உடன் இணைக்கப்பட்டது',
-    noDevice: 'சாதனம் இணைக்கப்படவில்லை',
-    connect: 'இணைக்கவும்',
-    connectDevice: 'சாதனத்தை இணைக்கவும்',
-    fetching: 'ESP32 இலிருந்து தரவு பெறப்படுகிறது...',
-    connectionError: 'இணைப்பு பிழை',
-    errorHint: 'உங்கள் ESP32 ஆனது இயக்கத்தில் உள்ளது மற்றும் அதே WiFi நெட்வொர்க்குடன் இணைக்கப்பட்டுள்ளது என்பதை உறுதிப்படுத்தவும்.',
-    retry: 'மீண்டும் முயற்சிக்கவும்',
-    moistureLevel: 'ஈரப்பத அளவு',
-    temperature: 'வெப்பநிலை',
-    humidity: 'ஈரப்பதம்',
-    lastUpdated: 'கடைசியாக புதுப்பிக்கப்பட்டது',
-    noDeviceTitle: 'சாதனம் இணைக்கப்படவில்லை',
-    noDeviceText: 'ஈரப்பத தரவைக் காண ESP32 சாதனத்துடன் இணைக்கவும்',
-    statusOverDried: 'அதிகமாக உலர்ந்தது',
-    statusGood: 'நல்ல',
-    statusNeedsDry: 'உலர்த்த வேண்டும்',
-    recommendationOverDried: 'ஈரப்பத அளவு மிகவும் குறைவாக உள்ளது. விதைகள் அதிகமாக உலர்ந்துள்ளன.',
-    recommendationGood: 'உகந்த ஈரப்பத அளவு (12-14%)',
-    recommendationNeedsDry: 'ஈரப்பத அளவு அதிகமாக உள்ளது. விதைகளை உலர்த்த வேண்டும்.',
-    noDeviceConnected: 'சாதனம் இணைக்கப்படவில்லை',
-    startReading: 'வாசிப்பைத் தொடங்கவும்',
-    stopReading: 'வாசிப்பை நிறுத்தவும்',
-    readingInProgress: 'வாசிப்பு நடந்து கொண்டிருக்கிறது',
-    readingProgress: 'வாசிப்பு முன்னேற்றம்',
-    readingsCollected: 'சேகரிக்கப்பட்ட வாசிப்புகள்',
-    of: 'இல்',
-    seconds: 'வினாடிகள்',
-    collectingReadings: 'வாசிப்புகளை சேகரிக்கிறது...',
-    liveReading: 'நேரடி வாசிப்பு',
-    averageReading: 'சராசரி வாசிப்பு',
-    viewResults: 'முடிவுகளைக் காண்க',
-    readingComplete: 'வாசிப்பு முடிந்தது',
-    readingDuration: 'வாசிப்பு காலம்',
-    readingsCount: 'வாசிப்புகள் எண்ணிக்கை',
-    capSensor: 'கொள்ளளவு சென்சார்',
-    sampleTemp: 'மாதிரி வெப்பநிலை',
-    ambientTemp: 'சுற்றுப்புற வெப்பநிலை',
-    ambientHumidity: 'சுற்றுப்புற ஈரப்பதம்',
-    sampleWeight: 'மாதிரி எடை',
-    location: 'இடம்',
-    weather: 'வானிலை',
-    celsius: '°C',
-    percent: '%',
-    grams: 'g',
-    connectionInstructions: 'சாதனத்தை இணைக்கும் வழிமுறை',
-    step1: 'படி 1: சாதனத்தில் விதைகளை சேர்க்கவும்',
-    step2: 'படி 2: உள்ளமைக்கப்பட்ட கை அரைப்பான் பயன்படுத்தி விதைகளை அரைக்கவும்',
-    step3: 'படி 3: விதை ஈரப்பத கண்டறியும் சாதனத்தை இயக்கவும்',
-    step4: 'படி 4: WiFi அல்லது Bluetooth மூலம் சாதனத்துடன் இணைக்கவும்',
-    step5: 'படி 5: அளவீட்டைத் தொடங்க "வாசிப்பைத் தொடங்கவும்" என்பதைத் தட்டவும்',
-    instructionsNote: 'இணைப்பதற்கு முன் சாதனம் இயக்கத்தில் உள்ளது மற்றும் வரம்பிற்குள் உள்ளது என்பதை உறுதிப்படுத்தவும்.',
-  },
-};
-
 export default function MoistureDetectorScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('moistureDetector');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [moistureData, setMoistureData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -236,7 +63,7 @@ export default function MoistureDetectorScreen({ navigation }) {
     
     if (!device) {
       setConnected(false);
-      setError(t.noDeviceConnected);
+      setError(translate('noDeviceConnected'));
       setMoistureData(null);
       return;
     }
@@ -344,7 +171,7 @@ export default function MoistureDetectorScreen({ navigation }) {
       fetchData();
     } else {
       setConnected(false);
-      setError(t.noDeviceConnected);
+      setError(translate('noDeviceConnected'));
     }
   }, []);
 
@@ -380,7 +207,7 @@ export default function MoistureDetectorScreen({ navigation }) {
   // Start reading session
   const startReading = async () => {
     if (!connected) {
-      showAppAlert(t.error, t.noDeviceConnected);
+      showAppAlert(translate('common.error'), translate('noDeviceConnected'));
       return;
     }
 
@@ -511,11 +338,11 @@ export default function MoistureDetectorScreen({ navigation }) {
   // Thresholds: Below 12 = Over dried, 12-14 = Good, Above 14 = Needs to dry
   const getMoistureStatus = (moisture) => {
     if (moisture < 12) {
-      return { status: t.statusOverDried, color: '#F44336', recommendation: t.recommendationOverDried };
+      return { status: translate('statusOverDried'), color: '#F44336', recommendation: translate('recommendationOverDried') };
     } else if (moisture >= 12 && moisture <= 14) {
-      return { status: t.statusGood, color: '#4CAF50', recommendation: t.recommendationGood };
+      return { status: translate('statusGood'), color: '#4CAF50', recommendation: translate('recommendationGood') };
     } else {
-      return { status: t.statusNeedsDry, color: '#FF9800', recommendation: t.recommendationNeedsDry };
+      return { status: translate('statusNeedsDry'), color: '#FF9800', recommendation: translate('recommendationNeedsDry') };
     }
   };
 
@@ -583,7 +410,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -599,9 +426,9 @@ export default function MoistureDetectorScreen({ navigation }) {
                 <Icon name="weather-partly-cloudy" size={24} color="#0F5132" />
               </View>
               <View style={styles.weatherInfo}>
-                <Text style={styles.weatherLocation}>{t.location}: Malabe</Text>
+                <Text style={styles.weatherLocation}>{translate('common.location')}: Malabe</Text>
                 <Text style={styles.weatherDescription}>
-                  {weatherData.temperature.toFixed(1)}{t.celsius} • {weatherData.description}
+                  {weatherData.temperature.toFixed(1)}{translate('celsius')} • {weatherData.description}
                 </Text>
               </View>
             </View>
@@ -620,7 +447,7 @@ export default function MoistureDetectorScreen({ navigation }) {
             </View>
             <View style={styles.statusTextContainer}>
               <Text style={[styles.statusText, connected && styles.statusTextConnected]}>
-                {connected ? t.connected : t.noDevice}
+                {connected ? translate('connected') : translate('noDevice')}
               </Text>
               {connectedDevice && (
                 <Text style={styles.statusDeviceIp}>
@@ -636,7 +463,7 @@ export default function MoistureDetectorScreen({ navigation }) {
                 onPress={handleConnectDevice}
               >
                 <Icon name="link" size={18} color="white" />
-                <Text style={styles.connectButtonText}>{t.connect}</Text>
+                <Text style={styles.connectButtonText}>{translate('common.connect')}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -649,7 +476,7 @@ export default function MoistureDetectorScreen({ navigation }) {
             onPress={startReading}
           >
             <Icon name="play-circle" size={28} color="white" />
-            <Text style={styles.startReadingButtonText}>{t.startReading}</Text>
+            <Text style={styles.startReadingButtonText}>{translate('startReading')}</Text>
           </TouchableOpacity>
         )}
 
@@ -658,7 +485,7 @@ export default function MoistureDetectorScreen({ navigation }) {
           <View style={styles.readingSessionCard}>
             <View style={styles.readingSessionHeader}>
               <Icon name="chart-line" size={24} color="#0F5132" />
-              <Text style={styles.readingSessionTitle}>{t.readingInProgress}</Text>
+              <Text style={styles.readingSessionTitle}>{translate('readingInProgress')}</Text>
             </View>
 
             {/* Progress Bar */}
@@ -678,10 +505,10 @@ export default function MoistureDetectorScreen({ navigation }) {
               </View>
               <View style={styles.progressInfo}>
                 <Text style={styles.progressText}>
-                  {t.readingsCollected}: {readings.length} {t.of} {TARGET_READINGS}
+                  {translate('readingsCollected')}: {readings.length} {translate('of')} {TARGET_READINGS}
                 </Text>
                 <Text style={styles.progressText}>
-                  {readingDuration} {t.seconds} / {READING_DURATION} {t.seconds}
+                  {readingDuration} {translate('seconds')} / {READING_DURATION} {translate('seconds')}
                 </Text>
               </View>
             </View>
@@ -691,7 +518,7 @@ export default function MoistureDetectorScreen({ navigation }) {
               <View style={styles.liveReadingCard}>
                 <View style={styles.liveReadingHeader}>
                   <Icon name="pulse" size={20} color="#4CAF50" />
-                  <Text style={styles.liveReadingTitle}>{t.liveReading}</Text>
+                  <Text style={styles.liveReadingTitle}>{translate('liveReading')}</Text>
                 </View>
                 
                 {/* All Sensor Readings - Always show all 5 sensors */}
@@ -699,57 +526,57 @@ export default function MoistureDetectorScreen({ navigation }) {
                   {/* Capacitive Sensor */}
                   <View style={styles.sensorReadingItem}>
                     <Icon name="water" size={18} color="#2196F3" />
-                    <Text style={styles.sensorReadingLabel}>{t.capSensor}</Text>
+                    <Text style={styles.sensorReadingLabel}>{translate('capSensor')}</Text>
                     <Text style={styles.sensorReadingValue}>
                       {liveReading.capSensorValue !== null && liveReading.capSensorValue !== undefined
-                        ? `${liveReading.capSensorValue.toFixed(1)}${t.percent}`
+                        ? `${liveReading.capSensorValue.toFixed(1)}${translate('percent')}`
                         : liveReading.moisture !== null && liveReading.moisture !== undefined
-                        ? `${liveReading.moisture.toFixed(1)}${t.percent}`
-                        : `0.0${t.percent}`}
+                        ? `${liveReading.moisture.toFixed(1)}${translate('percent')}`
+                        : `0.0${translate('percent')}`}
                     </Text>
                   </View>
 
                   {/* Sample Temperature (DS18B20) */}
                   <View style={styles.sensorReadingItem}>
                     <Icon name="thermometer" size={18} color="#FF9800" />
-                    <Text style={styles.sensorReadingLabel}>{t.sampleTemp}</Text>
+                    <Text style={styles.sensorReadingLabel}>{translate('sampleTemp')}</Text>
                     <Text style={styles.sensorReadingValue}>
                       {liveReading.sampleTemperature != null
-                        ? `${liveReading.sampleTemperature.toFixed(1)}${t.celsius}`
-                        : `--${t.celsius}`}
+                        ? `${liveReading.sampleTemperature.toFixed(1)}${translate('celsius')}`
+                        : `--${translate('celsius')}`}
                     </Text>
                   </View>
 
                   {/* Ambient Temperature (DHT22) */}
                   <View style={styles.sensorReadingItem}>
                     <Icon name="thermometer-lines" size={18} color="#F44336" />
-                    <Text style={styles.sensorReadingLabel}>{t.ambientTemp}</Text>
+                    <Text style={styles.sensorReadingLabel}>{translate('ambientTemp')}</Text>
                     <Text style={styles.sensorReadingValue}>
                       {liveReading.ambientTemperature !== null && liveReading.ambientTemperature !== undefined
-                        ? `${liveReading.ambientTemperature.toFixed(1)}${t.celsius}`
-                        : `--${t.celsius}`}
+                        ? `${liveReading.ambientTemperature.toFixed(1)}${translate('celsius')}`
+                        : `--${translate('celsius')}`}
                     </Text>
                   </View>
 
                   {/* Ambient Humidity (DHT22) */}
                   <View style={styles.sensorReadingItem}>
                     <Icon name="water-percent" size={18} color="#9C27B0" />
-                    <Text style={styles.sensorReadingLabel}>{t.ambientHumidity}</Text>
+                    <Text style={styles.sensorReadingLabel}>{translate('ambientHumidity')}</Text>
                     <Text style={styles.sensorReadingValue}>
                       {liveReading.ambientHumidity !== null && liveReading.ambientHumidity !== undefined
-                        ? `${liveReading.ambientHumidity.toFixed(1)}${t.percent}`
-                        : `--${t.percent}`}
+                        ? `${liveReading.ambientHumidity.toFixed(1)}${translate('percent')}`
+                        : `--${translate('percent')}`}
                     </Text>
                   </View>
 
                   {/* Sample Weight (Load cell + HX711) */}
                   <View style={styles.sensorReadingItem}>
                     <Icon name="scale-balance" size={18} color="#4CAF50" />
-                    <Text style={styles.sensorReadingLabel}>{t.sampleWeight}</Text>
+                    <Text style={styles.sensorReadingLabel}>{translate('sampleWeight')}</Text>
                     <Text style={styles.sensorReadingValue}>
                       {liveReading.sampleWeight != null
-                        ? `${liveReading.sampleWeight.toFixed(1)}${t.grams}`
-                        : `--${t.grams}`}
+                        ? `${liveReading.sampleWeight.toFixed(1)}${translate('grams')}`
+                        : `--${translate('grams')}`}
                     </Text>
                   </View>
                 </View>
@@ -762,7 +589,7 @@ export default function MoistureDetectorScreen({ navigation }) {
               onPress={stopReading}
             >
               <Icon name="stop-circle" size={24} color="white" />
-              <Text style={styles.stopReadingButtonText}>{t.stopReading}</Text>
+              <Text style={styles.stopReadingButtonText}>{translate('stopReading')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -771,28 +598,28 @@ export default function MoistureDetectorScreen({ navigation }) {
         {loading && !moistureData && (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#0F5132" />
-            <Text style={styles.loadingText}>{t.fetching}</Text>
+            <Text style={styles.loadingText}>{translate('fetching')}</Text>
           </View>
         )}
 
         {/* Error State */}
         {error && !loading && (
           <View style={styles.errorCard}>
-            <Text style={styles.errorTitle}>{t.connectionError}</Text>
+            <Text style={styles.errorTitle}>{translate('common.connectionError')}</Text>
             <Text style={styles.errorText}>{error}</Text>
             <Text style={styles.errorHint}>
-              {t.errorHint}
+              {translate('errorHint')}
             </Text>
             <View style={styles.errorActions}>
               <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
-                <Text style={styles.retryButtonText}>{t.retry}</Text>
+                <Text style={styles.retryButtonText}>{translate('retry')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.connectDeviceButton}
                 onPress={handleConnectDevice}
               >
                 <Icon name="link" size={20} color="white" />
-                <Text style={styles.connectDeviceButtonText}>{t.connectDevice}</Text>
+                <Text style={styles.connectDeviceButtonText}>{translate('connectDevice')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -803,43 +630,43 @@ export default function MoistureDetectorScreen({ navigation }) {
           <View style={styles.instructionsCard}>
             <View style={styles.instructionsHeader}>
               <Icon name="information" size={24} color="#0F5132" />
-              <Text style={styles.instructionsTitle}>{t.connectionInstructions}</Text>
+              <Text style={styles.instructionsTitle}>{translate('connectionInstructions')}</Text>
             </View>
             <View style={styles.stepsContainer}>
               <View style={styles.stepItem}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>1</Text>
                 </View>
-                <Text style={styles.stepText}>{t.step1}</Text>
+                <Text style={styles.stepText}>{translate('step1')}</Text>
               </View>
               <View style={styles.stepItem}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>2</Text>
                 </View>
-                <Text style={styles.stepText}>{t.step2}</Text>
+                <Text style={styles.stepText}>{translate('step2')}</Text>
               </View>
               <View style={styles.stepItem}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>3</Text>
                 </View>
-                <Text style={styles.stepText}>{t.step3}</Text>
+                <Text style={styles.stepText}>{translate('step3')}</Text>
               </View>
               <View style={styles.stepItem}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>4</Text>
                 </View>
-                <Text style={styles.stepText}>{t.step4}</Text>
+                <Text style={styles.stepText}>{translate('step4')}</Text>
               </View>
               <View style={styles.stepItem}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>5</Text>
                 </View>
-                <Text style={styles.stepText}>{t.step5}</Text>
+                <Text style={styles.stepText}>{translate('step5')}</Text>
               </View>
             </View>
             <View style={styles.instructionsNote}>
               <Icon name="lightbulb-outline" size={16} color="#666" />
-              <Text style={styles.instructionsNoteText}>{t.instructionsNote}</Text>
+              <Text style={styles.instructionsNoteText}>{translate('instructionsNote')}</Text>
             </View>
           </View>
         )}
@@ -848,16 +675,16 @@ export default function MoistureDetectorScreen({ navigation }) {
         {!moistureData && !loading && !error && !connectedDevice && (
           <View style={styles.emptyState}>
             <Icon name="alert-circle" size={64} color="#CCC" />
-            <Text style={styles.emptyStateTitle}>{t.noDeviceTitle}</Text>
+            <Text style={styles.emptyStateTitle}>{translate('noDeviceTitle')}</Text>
             <Text style={styles.emptyStateText}>
-              {t.noDeviceText}
+              {translate('noDeviceText')}
         </Text>
             <TouchableOpacity
               style={styles.emptyStateButton}
               onPress={handleConnectDevice}
             >
               <Icon name="link" size={24} color="white" />
-              <Text style={styles.emptyStateButtonText}>{t.connectDevice}</Text>
+              <Text style={styles.emptyStateButtonText}>{translate('connectDevice')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -1629,5 +1456,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
-
 

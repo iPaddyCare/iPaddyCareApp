@@ -10,40 +10,14 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../i18n/useTranslation';
 
 const { width } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    home: 'Home',
-    seedDetection: 'Seeds',
-    moisture: 'Moisture',
-    soilPH: 'Soil pH',
-    pestDetection: 'Pest',
-  },
-  සිංහල: {
-    home: 'මුල් පිටුව',
-    seedDetection: 'බීජ',
-    moisture: 'තෙතමනය',
-    soilPH: 'පස් pH',
-    pestDetection: 'පළිබෝධ',
-  },
-  தமிழ்: {
-    home: 'முகப்பு',
-    seedDetection: 'விதைகள்',
-    moisture: 'ஈரப்பதம்',
-    soilPH: 'மண் pH',
-    pestDetection: 'பூச்சி',
-  },
-};
-
 export default function BottomNavigation({ drawerNavigation }) {
   const navigation = useNavigation();
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('bottomNav');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   
   // Use drawerNavigation if provided, otherwise try to get it from navigation context
   const drawerNav = drawerNavigation || navigation.getParent() || navigation;
@@ -72,21 +46,21 @@ export default function BottomNavigation({ drawerNavigation }) {
   const navItems = [
     {
       id: 'SeedDetection',
-      label: t.seedDetection,
+      label: translate('seedDetection'),
       icon: 'seed',
       route: 'SeedDetection',
       color: '#4CAF50',
     },
     {
       id: 'MoistureDetector',
-      label: t.moisture,
+      label: translate('moisture'),
       icon: 'water',
       route: 'MoistureDetector',
       color: '#2196F3',
     },
     {
       id: 'Home',
-      label: t.home,
+      label: translate('home'),
       icon: 'home',
       route: 'Home',
       color: '#0F5132',
@@ -94,14 +68,14 @@ export default function BottomNavigation({ drawerNavigation }) {
     },
     {
       id: 'SoilPH',
-      label: t.soilPH,
+      label: translate('soilPH'),
       icon: 'test-tube',
       route: 'SoilPH',
       color: '#FF6D00',
     },
     {
       id: 'PestDetection',
-      label: t.pestDetection,
+      label: translate('pestDetection'),
       icon: 'bug',
       route: 'PestDetection',
       color: '#E91E63',

@@ -19,7 +19,8 @@ import {
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getApprovedProducts, incrementProductViews } from '../src/services/marketplaceService';
@@ -27,135 +28,6 @@ import { getDiseaseMatchKeySet, diseaseLabelMatchesKeys } from '../src/services/
 import { SL_DISTRICTS } from '../src/components/CityPickerModal';
 
 const { width, height } = Dimensions.get('window');
-
-const translations = {
-  English: {
-    title: 'Marketplace',
-    subtitle: 'Buy & Sell Paddy Products',
-    searchPlaceholder: 'Search products...',
-    categories: 'Categories',
-    allProducts: 'All Products',
-    seeds: 'Seeds',
-    fertilizers: 'Fertilizers',
-    tools: 'Tools & Equipment',
-    pesticides: 'Pesticides',
-    herbicides: 'Herbicides',
-    addProduct: 'Add Product',
-    price: 'Price',
-    location: 'Location',
-    seller: 'Seller',
-    contact: 'Contact Seller',
-    noProducts: 'No products available',
-    noProductsDesc: 'Be the first to list your product!',
-    featured: 'Featured Products',
-    recent: 'Recent Listings',
-    filter: 'Filter',
-    sort: 'Sort',
-    priceLow: 'Price: Low to High',
-    priceHigh: 'Price: High to Low',
-    newest: 'Newest First',
-    oldest: 'Oldest First',
-    myListings: 'My Listings',
-    allDistricts: 'All Cities',
-    loadMore: 'Load More',
-    error: 'Error',
-    couldNotDial: 'Could not open phone dialer.',
-    loginRequired: 'Login Required',
-    loginToContact: 'Please login to contact sellers.',
-    loginToAdd: 'Please login to add products.',
-    cancel: 'Cancel',
-    login: 'Login',
-    accessRestricted: 'Access Restricted',
-    officersCannotList: 'Officers cannot list products in the marketplace.',
-    sellerDetails: 'Seller Details',
-    close: 'Close',
-    contactSeller: 'Contact Seller',
-  },
-  සිංහල: {
-    title: 'වෙළඳපොළ',
-    subtitle: 'වී නිෂ්පාදන මිලදී ගන්න සහ විකිණීම',
-    searchPlaceholder: 'නිෂ්පාදන සොයන්න...',
-    categories: 'කාණ්ඩ',
-    allProducts: 'සියලුම නිෂ්පාදන',
-    seeds: 'බීජ',
-    fertilizers: 'සාරවත් පොහොර',
-    tools: 'මෙවලම් සහ උපකරණ',
-    pesticides: 'කෘමිනාශක',
-    herbicides: 'වල් නාශක',
-    addProduct: 'නිෂ්පාදනයක් එක් කරන්න',
-    price: 'මිල',
-    location: 'ස්ථානය',
-    seller: 'විකුණන්නා',
-    contact: 'විකුණන්නා හා සම්බන්ධ වන්න',
-    noProducts: 'නිෂ්පාදන නොමැත',
-    noProductsDesc: 'පළමුව ඔබේ නිෂ්පාදනය ලැයිස්තුගත කරන්න!',
-    featured: 'විශේෂ නිෂ්පාදන',
-    recent: 'මෑත ලැයිස්තු',
-    filter: 'පෙරහන',
-    sort: 'වර්ගීකරණය',
-    priceLow: 'මිල: අඩු සිට ඉහළ',
-    priceHigh: 'මිල: ඉහළ සිට අඩු',
-    newest: 'නවතම',
-    oldest: 'පැරණිතම',
-    myListings: 'මගේ ලැයිස්තු',
-    allDistricts: 'සියලු නගර',
-    loadMore: 'තවත් පූරණය කරන්න',
-    error: 'දෝෂය',
-    couldNotDial: 'දුරකථන ඩයලරය විවෘත කළ නොහැක.',
-    loginRequired: 'පිවිසීම අවශ්‍යයි',
-    loginToContact: 'විකුණුම්කරුවන් සම්බන්ධ කර ගැනීමට පිවිසෙන්න.',
-    loginToAdd: 'නිෂ්පාදන එක් කිරීමට පිවිසෙන්න.',
-    cancel: 'අවලංගු කරන්න',
-    login: 'පිවිසෙන්න',
-    accessRestricted: 'ප්‍රවේශය සීමා කර ඇත',
-    officersCannotList: 'නිලධාරීන්ට වෙළඳපොළේ නිෂ්පාදන ලැයිස්තුගත කළ නොහැක.',
-    sellerDetails: 'විකුණුම්කරුගේ විස්තර',
-    close: 'වසන්න',
-    contactSeller: 'විකුණුම්කරු සම්බන්ධ කරන්න',
-  },
-  தமிழ்: {
-    title: 'சந்தை',
-    subtitle: 'நெல் தயாரிப்புகளை வாங்கவும் விற்கவும்',
-    searchPlaceholder: 'தயாரிப்புகளைத் தேடவும்...',
-    categories: 'வகைகள்',
-    allProducts: 'அனைத்து தயாரிப்புகள்',
-    seeds: 'விதைகள்',
-    fertilizers: 'உரங்கள்',
-    tools: 'கருவிகள் மற்றும் உபகரணங்கள்',
-    pesticides: 'பூச்சிக்கொல்லிகள்',
-    herbicides: 'களைக்கொல்லிகள்',
-    addProduct: 'தயாரிப்பைச் சேர்க்கவும்',
-    price: 'விலை',
-    location: 'இடம்',
-    seller: 'விற்பனையாளர்',
-    contact: 'விற்பனையாளரைத் தொடர்பு கொள்ளுங்கள்',
-    noProducts: 'தயாரிப்புகள் இல்லை',
-    noProductsDesc: 'முதல் தயாரிப்பை பட்டியலிடுங்கள்!',
-    featured: 'சிறப்பு தயாரிப்புகள்',
-    recent: 'சமீபத்திய பட்டியல்கள்',
-    filter: 'வடிகட்டு',
-    sort: 'வரிசைப்படுத்து',
-    priceLow: 'விலை: குறைந்தது முதல் அதிகம்',
-    priceHigh: 'விலை: அதிகம் முதல் குறைந்தது',
-    newest: 'புதியது முதலில்',
-    oldest: 'பழையது முதலில்',
-    myListings: 'எனது பட்டியல்கள்',
-    allDistricts: 'அனைத்து நகரங்கள்',
-    loadMore: 'மேலும் ஏற்றவும்',
-    error: 'பிழை',
-    couldNotDial: 'தொலைபேசி டயலரைத் திறக்க முடியவில்லை.',
-    loginRequired: 'உள்நுழைவு தேவை',
-    loginToContact: 'விற்பனையாளர்களை தொடர்பு கொள்ள உள்நுழையவும்.',
-    loginToAdd: 'தயாரிப்புகளைச் சேர்க்க உள்நுழையவும்.',
-    cancel: 'ரத்து',
-    login: 'உள்நுழை',
-    accessRestricted: 'அணுகல் கட்டுப்படுத்தப்பட்டது',
-    officersCannotList: 'அதிகாரிகள் சந்தையில் தயாரிப்புகளை பட்டியலிட முடியாது.',
-    sellerDetails: 'விற்பனையாளர் விவரங்கள்',
-    close: 'மூடு',
-    contactSeller: 'விற்பனையாளரை தொடர்பு கொள்ளுங்கள்',
-  },
-};
 
 const categoryEmojis = {
   seeds: '🌾',
@@ -209,10 +81,9 @@ const ProductCard = ({ product, onPress }) => (
 );
 
 export default function MarketplaceScreen({ navigation, route }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('marketplace');
   const { isAuthenticated, isOfficer } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDistrict, setSelectedDistrict] = useState(null);
@@ -289,12 +160,12 @@ export default function MarketplaceScreen({ navigation, route }) {
   );
 
   const categories = [
-    { id: 'all', label: t.allProducts, icon: '📦' },
-    { id: 'seeds', label: t.seeds, icon: '🌾' },
-    { id: 'fertilizers', label: t.fertilizers, icon: '🌱' },
-    { id: 'tools', label: t.tools, icon: '🔧' },
-    { id: 'pesticides', label: t.pesticides, icon: '🛡️' },
-    { id: 'herbicides', label: t.herbicides, icon: '🧪' },
+    { id: 'all', label: translate('allProducts'), icon: '📦' },
+    { id: 'seeds', label: translate('seeds'), icon: '🌾' },
+    { id: 'fertilizers', label: translate('fertilizers'), icon: '🌱' },
+    { id: 'tools', label: translate('tools'), icon: '🔧' },
+    { id: 'pesticides', label: translate('pesticides'), icon: '🛡️' },
+    { id: 'herbicides', label: translate('herbicides'), icon: '🧪' },
   ];
 
   // Expand the search query into a set of normalized disease keys (covers aliases like
@@ -376,7 +247,7 @@ export default function MarketplaceScreen({ navigation, route }) {
 
   const handleCall = (phone) => {
     const url = Platform.OS === 'ios' ? `telprompt:${phone}` : `tel:${phone}`;
-    Linking.openURL(url).catch(() => showAppAlert(t.error, t.couldNotDial));
+    Linking.openURL(url).catch(() => showAppAlert(translate('common.error'), translate('couldNotDial')));
   };
 
   const handleContact = (product) => {
@@ -384,11 +255,11 @@ export default function MarketplaceScreen({ navigation, route }) {
       setDetailModalVisible(false);
       setTimeout(() => {
         showAppAlert(
-          t.loginRequired,
-          t.loginToContact,
+          translate('common.loginRequired'),
+          translate('loginToContact'),
           [
-            { text: t.cancel, style: 'cancel' },
-            { text: t.login, onPress: () => navigation.navigate('Login') },
+            { text: translate('cancel'), style: 'cancel' },
+            { text: translate('login'), onPress: () => navigation.navigate('Login') },
           ]
         );
       }, 300);
@@ -400,8 +271,8 @@ export default function MarketplaceScreen({ navigation, route }) {
   const handleAddProduct = () => {
     if (isOfficer) {
       showAppAlert(
-        t.accessRestricted,
-        t.officersCannotList,
+        translate('common.accessRestricted'),
+        translate('officersCannotList'),
         [{ text: 'OK' }]
       );
       return;
@@ -409,11 +280,11 @@ export default function MarketplaceScreen({ navigation, route }) {
 
     if (!isAuthenticated) {
       showAppAlert(
-        t.loginRequired,
-        t.loginToAdd,
+        translate('common.loginRequired'),
+        translate('loginToAdd'),
         [
-          { text: t.cancel, style: 'cancel' },
-          { text: t.login, onPress: () => navigation.navigate('Login') },
+          { text: translate('cancel'), style: 'cancel' },
+          { text: translate('login'), onPress: () => navigation.navigate('Login') },
         ]
       );
     } else {
@@ -453,8 +324,8 @@ export default function MarketplaceScreen({ navigation, route }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
-                <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
+                <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
               </View>
               {isOfficer ? (
                 <TouchableOpacity
@@ -480,7 +351,7 @@ export default function MarketplaceScreen({ navigation, route }) {
               <Icon name="magnify" size={20} color="#666" style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
-                placeholder={t.searchPlaceholder}
+                placeholder={translate('searchPlaceholder')}
                 placeholderTextColor="#999"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -495,10 +366,10 @@ export default function MarketplaceScreen({ navigation, route }) {
             {/* Sort Pills */}
             <Animated.View style={[styles.sortContainer, { opacity: fadeAnim }]}>
               {[
-                { id: 'newest', label: t.newest },
-                { id: 'priceLow', label: t.priceLow },
-                { id: 'priceHigh', label: t.priceHigh },
-                { id: 'oldest', label: t.oldest },
+                { id: 'newest', label: translate('newest') },
+                { id: 'priceLow', label: translate('priceLow') },
+                { id: 'priceHigh', label: translate('priceHigh') },
+                { id: 'oldest', label: translate('oldest') },
               ].map((option) => (
                 <TouchableOpacity
                   key={option.id}
@@ -526,7 +397,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.districtPillText, !selectedDistrict && styles.districtPillTextActive]}>
-                    {t.allDistricts}
+                    {translate('allDistricts')}
                   </Text>
                 </TouchableOpacity>
                 {SL_DISTRICTS.map(district => (
@@ -552,7 +423,7 @@ export default function MarketplaceScreen({ navigation, route }) {
 
             {/* Categories */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.categories}</Text>
+              <Text style={styles.sectionTitle}>{translate('categories')}</Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -575,7 +446,7 @@ export default function MarketplaceScreen({ navigation, route }) {
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <View style={styles.productsHeader}>
                 <Text style={styles.sectionTitle}>
-                  {selectedCategory === 'all' ? t.allProducts : categories.find(c => c.id === selectedCategory)?.label}
+                  {selectedCategory === 'all' ? translate('allProducts') : categories.find(c => c.id === selectedCategory)?.label}
                 </Text>
                 <Text style={styles.productCount}>{filteredProducts.length} items</Text>
               </View>
@@ -602,7 +473,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                       {loadingMore ? (
                         <ActivityIndicator size="small" color="#0F5132" />
                       ) : (
-                        <Text style={styles.loadMoreText}>{t.loadMore}</Text>
+                        <Text style={styles.loadMoreText}>{translate('loadMore')}</Text>
                       )}
                     </TouchableOpacity>
                   )}
@@ -612,15 +483,15 @@ export default function MarketplaceScreen({ navigation, route }) {
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>📦</Text>
-                  <Text style={styles.emptyStateTitle}>{t.noProducts}</Text>
-                  <Text style={styles.emptyStateText}>{t.noProductsDesc}</Text>
+                  <Text style={styles.emptyStateTitle}>{translate('noProducts')}</Text>
+                  <Text style={styles.emptyStateText}>{translate('noProductsDesc')}</Text>
                   {isAuthenticated && !isOfficer && (
                     <TouchableOpacity
                       style={styles.addProductButton}
                       onPress={handleAddProduct}
                     >
                       <Icon name="plus" size={20} color="#FFFFFF" />
-                      <Text style={styles.addProductButtonText}>{t.addProduct}</Text>
+                      <Text style={styles.addProductButtonText}>{translate('addProduct')}</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -716,7 +587,7 @@ export default function MarketplaceScreen({ navigation, route }) {
 
                     {/* Seller Info */}
                     <View style={styles.modalInfoSection}>
-                      <Text style={styles.modalInfoTitle}>{t.sellerDetails}</Text>
+                      <Text style={styles.modalInfoTitle}>{translate('sellerDetails')}</Text>
                       <View style={styles.modalInfoRow}>
                         <View style={styles.modalInfoIcon}>
                           <Icon name="account" size={18} color="#0F5132" />
@@ -746,7 +617,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                       style={styles.modalCloseBtn}
                       onPress={() => setDetailModalVisible(false)}
                     >
-                      <Text style={styles.modalCloseBtnText}>{t.close}</Text>
+                      <Text style={styles.modalCloseBtnText}>{translate('close')}</Text>
                     </TouchableOpacity>
                     {selectedProduct.phone && (
                       <TouchableOpacity
@@ -754,7 +625,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                         onPress={() => handleContact(selectedProduct)}
                       >
                         <Icon name="phone" size={20} color="#FFFFFF" />
-                        <Text style={styles.modalContactBtnText}>{t.contactSeller}</Text>
+                        <Text style={styles.modalContactBtnText}>{translate('contactSeller')}</Text>
                       </TouchableOpacity>
                     )}
                   </View>

@@ -13,150 +13,12 @@ import {
 } from 'react-native';
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
 const SUPPORT_EMAIL = 'ipaddycare@gmail.com';
-
-// Language translations
-const translations = {
-  English: {
-    title: 'Help & Support',
-    contactUs: 'Contact Us',
-    email: 'Email',
-    supportEmail: 'Support Email',
-    sendEmail: 'Send Email',
-    frequentlyAsked: 'Frequently Asked Questions',
-    faq1: 'How do I connect my device?',
-    faq1Answer: 'Go to Device Connection screen and follow the instructions to connect via WiFi or Bluetooth.',
-    faq2: 'How accurate are the readings?',
-    faq2Answer: 'Our sensors provide accurate readings within ±2% margin of error. Ensure proper calibration for best results.',
-    faq3: 'Can I use the app offline?',
-    faq3Answer: 'Yes, most features work offline. However, some features like weather data require internet connection.',
-    faq4: 'How do I export my test results?',
-    faq4Answer: 'Go to Settings > Data & Storage > Export Data to save your test history.',
-    faq5: 'What devices are supported?',
-    faq5Answer: 'The app supports ESP32 devices and Bluetooth-enabled moisture sensors. Check Device Connection for details.',
-    troubleshooting: 'Troubleshooting',
-    resetApp: 'Reset App Settings',
-    clearCache: 'Clear Cache',
-    reportBug: 'Report a Bug',
-    feedback: 'Send Feedback',
-    version: 'Version 1.0.0',
-    supportHours: 'Support Hours',
-    supportHoursText: 'Monday - Friday: 9:00 AM - 5:00 PM',
-    responseTime: 'Response Time',
-    responseTimeText: 'We typically respond within 24-48 hours',
-    helpSubject: 'Help & Support Request',
-    pleaseSendEmail: 'Please send email to:',
-    ok: 'OK',
-    emailCopied: 'Email Copied',
-    emailCopiedDesc: 'Email address copied:',
-    resetConfirm: 'This will reset all app settings to default. Continue?',
-    cancel: 'Cancel',
-    reset: 'Reset',
-    success: 'Success',
-    appResetSuccess: 'App settings reset successfully',
-    clearCacheConfirm: 'This will clear all cached data. Continue?',
-    clear: 'Clear',
-    cacheClearedSuccess: 'Cache cleared successfully',
-    reportBugSubtitle: 'Report issues or bugs',
-    feedbackSubtitle: 'Share your thoughts',
-    resetAppSubtitle: 'Reset to default settings',
-    clearCacheSubtitle: 'Clear cached data',
-  },
-  සිංහල: {
-    title: 'උදව් සහ සහාය',
-    contactUs: 'අප හා සම්බන්ධ වන්න',
-    email: 'විද්‍යුත් තැපෑල',
-    supportEmail: 'සහාය විද්‍යුත් තැපෑල',
-    sendEmail: 'විද්‍යුත් තැපෑල යවන්න',
-    frequentlyAsked: 'නිතර අසන ප්‍රශ්න',
-    faq1: 'මගේ උපාංගය සම්බන්ධ කරන්නේ කෙසේද?',
-    faq1Answer: 'උපාංග සම්බන්ධතා තිරයට ගොස් WiFi හෝ Bluetooth හරහා සම්බන්ධ වීමට උපදෙස් අනුගමනය කරන්න.',
-    faq2: 'කියවීම් කෙතරම් නිවැරදිද?',
-    faq2Answer: 'අපගේ සංවේදක ±2% දෝෂ සීමාවක් තුළ නිවැරදි කියවීම් සපයයි. හොඳම ප්‍රතිඵල සඳහා නිසි කැලිබ්‍රේෂන් සහතික කරන්න.',
-    faq3: 'මට අන්තර්ජාලයකින් තොරව යෙදුම භාවිතා කළ හැකිද?',
-    faq3Answer: 'ඔව්, බොහෝ විශේෂාංග අන්තර්ජාලයකින් තොරව ක්‍රියා කරයි. කෙසේ වෙතත්, කාලගුණ දත්ත වැනි සමහර විශේෂාංග සඳහා අන්තර්ජාල සම්බන්ධතාවයක් අවශ්‍ය වේ.',
-    faq4: 'මගේ පරීක්ෂණ ප්‍රතිඵල නිර්යාත කරන්නේ කෙසේද?',
-    faq4Answer: 'සැකසුම් > දත්ත සහ ගබඩාව > දත්ත නිර්යාත කරන්න වෙත ගොස් ඔබේ පරීක්ෂණ ඉතිහාසය සුරක්ෂිත කරන්න.',
-    faq5: 'කුමන උපාංග සහාය දක්වනු ලැබේද?',
-    faq5Answer: 'යෙදුම ESP32 උපාංග සහ Bluetooth-සක්‍රිය තෙතමන සංවේදක සහාය දක්වයි. විස්තර සඳහා උපාංග සම්බන්ධතාව පරීක්ෂා කරන්න.',
-    troubleshooting: 'ගැටළු විසඳීම',
-    resetApp: 'යෙදුම් සැකසුම් යළි සැකසීම',
-    clearCache: 'කෑෂ් මකන්න',
-    reportBug: 'දෝෂයක් වාර්තා කරන්න',
-    feedback: 'ප්‍රතිචාරයක් යවන්න',
-    version: 'අනුවාදය 1.0.0',
-    supportHours: 'සහාය පැය',
-    supportHoursText: 'සඳුදා - සිකුරාදා: පෙ.ව. 9:00 - ප.ව. 5:00',
-    responseTime: 'ප්‍රතිචාර කාලය',
-    responseTimeText: 'අපි සාමාන්‍යයෙන් පැය 24-48 තුළ ප්‍රතිචාර දක්වයි',
-    helpSubject: 'උදව් සහ සහාය ඉල්ලීම',
-    pleaseSendEmail: 'කරුණාකර විද්‍යුත් තැපෑල යවන්න:',
-    ok: 'හරි',
-    emailCopied: 'විද්‍යුත් තැපෑල පිටපත් කරන ලදී',
-    emailCopiedDesc: 'විද්‍යුත් තැපැල් ලිපිනය පිටපත් කරන ලදී:',
-    resetConfirm: 'මෙය සියලුම යෙදුම් සැකසුම් පෙරනිමියට යළි පිහිටුවනු ඇත. ඉදිරියට යන්නද?',
-    cancel: 'අවලංගු කරන්න',
-    reset: 'යළි පිහිටුවන්න',
-    success: 'සාර්ථකයි',
-    appResetSuccess: 'යෙදුම් සැකසුම් සාර්ථකව යළි පිහිටුවන ලදී',
-    clearCacheConfirm: 'මෙය සියලුම කෑෂ් කළ දත්ත මකා දමනු ඇත. ඉදිරියට යන්නද?',
-    clear: 'මකන්න',
-    cacheClearedSuccess: 'කෑෂ් සාර්ථකව මකා දමන ලදී',
-    reportBugSubtitle: 'ගැටළු හෝ දෝෂ වාර්තා කරන්න',
-    feedbackSubtitle: 'ඔබේ අදහස් බෙදාගන්න',
-    resetAppSubtitle: 'පෙරනිමි සැකසුම් වෙත යළි පිහිටුවන්න',
-    clearCacheSubtitle: 'කෑෂ් කළ දත්ත මකන්න',
-  },
-  தமிழ்: {
-    title: 'உதவி மற்றும் ஆதரவு',
-    contactUs: 'எங்களைத் தொடர்பு கொள்ளுங்கள்',
-    email: 'மின்னஞ்சல்',
-    supportEmail: 'ஆதரவு மின்னஞ்சல்',
-    sendEmail: 'மின்னஞ்சல் அனுப்ப',
-    frequentlyAsked: 'அடிக்கடி கேட்கப்படும் கேள்விகள்',
-    faq1: 'எனது சாதனத்தை எவ்வாறு இணைப்பது?',
-    faq1Answer: 'சாதன இணைப்பு திரையில் சென்று WiFi அல்லது Bluetooth வழியாக இணைக்க வழிமுறைகளைப் பின்பற்றவும்.',
-    faq2: 'வாசிப்புகள் எவ்வளவு துல்லியமானவை?',
-    faq2Answer: 'எங்கள் சென்சார்கள் ±2% பிழை வரம்பிற்குள் துல்லியமான வாசிப்புகளை வழங்குகின்றன. சிறந்த முடிவுகளுக்கு சரியான அளவீட்டை உறுதிசெய்யவும்.',
-    faq3: 'ஆஃப்லைனில் பயன்பாட்டைப் பயன்படுத்த முடியுமா?',
-    faq3Answer: 'ஆம், பெரும்பாலான அம்சங்கள் ஆஃப்லைனில் செயல்படுகின்றன. இருப்பினும், வானிலை தரவு போன்ற சில அம்சங்களுக்கு இணைய இணைப்பு தேவை.',
-    faq4: 'எனது சோதனை முடிவுகளை எவ்வாறு ஏற்றுமதி செய்வது?',
-    faq4Answer: 'அமைப்புகள் > தரவு மற்றும் சேமிப்பு > தரவு ஏற்றுமதி சென்று உங்கள் சோதனை வரலாற்றைச் சேமிக்கவும்.',
-    faq5: 'எந்த சாதனங்கள் ஆதரிக்கப்படுகின்றன?',
-    faq5Answer: 'பயன்பாடு ESP32 சாதனங்கள் மற்றும் Bluetooth-இயக்கப்பட்ட ஈரப்பதம் சென்சார்களை ஆதரிக்கிறது. விவரங்களுக்கு சாதன இணைப்பைச் சரிபார்க்கவும்.',
-    troubleshooting: 'சிக்கல் தீர்த்தல்',
-    resetApp: 'பயன்பாட்டு அமைப்புகளை மீட்டமை',
-    clearCache: 'கேச் அழிக்க',
-    reportBug: 'பிழையைப் புகாரளிக்க',
-    feedback: 'கருத்தை அனுப்ப',
-    version: 'பதிப்பு 1.0.0',
-    supportHours: 'ஆதரவு நேரம்',
-    supportHoursText: 'திங்கள் - வெள்ளி: காலை 9:00 - மாலை 5:00',
-    responseTime: 'பதிலளிக்கும் நேரம்',
-    responseTimeText: 'நாங்கள் பொதுவாக 24-48 மணி நேரத்திற்குள் பதிலளிக்கிறோம்',
-    helpSubject: 'உதவி மற்றும் ஆதரவு கோரிக்கை',
-    pleaseSendEmail: 'தயவுசெய்து மின்னஞ்சல் அனுப்பவும்:',
-    ok: 'சரி',
-    emailCopied: 'மின்னஞ்சல் நகலெடுக்கப்பட்டது',
-    emailCopiedDesc: 'மின்னஞ்சல் முகவரி நகலெடுக்கப்பட்டது:',
-    resetConfirm: 'இது அனைத்து பயன்பாட்டு அமைப்புகளையும் இயல்புநிலைக்கு மீட்டமைக்கும். தொடரவா?',
-    cancel: 'ரத்து',
-    reset: 'மீட்டமை',
-    success: 'வெற்றி',
-    appResetSuccess: 'பயன்பாட்டு அமைப்புகள் வெற்றிகரமாக மீட்டமைக்கப்பட்டன',
-    clearCacheConfirm: 'இது அனைத்து கேச் செய்யப்பட்ட தரவையும் அழிக்கும். தொடரவா?',
-    clear: 'அழி',
-    cacheClearedSuccess: 'கேச் வெற்றிகரமாக அழிக்கப்பட்டது',
-    reportBugSubtitle: 'சிக்கல்கள் அல்லது பிழைகளைப் புகாரளி',
-    feedbackSubtitle: 'உங்கள் எண்ணங்களைப் பகிர்',
-    resetAppSubtitle: 'இயல்புநிலை அமைப்புகளுக்கு மீட்டமை',
-    clearCacheSubtitle: 'கேச் செய்யப்பட்ட தரவை அழி',
-  },
-};
 
 const FAQItem = ({ question, answer, isExpanded, onToggle }) => {
   return (
@@ -202,9 +64,8 @@ const SupportCard = ({ icon, title, subtitle, onPress, color = '#0F5132' }) => {
 };
 
 export default function HelpScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('help');
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [expandedFAQ, setExpandedFAQ] = useState(null);
 
@@ -217,7 +78,7 @@ export default function HelpScreen({ navigation }) {
   }, [fadeAnim]);
 
   const handleSendEmail = async () => {
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t.helpSubject)}`;
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(translate('helpSubject'))}`;
 
     if (Platform.OS === 'ios') {
       // On iOS, check if we can open the URL first
@@ -233,9 +94,9 @@ export default function HelpScreen({ navigation }) {
             }, 100);
           } catch (openErr) {
             showAppAlert(
-              t.email,
-              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
-              [{ text: t.ok }]
+              translate('common.email'),
+              `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+              [{ text: translate('common.ok') }]
             );
           }
         } else {
@@ -244,9 +105,9 @@ export default function HelpScreen({ navigation }) {
             await Linking.openURL(emailUrl);
           } catch (openErr) {
             showAppAlert(
-              t.email,
-              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
-              [{ text: t.ok }]
+              translate('common.email'),
+              `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+              [{ text: translate('common.ok') }]
             );
           }
         }
@@ -256,9 +117,9 @@ export default function HelpScreen({ navigation }) {
           await Linking.openURL(emailUrl);
         } catch (openErr) {
           showAppAlert(
-            t.email,
-            `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
-            [{ text: t.ok }]
+            translate('common.email'),
+            `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+            [{ text: translate('common.ok') }]
           );
         }
       }
@@ -268,28 +129,28 @@ export default function HelpScreen({ navigation }) {
         await Linking.openURL(emailUrl);
       } catch (err) {
         showAppAlert(
-          t.email,
-          `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
-          [{ text: t.ok }]
+          translate('common.email'),
+          `${translate('common.pleaseSendEmail')} ${SUPPORT_EMAIL}`,
+          [{ text: translate('common.ok') }]
         );
       }
     }
   };
 
   const handleCopyEmail = () => {
-    showAppAlert(t.emailCopied, `${t.emailCopiedDesc} ${SUPPORT_EMAIL}`);
+    showAppAlert(translate('emailCopied'), `${translate('emailCopiedDesc')} ${SUPPORT_EMAIL}`);
   };
 
   const handleResetApp = () => {
     showAppAlert(
-      t.resetApp,
-      t.resetConfirm,
+      translate('resetApp'),
+      translate('resetConfirm'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.reset,
+          text: translate('reset'),
           style: 'destructive',
-          onPress: () => showAppAlert(t.success, t.appResetSuccess),
+          onPress: () => showAppAlert(translate('success'), translate('appResetSuccess')),
         },
       ]
     );
@@ -297,25 +158,25 @@ export default function HelpScreen({ navigation }) {
 
   const handleClearCache = () => {
     showAppAlert(
-      t.clearCache,
-      t.clearCacheConfirm,
+      translate('clearCache'),
+      translate('clearCacheConfirm'),
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.clear,
+          text: translate('clear'),
           style: 'destructive',
-          onPress: () => showAppAlert(t.success, t.cacheClearedSuccess),
+          onPress: () => showAppAlert(translate('success'), translate('cacheClearedSuccess')),
         },
       ]
     );
   };
 
   const faqs = [
-    { id: 1, question: t.faq1, answer: t.faq1Answer },
-    { id: 2, question: t.faq2, answer: t.faq2Answer },
-    { id: 3, question: t.faq3, answer: t.faq3Answer },
-    { id: 4, question: t.faq4, answer: t.faq4Answer },
-    { id: 5, question: t.faq5, answer: t.faq5Answer },
+    { id: 1, question: translate('faq1'), answer: translate('faq1Answer') },
+    { id: 2, question: translate('faq2'), answer: translate('faq2Answer') },
+    { id: 3, question: translate('faq3'), answer: translate('faq3Answer') },
+    { id: 4, question: translate('faq4'), answer: translate('faq4Answer') },
+    { id: 5, question: translate('faq5'), answer: translate('faq5Answer') },
   ];
 
   return (
@@ -343,7 +204,7 @@ export default function HelpScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
               </View>
               <View style={styles.backButtonPlaceholder} />
             </View>
@@ -352,14 +213,14 @@ export default function HelpScreen({ navigation }) {
           <View style={styles.innerContent}>
             {/* Contact Section */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.contactUs}</Text>
+              <Text style={styles.sectionTitle}>{translate('contactUs')}</Text>
               <View style={styles.contactCard}>
                 <View style={styles.emailContainer}>
                   <View style={styles.emailIconContainer}>
                     <Icon name="email" size={24} color="#0F5132" />
                   </View>
                   <View style={styles.emailContent}>
-                    <Text style={styles.emailLabel}>{t.supportEmail}</Text>
+                    <Text style={styles.emailLabel}>{translate('supportEmail')}</Text>
                     <Text style={styles.emailAddress}>{SUPPORT_EMAIL}</Text>
                   </View>
                 </View>
@@ -369,7 +230,7 @@ export default function HelpScreen({ navigation }) {
                     onPress={handleSendEmail}
                   >
                     <Icon name="email-outline" size={20} color="#FFFFFF" />
-                    <Text style={styles.emailButtonText}>{t.sendEmail}</Text>
+                    <Text style={styles.emailButtonText}>{translate('sendEmail')}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={[styles.emailButton, styles.copyButton]}
@@ -383,43 +244,43 @@ export default function HelpScreen({ navigation }) {
               <View style={styles.supportInfo}>
                 <View style={styles.supportInfoItem}>
                   <Icon name="clock-outline" size={18} color="#666" />
-                  <Text style={styles.supportInfoText}>{t.supportHoursText}</Text>
+                  <Text style={styles.supportInfoText}>{translate('supportHoursText')}</Text>
                 </View>
                 <View style={styles.supportInfoItem}>
                   <Icon name="timer-outline" size={18} color="#666" />
-                  <Text style={styles.supportInfoText}>{t.responseTimeText}</Text>
+                  <Text style={styles.supportInfoText}>{translate('responseTimeText')}</Text>
                 </View>
               </View>
             </Animated.View>
 
             {/* Support Actions */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.troubleshooting}</Text>
+              <Text style={styles.sectionTitle}>{translate('troubleshooting')}</Text>
               <SupportCard
                 icon="bug"
-                title={t.reportBug}
-                subtitle={t.reportBugSubtitle}
+                title={translate('reportBug')}
+                subtitle={translate('reportBugSubtitle')}
                 onPress={handleSendEmail}
                 color="#E91E63"
               />
               <SupportCard
                 icon="message-text-outline"
-                title={t.feedback}
-                subtitle={t.feedbackSubtitle}
+                title={translate('feedback')}
+                subtitle={translate('feedbackSubtitle')}
                 onPress={handleSendEmail}
                 color="#2196F3"
               />
               <SupportCard
                 icon="refresh"
-                title={t.resetApp}
-                subtitle={t.resetAppSubtitle}
+                title={translate('resetApp')}
+                subtitle={translate('resetAppSubtitle')}
                 onPress={handleResetApp}
                 color="#FF6D00"
               />
               <SupportCard
                 icon="delete-outline"
-                title={t.clearCache}
-                subtitle={t.clearCacheSubtitle}
+                title={translate('clearCache')}
+                subtitle={translate('clearCacheSubtitle')}
                 onPress={handleClearCache}
                 color="#607D8B"
               />
@@ -427,7 +288,7 @@ export default function HelpScreen({ navigation }) {
 
             {/* FAQ Section */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.frequentlyAsked}</Text>
+              <Text style={styles.sectionTitle}>{translate('frequentlyAsked')}</Text>
               <View style={styles.faqContainer}>
                 {faqs.map((faq) => (
                   <FAQItem
@@ -445,7 +306,7 @@ export default function HelpScreen({ navigation }) {
 
             {/* Version Info */}
             <Animated.View style={[styles.versionContainer, { opacity: fadeAnim }]}>
-              <Text style={styles.versionText}>{t.version}</Text>
+              <Text style={styles.versionText}>{translate('version')}</Text>
             </Animated.View>
           </View>
         </ScrollView>

@@ -28,197 +28,9 @@ import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
 import PokedexResultCard from '../src/components/PokedexResultCard';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
 
 const { width, height } = Dimensions.get('window');
-
-const translations = {
-  English: {
-    headerTitle: 'Pest & Disease Detection',
-    takePhoto: 'Take Photo',
-    takePhotoDesc: 'Capture plant images using camera',
-    chooseGallery: 'Choose from Gallery',
-    chooseGalleryDesc: 'Select an image from your gallery',
-    selectedImage: 'Selected Image',
-    changeImage: 'Change Image',
-    analyzing: 'Analyzing image...',
-    detectPest: 'Detect Pest',
-    detectDisease: 'Detect Disease',
-    askPlaceholder: 'Ask a question...',
-    readyToScan: 'Ready to Scan',
-    readyToScanDesc: 'Take a photo or select an image of your crop to detect pests and diseases',
-    apiKeyRequired: 'API Key Required',
-    enterApiKey: 'Enter your OpenAI API key',
-    cancel: 'Cancel',
-    save: 'Save',
-    grantPermission: 'Grant Permission',
-    close: 'Close',
-    error: 'Error',
-    failedInit: 'Failed to initialize detection services',
-    permissionDenied: 'Permission Denied',
-    micRequired: 'Microphone permission is required for voice input.',
-    notAvailable: 'Not Available',
-    voiceUnavailable: 'Voice recognition is not available. This feature requires the legacy React Native architecture.',
-    voiceError: 'Voice Error',
-    voiceErrorMsg: 'Voice recognition failed to start. This module may not be compatible with the current React Native architecture.',
-    cameraRequired: 'Camera permission is required to take photos.',
-    cameraNotReady: 'Camera not ready',
-    failedTakePic: 'Failed to take picture. Please try again.',
-    selectImageFirst: 'Please select an image first',
-    servicesNotReady: 'Services not ready yet',
-    failedDetect: 'Failed to detect disease. Please try again.',
-    failedResponse: 'Failed to get response. Please check your internet connection and API key.',
-    success: 'Success',
-    apiKeySaved: 'API key saved! You can now use the chat.',
-    failedSaveKey: 'Failed to save API key',
-    invalidApiKey: 'Please enter a valid API key',
-    cameraPermDenied: 'Camera permission is required.',
-    diseaseMode: 'Disease',
-    pestMode: 'Pest',
-    micPermissionTitle: 'Microphone Permission',
-    micPermissionMsg: 'This app needs access to your microphone for voice input.',
-    askMeLater: 'Ask Me Later',
-    ok: 'OK',
-    selectImage: 'Select Image',
-    chooseOption: 'Choose an option',
-    camera: 'Camera',
-    gallery: 'Gallery',
-    hideChat: 'Hide Chat',
-    askAboutDisease: 'Ask Questions About This Disease',
-    askMeAnythingAbout: 'Ask me anything about',
-    chatExample: 'Example: "How do I prevent this disease?" or "What are the best treatment methods?"',
-    listening: 'Listening...',
-    apiKeyModalDesc: 'To use the chat feature, you need an OpenAI API key. Get one from:',
-    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
-    apiKeyEnvNote: 'Note: Your API key should be in the .env file as OPENAI_API_KEY',
-    cameraPermissionRequired: 'Camera permission is required',
-    voiceLangFallback: 'Language Not Supported',
-    voiceLangFallbackMsg: 'Voice input is not available in your selected language on this device. Using English instead. Tip: install the offline voice pack for this language in your device settings.',
-  },
-  සිංහල: {
-    headerTitle: 'කෘමී සහ රෝග හඳුනාගැනීම',
-    takePhoto: 'ඡායාරූපයක් ගන්න',
-    takePhotoDesc: 'කැමරාව භාවිතයෙන් ශාක රූප ග්‍රහණය කරන්න',
-    chooseGallery: 'ගැලරියෙන් තෝරන්න',
-    chooseGalleryDesc: 'ඔබේ ගැලරියෙන් රූපයක් තෝරන්න',
-    selectedImage: 'තෝරාගත් රූපය',
-    changeImage: 'රූපය වෙනස් කරන්න',
-    analyzing: 'රූපය විශ්ලේෂණය කරමින්...',
-    detectPest: 'කෘමියා හඳුනන්න',
-    detectDisease: 'රෝගය හඳුනන්න',
-    askPlaceholder: 'ප්‍රශ්නයක් අසන්න...',
-    readyToScan: 'පරිලෝකනයට සූදානම්',
-    readyToScanDesc: 'කෘමීන් සහ රෝග හඳුනා ගැනීමට ඔබේ බෝගයේ ඡායාරූපයක් ගන්න හෝ රූපයක් තෝරන්න',
-    apiKeyRequired: 'API යතුර අවශ්‍යයි',
-    enterApiKey: 'ඔබේ OpenAI API යතුර ඇතුළත් කරන්න',
-    cancel: 'අවලංගු කරන්න',
-    save: 'සුරකින්න',
-    grantPermission: 'අවසර දෙන්න',
-    close: 'වසන්න',
-    error: 'දෝෂය',
-    failedInit: 'හඳුනාගැනීමේ සේවා ආරම්භ කිරීමට අසමත් විය',
-    permissionDenied: 'අවසරය ප්‍රතික්ෂේප කරන ලදී',
-    micRequired: 'හඬ ආදානය සඳහා මයික්‍රෆෝන් අවසරය අවශ්‍ය වේ.',
-    notAvailable: 'ලබා ගත නොහැක',
-    voiceUnavailable: 'හඬ හඳුනාගැනීම ලබා ගත නොහැක. මෙම විශේෂාංගය legacy React Native ගෘහනිර්මාණ ශිල්පය අවශ්‍ය වේ.',
-    voiceError: 'හඬ දෝෂය',
-    voiceErrorMsg: 'හඬ හඳුනාගැනීම ආරම්භ කිරීමට අසමත් විය. මෙම මොඩියුලය වර්තමාන React Native ගෘහනිර්මාණ ශිල්පය සමඟ අනුකූල නොවිය හැක.',
-    cameraRequired: 'ඡායාරූප ගැනීමට කැමරා අවසරය අවශ්‍ය වේ.',
-    cameraNotReady: 'කැමරාව සූදානම් නැත',
-    failedTakePic: 'ඡායාරූපයක් ගැනීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
-    selectImageFirst: 'කරුණාකර පළමුව රූපයක් තෝරන්න',
-    servicesNotReady: 'සේවා තවමත් සූදානම් නැත',
-    failedDetect: 'රෝගය හඳුනාගැනීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
-    failedResponse: 'ප්‍රතිචාරයක් ලබා ගැනීමට අසමත් විය. ඔබේ අන්තර්ජාල සම්බන්ධතාවය සහ API යතුර පරීක්ෂා කරන්න.',
-    success: 'සාර්ථකයි',
-    apiKeySaved: 'API යතුර සුරකින ලදී! ඔබට දැන් කතාබස් භාවිතා කළ හැක.',
-    failedSaveKey: 'API යතුර සුරැකීමට අසමත් විය',
-    invalidApiKey: 'කරුණාකර වලංගු API යතුරක් ඇතුළත් කරන්න',
-    cameraPermDenied: 'කැමරා අවසරය අවශ්‍ය වේ.',
-    diseaseMode: 'රෝගය',
-    pestMode: 'කෘමියා',
-    micPermissionTitle: 'මයික්‍රෆෝන් අවසරය',
-    micPermissionMsg: 'හඬ ආදානය සඳහා මෙම යෙදුමට ඔබේ මයික්‍රෆෝනයට ප්‍රවේශය අවශ්‍ය වේ.',
-    askMeLater: 'පසුව අසන්න',
-    ok: 'හරි',
-    selectImage: 'රූපයක් තෝරන්න',
-    chooseOption: 'විකල්පයක් තෝරන්න',
-    camera: 'කැමරාව',
-    gallery: 'ගැලරිය',
-    hideChat: 'කතාබස් සඟවන්න',
-    askAboutDisease: 'මෙම රෝගය ගැන ප්‍රශ්න අසන්න',
-    askMeAnythingAbout: 'ඕනෑම දෙයක් අසන්න',
-    chatExample: 'උදා: "මෙම රෝගය වැළැක්විය හැක්කේ කෙසේද?" හෝ "හොඳම ප්‍රතිකාර ක්‍රම මොනවාද?"',
-    listening: 'සවන් දෙමින්...',
-    apiKeyModalDesc: 'කතාබස් විශේෂාංගය භාවිතා කිරීමට, ඔබට OpenAI API යතුරක් අවශ්‍යයි. එය ලබා ගන්න:',
-    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
-    apiKeyEnvNote: 'සටහන: ඔබේ API යතුර .env ගොනුවේ OPENAI_API_KEY ලෙස තිබිය යුතුය',
-    cameraPermissionRequired: 'කැමරා අවසරය අවශ්‍ය වේ',
-    voiceLangFallback: 'භාෂාව සහාය නොදක්වයි',
-    voiceLangFallbackMsg: 'මෙම උපාංගයේ ඔබ තෝරාගත් භාෂාවෙන් හඬ ආදානය ලබා ගත නොහැක. ඉංග්‍රීසි භාවිතා කරයි. ඉඟිය: ඔබේ උපාංග සැකසුම්වල මෙම භාෂාව සඳහා නොබැඳි හඬ පැකේජය ස්ථාපනය කරන්න.',
-  },
-  தமிழ்: {
-    headerTitle: 'பூச்சி மற்றும் நோய் கண்டறிதல்',
-    takePhoto: 'புகைப்படம் எடு',
-    takePhotoDesc: 'கேமராவைப் பயன்படுத்தி தாவர படங்களைப் பிடிக்கவும்',
-    chooseGallery: 'கேலரியில் இருந்து தேர்வு செய்',
-    chooseGalleryDesc: 'உங்கள் கேலரியிலிருந்து ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
-    selectedImage: 'தேர்ந்தெடுக்கப்பட்ட படம்',
-    changeImage: 'படத்தை மாற்று',
-    analyzing: 'படத்தை பகுப்பாய்வு செய்கிறது...',
-    detectPest: 'பூச்சியை கண்டறி',
-    detectDisease: 'நோயை கண்டறி',
-    askPlaceholder: 'கேள்வி கேளுங்கள்...',
-    readyToScan: 'ஸ்கேன் செய்ய தயார்',
-    readyToScanDesc: 'பூச்சிகள் மற்றும் நோய்களைக் கண்டறிய உங்கள் பயிரின் புகைப்படத்தை எடுக்கவும் அல்லது படத்தைத் தேர்ந்தெடுக்கவும்',
-    apiKeyRequired: 'API விசை தேவை',
-    enterApiKey: 'உங்கள் OpenAI API விசையை உள்ளிடவும்',
-    cancel: 'ரத்து',
-    save: 'சேமி',
-    grantPermission: 'அனுமதி வழங்கு',
-    close: 'மூடு',
-    error: 'பிழை',
-    failedInit: 'கண்டறிதல் சேவைகளைத் தொடங்க முடியவில்லை',
-    permissionDenied: 'அனுமதி மறுக்கப்பட்டது',
-    micRequired: 'குரல் உள்ளீட்டிற்கு மைக்ரோபோன் அனுமதி தேவை.',
-    notAvailable: 'கிடைக்கவில்லை',
-    voiceUnavailable: 'குரல் அங்கீகாரம் கிடைக்கவில்லை. இந்த அம்சத்திற்கு legacy React Native கட்டமைப்பு தேவை.',
-    voiceError: 'குரல் பிழை',
-    voiceErrorMsg: 'குரல் அங்கீகாரம் தொடங்கத் தவறிவிட்டது. இந்த தொகுதி தற்போதைய React Native கட்டமைப்புடன் இணக்கமாக இல்லாமல் இருக்கலாம்.',
-    cameraRequired: 'புகைப்படங்கள் எடுக்க கேமரா அனுமதி தேவை.',
-    cameraNotReady: 'கேமரா தயாராக இல்லை',
-    failedTakePic: 'படம் எடுக்கத் தவறிவிட்டது. மீண்டும் முயற்சிக்கவும்.',
-    selectImageFirst: 'முதலில் ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
-    servicesNotReady: 'சேவைகள் இன்னும் தயாராக இல்லை',
-    failedDetect: 'நோயைக் கண்டறிய முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
-    failedResponse: 'பதிலைப் பெற முடியவில்லை. உங்கள் இணைய இணைப்பு மற்றும் API விசையைச் சரிபார்க்கவும்.',
-    success: 'வெற்றி',
-    apiKeySaved: 'API விசை சேமிக்கப்பட்டது! நீங்கள் இப்போது அரட்டையைப் பயன்படுத்தலாம்.',
-    failedSaveKey: 'API விசையைச் சேமிக்க முடியவில்லை',
-    invalidApiKey: 'சரியான API விசையை உள்ளிடவும்',
-    cameraPermDenied: 'கேமரா அனுமதி தேவை.',
-    diseaseMode: 'நோய்',
-    pestMode: 'பூச்சி',
-    micPermissionTitle: 'மைக்ரோபோன் அனுமதி',
-    micPermissionMsg: 'குரல் உள்ளீட்டிற்காக இந்த பயன்பாட்டிற்கு உங்கள் மைக்ரோபோனுக்கான அணுகல் தேவை.',
-    askMeLater: 'பிறகு கேள்',
-    ok: 'சரி',
-    selectImage: 'படத்தைத் தேர்ந்தெடு',
-    chooseOption: 'ஒரு விருப்பத்தைத் தேர்ந்தெடு',
-    camera: 'கேமரா',
-    gallery: 'கேலரி',
-    hideChat: 'அரட்டையை மறை',
-    askAboutDisease: 'இந்த நோய் பற்றி கேள்விகள் கேள்',
-    askMeAnythingAbout: 'எதைப் பற்றியும் கேள்',
-    chatExample: 'உதா: "இந்த நோயை எவ்வாறு தடுப்பது?" அல்லது "சிறந்த சிகிச்சை முறைகள் என்ன?"',
-    listening: 'கேட்கிறது...',
-    apiKeyModalDesc: 'அரட்டை அம்சத்தைப் பயன்படுத்த, உங்களுக்கு OpenAI API விசை தேவை. இங்கே பெறவும்:',
-    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
-    apiKeyEnvNote: 'குறிப்பு: உங்கள் API விசை .env கோப்பில் OPENAI_API_KEY ஆக இருக்க வேண்டும்',
-    cameraPermissionRequired: 'கேமரா அனுமதி தேவை',
-    voiceLangFallback: 'மொழி ஆதரிக்கப்படவில்லை',
-    voiceLangFallbackMsg: 'இந்த சாதனத்தில் நீங்கள் தேர்ந்தெடுத்த மொழியில் குரல் உள்ளீடு கிடைக்கவில்லை. ஆங்கிலம் பயன்படுத்தப்படுகிறது. குறிப்பு: உங்கள் சாதன அமைப்புகளில் இந்த மொழிக்கான ஆஃப்லைன் குரல் தொகுப்பை நிறுவவும்.',
-  },
-};
 
 const VOICE_LOCALES = {
   English: 'en-US',
@@ -228,7 +40,7 @@ const VOICE_LOCALES = {
 
 export default function PestDetectionScreen({ navigation }) {
   const { selectedLanguage } = useLanguage();
-  const t = translations[selectedLanguage] || translations.English;
+  const translate = useTranslation('pestDetection');
   const [detectionMode, setDetectionMode] = useState('disease'); // 'disease' or 'pest'
   const [imageUri, setImageUri] = useState(null);
   const [detecting, setDetecting] = useState(false);
@@ -361,7 +173,7 @@ export default function PestDetectionScreen({ navigation }) {
       setServicesReady(true);
     } catch (error) {
       console.error('Failed to initialize services:', error);
-      showAppAlert(t.error, t.failedInit);
+      showAppAlert(translate('common.error'), translate('failedInit'));
     }
   };
 
@@ -414,11 +226,11 @@ export default function PestDetectionScreen({ navigation }) {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
           {
-            title: t.micPermissionTitle,
-            message: t.micPermissionMsg,
-            buttonNeutral: t.askMeLater,
-            buttonNegative: t.cancel,
-            buttonPositive: t.ok,
+            title: translate('micPermissionTitle'),
+            message: translate('micPermissionMsg'),
+            buttonNeutral: translate('askMeLater'),
+            buttonNegative: translate('cancel'),
+            buttonPositive: translate('common.ok'),
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -434,14 +246,14 @@ export default function PestDetectionScreen({ navigation }) {
     try {
       const hasPermission = await requestMicrophonePermission();
       if (!hasPermission) {
-        showAppAlert(t.permissionDenied, t.micRequired);
+        showAppAlert(translate('common.permissionDenied'), translate('micRequired'));
         return;
       }
 
       // Check if native Voice module is available (not supported with New Architecture)
       const isAvailable = await Voice.isAvailable().catch(() => false);
       if (!isAvailable) {
-        showAppAlert(t.notAvailable, t.voiceUnavailable);
+        showAppAlert(translate('notAvailable'), translate('voiceUnavailable'));
         return;
       }
       // Fully destroy previous session, wait for cleanup, then re-register listeners
@@ -458,7 +270,7 @@ export default function PestDetectionScreen({ navigation }) {
         // Locale not installed/supported on this device — fall back to English
         if (preferredLocale !== 'en-US') {
           console.warn(`Voice locale ${preferredLocale} not supported, falling back to en-US`);
-          showAppAlert(t.voiceLangFallback, t.voiceLangFallbackMsg);
+          showAppAlert(translate('voiceLangFallback'), translate('voiceLangFallbackMsg'));
           await Voice.start('en-US');
         } else {
           throw localeError;
@@ -467,7 +279,7 @@ export default function PestDetectionScreen({ navigation }) {
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting voice recognition:', error);
-      showAppAlert(t.voiceError, t.voiceErrorMsg);
+      showAppAlert(translate('voiceError'), translate('voiceErrorMsg'));
       setIsRecording(false);
     }
   };
@@ -489,15 +301,14 @@ export default function PestDetectionScreen({ navigation }) {
     }
   };
 
-
   const handleImagePicker = () => {
     showAppAlert(
-      t.selectImage,
-      t.chooseOption,
+      translate('selectImage'),
+      translate('chooseOption'),
       [
-        { text: t.camera, onPress: openCamera },
-        { text: t.gallery, onPress: openGallery },
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('camera'), onPress: openCamera },
+        { text: translate('gallery'), onPress: openGallery },
+        { text: translate('cancel'), style: 'cancel' },
       ]
     );
   };
@@ -506,7 +317,7 @@ export default function PestDetectionScreen({ navigation }) {
     if (!hasPermission) {
       const permissionResult = await requestPermission();
       if (!permissionResult) {
-        showAppAlert(t.permissionDenied, t.cameraRequired);
+        showAppAlert(translate('common.permissionDenied'), translate('cameraRequired'));
         return;
       }
     }
@@ -516,7 +327,7 @@ export default function PestDetectionScreen({ navigation }) {
   const takePicture = async () => {
     try {
       if (!cameraRef.current) {
-        showAppAlert(t.error, t.cameraNotReady);
+        showAppAlert(translate('common.error'), translate('cameraNotReady'));
         return;
       }
       
@@ -534,7 +345,7 @@ export default function PestDetectionScreen({ navigation }) {
       setShowCamera(false);
     } catch (error) {
       console.error('Error taking picture:', error);
-      showAppAlert(t.error, t.failedTakePic);
+      showAppAlert(translate('common.error'), translate('failedTakePic'));
     }
   };
 
@@ -562,12 +373,12 @@ export default function PestDetectionScreen({ navigation }) {
 
   const detectDisease = async () => {
     if (!imageUri) {
-      showAppAlert(t.error, t.selectImageFirst);
+      showAppAlert(translate('common.error'), translate('selectImageFirst'));
       return;
     }
 
     if (!servicesReady) {
-      showAppAlert(t.error, t.servicesNotReady);
+      showAppAlert(translate('common.error'), translate('servicesNotReady'));
       return;
     }
 
@@ -591,7 +402,7 @@ export default function PestDetectionScreen({ navigation }) {
       // (Marketplace product fetch lives inside PokedexResultCard now.)
     } catch (error) {
       console.error('Detection error:', error);
-      showAppAlert(t.error, t.failedDetect);
+      showAppAlert(translate('common.error'), translate('failedDetect'));
     } finally {
       setDetecting(false);
     }
@@ -633,7 +444,7 @@ export default function PestDetectionScreen({ navigation }) {
       setChatMessages([...newMessages, { role: 'assistant', content: response }]);
     } catch (error) {
       console.error('Chat error:', error);
-      showAppAlert(t.error, t.failedResponse);
+      showAppAlert(translate('common.error'), translate('failedResponse'));
       setChatMessages(newMessages.slice(0, -1)); // Remove user message on error
     } finally {
       setSendingMessage(false);
@@ -672,7 +483,7 @@ export default function PestDetectionScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.headerTitle}</Text>
+                <Text style={styles.headerTitle}>{translate('headerTitle')}</Text>
               </View>
             </View>
           </View>
@@ -687,7 +498,7 @@ export default function PestDetectionScreen({ navigation }) {
               >
                 <Icon name="leaf" size={18} color={detectionMode === 'disease' ? '#FFFFFF' : '#0F5132'} />
                 <Text style={[styles.modeToggleText, detectionMode === 'disease' && styles.modeToggleTextActive]}>
-                  {t.diseaseMode}
+                  {translate('diseaseMode')}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -697,7 +508,7 @@ export default function PestDetectionScreen({ navigation }) {
               >
                 <Icon name="bug" size={18} color={detectionMode === 'pest' ? '#FFFFFF' : '#0F5132'} />
                 <Text style={[styles.modeToggleText, detectionMode === 'pest' && styles.modeToggleTextActive]}>
-                  {t.pestMode}
+                  {translate('pestMode')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -725,8 +536,8 @@ export default function PestDetectionScreen({ navigation }) {
                         <Icon name="camera" size={32} color="#4CAF50" />
                       </View>
                       <View style={styles.actionTextContainer}>
-                        <Text style={styles.actionTitle}>{t.takePhoto}</Text>
-                        <Text style={styles.actionDescription}>{t.takePhotoDesc}</Text>
+                        <Text style={styles.actionTitle}>{translate('takePhoto')}</Text>
+                        <Text style={styles.actionDescription}>{translate('takePhotoDesc')}</Text>
                       </View>
                       <View style={styles.actionArrow}>
                         <Icon name="chevron-right" size={22} color="#0F5132" />
@@ -745,8 +556,8 @@ export default function PestDetectionScreen({ navigation }) {
                         <Icon name="image-plus" size={32} color="#2196F3" />
                       </View>
                       <View style={styles.actionTextContainer}>
-                        <Text style={styles.actionTitle}>{t.chooseGallery}</Text>
-                        <Text style={styles.actionDescription}>{t.chooseGalleryDesc}</Text>
+                        <Text style={styles.actionTitle}>{translate('chooseGallery')}</Text>
+                        <Text style={styles.actionDescription}>{translate('chooseGalleryDesc')}</Text>
                       </View>
                       <View style={styles.actionArrow}>
                         <Icon name="chevron-right" size={22} color="#0F5132" />
@@ -769,7 +580,7 @@ export default function PestDetectionScreen({ navigation }) {
                 ]}
               >
                 <View style={styles.imageCardHeader}>
-                  <Text style={styles.imageCardTitle}>{t.selectedImage}</Text>
+                  <Text style={styles.imageCardTitle}>{translate('selectedImage')}</Text>
                   <TouchableOpacity onPress={clearImage}>
                     <Icon name="close-circle" size={24} color="#666" />
                   </TouchableOpacity>
@@ -794,7 +605,7 @@ export default function PestDetectionScreen({ navigation }) {
                       >
                         <Icon name={detectionMode === 'pest' ? 'bug' : 'leaf'} size={18} color="#FFFFFF" />
                         <Text style={styles.processButtonText}>
-                          {detectionMode === 'pest' ? t.detectPest : t.detectDisease}
+                          {detectionMode === 'pest' ? translate('detectPest') : translate('detectDisease')}
                         </Text>
                       </TouchableOpacity>
                     )}
@@ -802,7 +613,7 @@ export default function PestDetectionScreen({ navigation }) {
                       style={styles.changeImageButton}
                       onPress={handleImagePicker}
                     >
-                      <Text style={styles.changeImageButtonText}>{t.changeImage}</Text>
+                      <Text style={styles.changeImageButtonText}>{translate('changeImage')}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -810,7 +621,7 @@ export default function PestDetectionScreen({ navigation }) {
                   <View style={styles.processButton}>
                     <View style={styles.processButtonContent}>
                       <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.processButtonText}>{t.analyzing}</Text>
+                      <Text style={styles.processButtonText}>{translate('analyzing')}</Text>
                     </View>
                   </View>
                 )}
@@ -849,7 +660,7 @@ export default function PestDetectionScreen({ navigation }) {
             >
               <MessageCircle size={20} color="#0F5132" />
               <Text style={styles.chatToggleText}>
-                {showChat ? t.hideChat : t.askAboutDisease}
+                {showChat ? translate('hideChat') : translate('askAboutDisease')}
               </Text>
             </TouchableOpacity>
 
@@ -859,10 +670,10 @@ export default function PestDetectionScreen({ navigation }) {
                   {chatMessages.length === 0 && (
                     <View style={styles.chatWelcome}>
                       <Text style={styles.chatWelcomeText}>
-                        {t.askMeAnythingAbout} {result.solution.diseaseName}!
+                        {translate('askMeAnythingAbout')} {result.solution.diseaseName}!
                       </Text>
                       <Text style={styles.chatWelcomeSubtext}>
-                        {t.chatExample}
+                        {translate('chatExample')}
                       </Text>
                     </View>
                   )}
@@ -894,7 +705,7 @@ export default function PestDetectionScreen({ navigation }) {
                 <View ref={chatInputRowRef} style={styles.chatInputContainer}>
                   <TextInput
                     style={styles.chatInput}
-                    placeholder={t.askPlaceholder}
+                    placeholder={translate('askPlaceholder')}
                     value={chatInput}
                     onChangeText={setChatInput}
                     multiline
@@ -935,7 +746,7 @@ export default function PestDetectionScreen({ navigation }) {
                   <View style={styles.recordingIndicator}>
                     <View style={styles.recordingDot} />
                     <Text style={styles.recordingText}>
-                      {recognizedText || t.listening}
+                      {recognizedText || translate('listening')}
                     </Text>
                   </View>
                 )}
@@ -958,8 +769,8 @@ export default function PestDetectionScreen({ navigation }) {
                 <View style={styles.emptyIconContainer}>
                   <Icon name="leaf-circle-outline" size={64} color="#0F5132" />
                 </View>
-                <Text style={styles.emptyStateTitle}>{t.readyToScan}</Text>
-                <Text style={styles.emptyStateText}>{t.readyToScanDesc}</Text>
+                <Text style={styles.emptyStateTitle}>{translate('readyToScan')}</Text>
+                <Text style={styles.emptyStateText}>{translate('readyToScanDesc')}</Text>
               </Animated.View>
             )}
           </View>
@@ -975,18 +786,18 @@ export default function PestDetectionScreen({ navigation }) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{t.apiKeyRequired}</Text>
+              <Text style={styles.modalTitle}>{translate('apiKeyRequired')}</Text>
               <Text style={styles.modalText}>
-                {t.apiKeyModalDesc}
+                {translate('apiKeyModalDesc')}
               </Text>
-              <Text style={styles.modalLink}>{t.apiKeyOpenAILink}</Text>
+              <Text style={styles.modalLink}>{translate('apiKeyOpenAILink')}</Text>
               <Text style={styles.modalSubtext}>
-                {t.apiKeyEnvNote}
+                {translate('apiKeyEnvNote')}
               </Text>
               
               <TextInput
                 style={styles.apiKeyInput}
-                placeholder={t.enterApiKey}
+                placeholder={translate('enterApiKey')}
                 value={apiKeyInput}
                 onChangeText={setApiKeyInput}
                 secureTextEntry
@@ -1002,7 +813,7 @@ export default function PestDetectionScreen({ navigation }) {
                     setApiKeyInput('');
                   }}
                 >
-                  <Text style={styles.modalButtonCancelText}>{t.cancel}</Text>
+                  <Text style={styles.modalButtonCancelText}>{translate('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonSave]}
@@ -1012,16 +823,16 @@ export default function PestDetectionScreen({ navigation }) {
                         await llmService.initialize(apiKeyInput.trim());
                         setShowApiKeyModal(false);
                         setApiKeyInput('');
-                        showAppAlert(t.success, t.apiKeySaved);
+                        showAppAlert(translate('success'), translate('apiKeySaved'));
                       } catch (error) {
-                        showAppAlert(t.error, t.failedSaveKey);
+                        showAppAlert(translate('common.error'), translate('failedSaveKey'));
                       }
                     } else {
-                      showAppAlert(t.error, t.invalidApiKey);
+                      showAppAlert(translate('common.error'), translate('invalidApiKey'));
                     }
                   }}
                 >
-                  <Text style={styles.modalButtonSaveText}>{t.save}</Text>
+                  <Text style={styles.modalButtonSaveText}>{translate('save')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1064,25 +875,25 @@ export default function PestDetectionScreen({ navigation }) {
             ) : (
               <View style={styles.cameraPermissionContainer}>
                 <Text style={styles.cameraPermissionText}>
-                  {t.cameraPermissionRequired}
+                  {translate('cameraPermissionRequired')}
                 </Text>
                 <TouchableOpacity
                   style={styles.cameraPermissionButton}
                   onPress={async () => {
                     const result = await requestPermission();
                     if (!result) {
-                      showAppAlert(t.permissionDenied, t.cameraPermDenied);
+                      showAppAlert(translate('common.permissionDenied'), translate('cameraPermDenied'));
                       setShowCamera(false);
                     }
                   }}
                 >
-                  <Text style={styles.cameraPermissionButtonText}>{t.grantPermission}</Text>
+                  <Text style={styles.cameraPermissionButtonText}>{translate('grantPermission')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.cameraCloseButton2}
                   onPress={() => setShowCamera(false)}
                 >
-                  <Text style={styles.cameraCloseButtonText}>{t.close}</Text>
+                  <Text style={styles.cameraCloseButtonText}>{translate('close')}</Text>
                 </TouchableOpacity>
               </View>
             )}

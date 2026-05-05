@@ -18,101 +18,17 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import auth from '@react-native-firebase/auth';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { saveOfficerProfile } from '../src/services/messagingService';
 
-const translations = {
-  English: {
-    welcomeBack: 'Welcome Back, Officer',
-    subtitle: 'Sign in to access officer dashboard',
-    email: 'Email',
-    password: 'Password',
-    login: 'Login',
-    signUp: 'Sign Up',
-    forgotPassword: 'Forgot Password?',
-    orContinueWith: 'or continue with',
-    continueWithGoogle: 'Continue with Google',
-    dontHaveAccount: "Don't have an account?",
-    alreadyHaveAccount: 'Already have an account?',
-    name: 'Full Name',
-    confirmPassword: 'Confirm Password',
-    createAccount: 'Create Account',
-    resetPassword: 'Reset Password',
-    enterEmail: 'Enter your @agri.gov.lk email to reset password',
-    sendResetLink: 'Send Reset Link',
-    backToLogin: 'Back to Login',
-    backToNormalLogin: 'Back to Normal Login',
-    officerOnly: 'Officer Access Only',
-    invalidEmail: 'Only @agri.gov.lk email addresses are allowed',
-    success: 'Success',
-    error: 'Error',
-    registrationFailed: 'Registration Failed',
-    accessDenied: 'Access Denied',
-    passwordResetSent: 'Password reset email sent!',
-  },
-  සිංහල: {
-    welcomeBack: 'ආපසු සාදරයෙන් පිළිගනිමු, නිලධාරියා',
-    subtitle: 'නිලධාරී පුවරුවට පිවිසීමට පිවිසෙන්න',
-    email: 'විද්‍යුත් තැපෑල',
-    password: 'මුරපදය',
-    login: 'පිවිසෙන්න',
-    signUp: 'ලියාපදිංචි වන්න',
-    forgotPassword: 'මුරපදය අමතකද?',
-    orContinueWith: 'නැතහොත් ඉදිරියට යන්න',
-    continueWithGoogle: 'Google සමඟ ඉදිරියට',
-    dontHaveAccount: 'ගිණුමක් නැතද?',
-    alreadyHaveAccount: 'දැනටමත් ගිණුමක් ඇතද?',
-    name: 'සම්පූර්ණ නම',
-    confirmPassword: 'මුරපදය තහවුරු කරන්න',
-    createAccount: 'ගිණුම සාදන්න',
-    resetPassword: 'මුරපදය නැවත සැකසීම',
-    enterEmail: 'මුරපදය නැවත සැකසීමට ඔබේ @agri.gov.lk විද්‍යුත් තැපෑල ඇතුළත් කරන්න',
-    sendResetLink: 'නැවත සැකසීමේ සබැඳිය යවන්න',
-    backToLogin: 'පිවිසීමට ආපසු යන්න',
-    backToNormalLogin: 'සාමාන්‍ය පිවිසීමට ආපසු යන්න',
-    officerOnly: 'නිලධාරී ප්‍රවේශය පමණි',
-    invalidEmail: '@agri.gov.lk විද්‍යුත් තැපැල් ලිපින පමණක් අවසර දී ඇත',
-    success: 'සාර්ථකයි',
-    error: 'දෝෂය',
-    registrationFailed: 'ලියාපදිංචිය අසාර්ථකයි',
-    accessDenied: 'ප්‍රවේශය ප්‍රතික්ෂේපිතයි',
-    passwordResetSent: 'මුරපදය නැවත සැකසීමේ විද්‍යුත් තැපෑල යවන ලදී!',
-  },
-  தமிழ்: {
-    welcomeBack: 'மீண்டும் வரவேற்கிறோம், அதிகாரி',
-    subtitle: 'அதிகாரி டாஷ்போர்டுக்கு அணுக உள்நுழையவும்',
-    email: 'மின்னஞ்சல்',
-    password: 'கடவுச்சொல்',
-    login: 'உள்நுழைக',
-    signUp: 'பதிவு செய்ய',
-    forgotPassword: 'கடவுச்சொல் மறந்துவிட்டதா?',
-    orContinueWith: 'அல்லது தொடரவும்',
-    continueWithGoogle: 'Google உடன் தொடரவும்',
-    dontHaveAccount: 'கணக்கு இல்லையா?',
-    alreadyHaveAccount: 'ஏற்கனவே கணக்கு உள்ளதா?',
-    name: 'முழுப் பெயர்',
-    confirmPassword: 'கடவுச்சொல்லை உறுதிப்படுத்த',
-    createAccount: 'கணக்கை உருவாக்க',
-    resetPassword: 'கடவுச்சொல்லை மீட்டமை',
-    enterEmail: 'கடவுச்சொல்லை மீட்டமைக்க உங்கள் @agri.gov.lk மின்னஞ்சலை உள்ளிடவும்',
-    sendResetLink: 'மீட்டமைப்பு இணைப்பை அனுப்ப',
-    backToLogin: 'உள்நுழைக்கு திரும்ப',
-    backToNormalLogin: 'சாதாரண உள்நுழைவுக்கு திரும்ப',
-    officerOnly: 'அதிகாரி அணுகல் மட்டும்',
-    invalidEmail: '@agri.gov.lk மின்னஞ்சல் முகவரிகள் மட்டுமே அனுமதிக்கப்படுகின்றன',
-    success: 'வெற்றி',
-    error: 'பிழை',
-    registrationFailed: 'பதிவு தோல்வியடைந்தது',
-    accessDenied: 'அணுகல் மறுக்கப்பட்டது',
-    passwordResetSent: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சல் அனுப்பப்பட்டது!',
-  },
-};
-
-const languageOptions = Object.keys(translations);
+const languageOptions = ['English', 'සිංහල', 'தமிழ்'];
 
 export default function OfficerLoginScreen({ navigation, onSkip }) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [isResetPassword, setIsResetPassword] = useState(false);
   const { selectedLanguage, changeLanguage } = useLanguage();
+  const translate = useTranslation('officerLogin');
   const [fadeAnim] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(30));
 
@@ -125,8 +41,6 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
 
   const [errors, setErrors] = useState({});
   const { signInAsOfficer, signUpAsOfficer, resetPassword, signInWithGoogle, signOut, loading } = useAuth();
-
-  const t = translations[selectedLanguage];
 
   React.useEffect(() => {
     Animated.parallel([
@@ -151,7 +65,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Invalid email format';
     } else if (!formData.email.endsWith('@agri.gov.lk')) {
-      newErrors.email = t.invalidEmail;
+      newErrors.email = translate('invalidEmail');
     }
 
     if (!formData.password) {
@@ -172,7 +86,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     if (isResetPassword && !formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (isResetPassword && !formData.email.endsWith('@agri.gov.lk')) {
-      newErrors.email = t.invalidEmail;
+      newErrors.email = translate('invalidEmail');
     }
 
     setErrors(newErrors);
@@ -185,11 +99,11 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     if (isResetPassword) {
       const result = await resetPassword(formData.email);
       if (result.success) {
-        showAppAlert(t.success, result.message || t.passwordResetSent);
+        showAppAlert(translate('success'), result.message || translate('passwordResetSent'));
         setIsResetPassword(false);
         setFormData({ ...formData, email: '' });
       } else {
-        showAppAlert(t.error, result.error);
+        showAppAlert(translate('common.error'), result.error);
       }
       return;
     }
@@ -202,7 +116,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
         if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
         console.error('Officer registration failed:', result.error);
-        showAppAlert(t.registrationFailed, result.error);
+        showAppAlert(translate('registrationFailed'), result.error);
       }
     } else {
       const result = await signInAsOfficer(formData.email, formData.password);
@@ -210,7 +124,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
         const currentUser = auth().currentUser;
         if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
-        showAppAlert(t.error, result.error);
+        showAppAlert(translate('common.error'), result.error);
       }
     }
   };
@@ -220,12 +134,12 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     if (result.success) {
       // Check if email is @agri.gov.lk
       if (result.user?.email && !result.user.email.endsWith('@agri.gov.lk')) {
-        showAppAlert(t.accessDenied, t.invalidEmail);
+        showAppAlert(translate('accessDenied'), translate('invalidEmail'));
         // Sign out if not officer email
         await signOut();
       }
     } else if (!result.cancelled) {
-      showAppAlert(t.error, result.error);
+      showAppAlert(translate('common.error'), result.error);
     }
   };
 
@@ -268,10 +182,10 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                 <Icon name="arrow-left" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               <Text style={styles.appName}>iPaddyCare</Text>
-              <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
-              <Text style={styles.subtitle}>{t.subtitle}</Text>
+              <Text style={styles.welcomeText}>{translate('welcomeBack')}</Text>
+              <Text style={styles.subtitle}>{translate('subtitle')}</Text>
               <View style={styles.badge}>
-                <Text style={styles.badgeText}>{t.officerOnly}</Text>
+                <Text style={styles.badgeText}>{translate('officerOnly')}</Text>
               </View>
               <View style={styles.languageSelector}>
                 {languageOptions.map((language) => {
@@ -312,9 +226,9 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
             >
               {isResetPassword ? (
                 <>
-                  <Text style={styles.resetText}>{t.enterEmail}</Text>
+                  <Text style={styles.resetText}>{translate('enterEmail')}</Text>
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>{t.email}</Text>
+                    <Text style={styles.label}>{translate('common.email')}</Text>
                     <TextInput
                       style={[styles.input, errors.email && styles.inputError]}
                       placeholder="officer@agri.gov.lk"
@@ -337,7 +251,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                     {loading ? (
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
-                      <Text style={styles.primaryButtonText}>{t.sendResetLink}</Text>
+                      <Text style={styles.primaryButtonText}>{translate('sendResetLink')}</Text>
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -347,14 +261,14 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                       setErrors({});
                     }}
                   >
-                    <Text style={styles.linkText}>{t.backToLogin}</Text>
+                    <Text style={styles.linkText}>{translate('backToLogin')}</Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <>
                   {isSignUp && (
                     <View style={styles.inputContainer}>
-                      <Text style={styles.label}>{t.name}</Text>
+                      <Text style={styles.label}>{translate('name')}</Text>
                       <TextInput
                         style={[styles.input, errors.name && styles.inputError]}
                         placeholder="Enter your full name"
@@ -370,7 +284,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                   )}
 
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>{t.email}</Text>
+                    <Text style={styles.label}>{translate('common.email')}</Text>
                     <TextInput
                       style={[styles.input, errors.email && styles.inputError]}
                       placeholder="officer@agri.gov.lk"
@@ -387,7 +301,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                   </View>
 
                   <View style={styles.inputContainer}>
-                    <Text style={styles.label}>{t.password}</Text>
+                    <Text style={styles.label}>{translate('common.password')}</Text>
                     <TextInput
                       style={[styles.input, errors.password && styles.inputError]}
                       placeholder="Enter your password"
@@ -403,7 +317,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
 
                   {isSignUp && (
                     <View style={styles.inputContainer}>
-                      <Text style={styles.label}>{t.confirmPassword}</Text>
+                      <Text style={styles.label}>{translate('confirmPassword')}</Text>
                       <TextInput
                         style={[styles.input, errors.confirmPassword && styles.inputError]}
                         placeholder="Confirm your password"
@@ -427,7 +341,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                       <ActivityIndicator color="#FFFFFF" />
                     ) : (
                       <Text style={styles.primaryButtonText}>
-                        {isSignUp ? t.createAccount : t.login}
+                        {isSignUp ? translate('createAccount') : translate('login')}
                       </Text>
                     )}
                   </TouchableOpacity>
@@ -437,13 +351,13 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                       style={styles.linkButton}
                       onPress={() => setIsResetPassword(true)}
                     >
-                      <Text style={styles.linkText}>{t.forgotPassword}</Text>
+                      <Text style={styles.linkText}>{translate('forgotPassword')}</Text>
                     </TouchableOpacity>
                   )}
 
                   <View style={styles.divider}>
                     <View style={styles.dividerLine} />
-                    <Text style={styles.dividerText}>{t.orContinueWith}</Text>
+                    <Text style={styles.dividerText}>{translate('orContinueWith')}</Text>
                     <View style={styles.dividerLine} />
                   </View>
 
@@ -452,12 +366,12 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                     onPress={handleGoogleSignIn}
                     disabled={loading}
                   >
-                    <Text style={styles.googleButtonText}>{t.continueWithGoogle}</Text>
+                    <Text style={styles.googleButtonText}>{translate('continueWithGoogle')}</Text>
                   </TouchableOpacity>
 
                   <View style={styles.switchContainer}>
                     <Text style={styles.switchText}>
-                      {isSignUp ? t.alreadyHaveAccount : t.dontHaveAccount}
+                      {isSignUp ? translate('alreadyHaveAccount') : translate('dontHaveAccount')}
                     </Text>
                     <TouchableOpacity
                       onPress={() => {
@@ -472,7 +386,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
                       }}
                     >
                       <Text style={styles.switchLink}>
-                        {isSignUp ? t.login : t.signUp}
+                        {isSignUp ? translate('login') : translate('signUp')}
                       </Text>
                     </TouchableOpacity>
                   </View>

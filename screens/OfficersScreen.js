@@ -14,168 +14,30 @@ import {
 } from 'react-native';
 import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLanguage } from '../src/context/LanguageContext';
+import { useTranslation } from '../src/i18n/useTranslation';
+
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getOfficers, getOrCreateConversation } from '../src/services/messagingService';
 
 const { width, height } = Dimensions.get('window');
 
-// Language translations
-const translations = {
-  English: {
-    title: 'Connect Officer',
-    subtitle: 'Get expert agricultural advice',
-    searchPlaceholder: 'Search officers...',
-    availableOfficers: 'Available Officers',
-    yourArea: 'In Area',
-    allAreas: 'All Areas',
-    online: 'Online',
-    offline: 'Offline',
-    sendMessage: 'Send Message',
-    shareTestHistory: 'Share Test History',
-    contactDetails: 'Contact Details',
-    phone: 'Phone',
-    email: 'Email',
-    location: 'Location',
-    specialization: 'Specialization',
-    experience: 'Experience',
-    rating: 'Rating',
-    call: 'Call',
-    message: 'Message',
-    emailOfficer: 'Email Officer',
-    noOfficers: 'No Officers Available',
-    noOfficersDesc: 'No agricultural officers found in your area',
-    filter: 'Filter',
-    all: 'All',
-    onlineOnly: 'Online',
-    sendTestHistory: 'Send Test History',
-    selectTests: 'Select tests to share',
-    send: 'Send',
-    messageSent: 'Message Sent',
-    messageSentDesc: 'Your message has been sent successfully',
-    testHistoryShared: 'Test History Shared',
-    testHistorySharedDesc: 'Test history has been shared with the officer',
-    loginRequired: 'Login Required',
-    loginRequiredDesc: 'Please login to contact officers',
-    login: 'Login',
-    cancel: 'Cancel',
-    noPhone: 'No Phone',
-    noPhoneDesc: 'This officer has not added a phone number yet.',
-    error: 'Error',
-    unableToCall: 'Unable to make phone call',
-    pleaseSendEmail: 'Please send email to:',
-    agriculturalInquiry: 'Agricultural Inquiry',
-    couldNotStartConv: 'Could not start conversation. Please try again.',
-  },
-  සිංහල: {
-    title: 'නිලධාරියා සම්බන්ධ වන්න',
-    subtitle: 'විශේෂඥ කෘෂිකර්ම උපදෙස් ලබාගන්න',
-    searchPlaceholder: 'නිලධාරීන් සොයන්න...',
-    availableOfficers: 'ලබා ගත හැකි නිලධාරීන්',
-    yourArea: 'ඔබේ ප්‍රදේශයේ',
-    allAreas: 'සියලුම ප්‍රදේශ',
-    online: 'සබැඳි',
-    offline: 'අසබැඳි',
-    sendMessage: 'පණිවිඩයක් යවන්න',
-    shareTestHistory: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්න',
-    contactDetails: 'සම්බන්ධතා තොරතුරු',
-    phone: 'දුරකථන',
-    email: 'විද්‍යුත් තැපෑල',
-    location: 'ස්ථානය',
-    specialization: 'විශේෂඥත්වය',
-    experience: 'අත්දැකීම්',
-    rating: 'ශ්‍රේණිගත කිරීම',
-    call: 'ඇමතුම',
-    message: 'පණිවිඩය',
-    emailOfficer: 'නිලධාරියාට විද්‍යුත් තැපෑල',
-    noOfficers: 'නිලධාරීන් නොමැත',
-    noOfficersDesc: 'ඔබේ ප්‍රදේශයේ කෘෂිකර්ම නිලධාරීන් හමු නොවීය',
-    filter: 'පෙරහන',
-    all: 'සියල්ල',
-    onlineOnly: 'සබැඳි',
-    sendTestHistory: 'පරීක්ෂණ ඉතිහාසය යවන්න',
-    selectTests: 'බෙදාගැනීමට පරීක්ෂණ තෝරන්න',
-    send: 'යවන්න',
-    messageSent: 'පණිවිඩය යවන ලදී',
-    messageSentDesc: 'ඔබේ පණිවිඩය සාර්ථකව යවන ලදී',
-    testHistoryShared: 'පරීක්ෂණ ඉතිහාසය බෙදාගන්නා ලදී',
-    testHistorySharedDesc: 'පරීක්ෂණ ඉතිහාසය නිලධාරියා සමඟ බෙදාගන්නා ලදී',
-    loginRequired: 'පිවිසීම අවශ්‍යයි',
-    loginRequiredDesc: 'නිලධාරීන් හා සම්බන්ධ වීමට කරුණාකර පිවිසෙන්න',
-    login: 'පිවිසෙන්න',
-    cancel: 'අවලංගු කරන්න',
-    noPhone: 'දුරකථන අංකයක් නැත',
-    noPhoneDesc: 'මෙම නිලධාරියා තවමත් දුරකථන අංකයක් එක් කර නැත.',
-    error: 'දෝෂය',
-    unableToCall: 'දුරකථන ඇමතුමක් ලබා දීමට නොහැකි විය',
-    pleaseSendEmail: 'කරුණාකර විද්‍යුත් තැපෑල යවන්න:',
-    agriculturalInquiry: 'කෘෂිකර්ම විමසීම',
-    couldNotStartConv: 'සංවාදය ආරම්භ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
-  },
-  தமிழ்: {
-    title: 'அதிகாரியை இணைக்கவும்',
-    subtitle: 'நிபுணர் விவசாய ஆலோசனையைப் பெறுங்கள்',
-    searchPlaceholder: 'அதிகாரிகளைத் தேடவும்...',
-    availableOfficers: 'கிடைக்கும் அதிகாரிகள்',
-    yourArea: 'உங்கள் பகுதியில்',
-    allAreas: 'அனைத்து பகுதிகளும்',
-    online: 'ஆன்லைன்',
-    offline: 'ஆஃப்லைன்',
-    sendMessage: 'செய்தி அனுப்ப',
-    shareTestHistory: 'சோதனை வரலாற்றைப் பகிரவும்',
-    contactDetails: 'தொடர்பு விவரங்கள்',
-    phone: 'தொலைபேசி',
-    email: 'மின்னஞ்சல்',
-    location: 'இடம்',
-    specialization: 'நிபுணத்துவம்',
-    experience: 'அனுபவம்',
-    rating: 'மதிப்பீடு',
-    call: 'அழை',
-    message: 'செய்தி',
-    emailOfficer: 'அதிகாரிக்கு மின்னஞ்சல்',
-    noOfficers: 'அதிகாரிகள் இல்லை',
-    noOfficersDesc: 'உங்கள் பகுதியில் விவசாய அதிகாரிகள் கிடைக்கவில்லை',
-    filter: 'வடிகட்டு',
-    all: 'அனைத்தும்',
-    onlineOnly: 'ஆன்லைன் மட்டும்',
-    sendTestHistory: 'சோதனை வரலாற்றை அனுப்ப',
-    selectTests: 'பகிர்வதற்கு சோதனைகளைத் தேர்ந்தெடுக்கவும்',
-    send: 'அனுப்ப',
-    messageSent: 'செய்தி அனுப்பப்பட்டது',
-    messageSentDesc: 'உங்கள் செய்தி வெற்றிகரமாக அனுப்பப்பட்டது',
-    testHistoryShared: 'சோதனை வரலாறு பகிரப்பட்டது',
-    testHistorySharedDesc: 'சோதனை வரலாறு அதிகாரியுடன் பகிரப்பட்டது',
-    loginRequired: 'உள்நுழைவு தேவை',
-    loginRequiredDesc: 'அதிகாரிகளைத் தொடர்பு கொள்ள தயவுசெய்து உள்நுழையவும்',
-    login: 'உள்நுழைக',
-    cancel: 'ரத்துசெய்',
-    noPhone: 'தொலைபேசி இல்லை',
-    noPhoneDesc: 'இந்த அதிகாரி இன்னும் தொலைபேசி எண்ணைச் சேர்க்கவில்லை.',
-    error: 'பிழை',
-    unableToCall: 'தொலைபேசி அழைப்பு செய்ய முடியவில்லை',
-    pleaseSendEmail: 'தயவுசெய்து மின்னஞ்சல் அனுப்பவும்:',
-    agriculturalInquiry: 'விவசாய விசாரணை',
-    couldNotStartConv: 'உரையாடலைத் தொடங்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
-  },
-};
-
 // No hardcoded data — officers fetched from Firestore
 
-const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
+const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, translate }) => {
   const handleCall = () => {
     if (!officer.phone) {
-      showAppAlert(t.noPhone, t.noPhoneDesc);
+      showAppAlert(translate('noPhone'), translate('noPhoneDesc'));
       return;
     }
     Linking.openURL(`tel:${officer.phone}`).catch(() => {
-      showAppAlert(t.error, t.unableToCall);
+      showAppAlert(translate('common.error'), translate('unableToCall'));
     });
   };
 
   const handleEmail = () => {
-    Linking.openURL(`mailto:${officer.email}?subject=${encodeURIComponent(t.agriculturalInquiry)}`).catch(() => {
-      showAppAlert(t.email, `${t.pleaseSendEmail} ${officer.email}`);
+    Linking.openURL(`mailto:${officer.email}?subject=${encodeURIComponent(translate('agriculturalInquiry'))}`).catch(() => {
+      showAppAlert(translate('common.email'), `${translate('common.pleaseSendEmail')} ${officer.email}`);
     });
   };
 
@@ -194,7 +56,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
           <View style={styles.officerNameRow}>
             <Text style={styles.officerName}>{officer.name || 'Officer'}</Text>
             <View style={[styles.statusBadge, { backgroundColor: officer.status === 'online' ? '#10B981' : '#6B7280' }]}>
-              <Text style={styles.statusText}>{officer.status === 'online' ? t.online : t.offline}</Text>
+              <Text style={styles.statusText}>{officer.status === 'online' ? translate('online') : translate('offline')}</Text>
             </View>
           </View>
           <Text style={styles.officerTitle}>{officer.title || 'Agricultural Officer'}</Text>
@@ -234,7 +96,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
           activeOpacity={0.7}
         >
           <Icon name="phone" size={16} color="#FFFFFF" />
-          <Text style={styles.callButtonText}>{t.call}</Text>
+          <Text style={styles.callButtonText}>{translate('call')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.messageButton]}
@@ -242,7 +104,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
           activeOpacity={0.7}
         >
           <Icon name="message-text" size={16} color="#FFFFFF" />
-          <Text style={styles.messageButtonText}>{t.message}</Text>
+          <Text style={styles.messageButtonText}>{translate('message')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.emailButton]}
@@ -259,7 +121,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
           activeOpacity={0.7}
         >
           <Icon name="account-details" size={16} color="#0F5132" />
-          <Text style={styles.secondaryButtonText}>{t.contactDetails}</Text>
+          <Text style={styles.secondaryButtonText}>{translate('contactDetails')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.secondaryButton}
@@ -267,7 +129,7 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
           activeOpacity={0.7}
         >
           <Icon name="share-variant" size={16} color="#0F5132" />
-          <Text style={styles.secondaryButtonText}>{t.shareTestHistory}</Text>
+          <Text style={styles.secondaryButtonText}>{translate('shareTestHistory')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -275,10 +137,9 @@ const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
 };
 
 export default function OfficersScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
+  const translate = useTranslation('officers');
   const { isAuthenticated, user } = useAuth();
   const insets = useSafeAreaInsets();
-  const t = translations[selectedLanguage];
   const [fadeAnim] = useState(new Animated.Value(0));
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState('all');
@@ -320,33 +181,33 @@ export default function OfficersScreen({ navigation }) {
   const handleContact = (officer) => {
     if (!isAuthenticated) {
       showAppAlert(
-        t.loginRequired,
-        t.loginRequiredDesc,
+        translate('common.loginRequired'),
+        translate('loginRequiredDesc'),
         [
-          { text: t.cancel, style: 'cancel' },
-          { text: t.login, onPress: () => navigation.navigate('Login') },
+          { text: translate('cancel'), style: 'cancel' },
+          { text: translate('login'), onPress: () => navigation.navigate('Login') },
         ]
       );
       return;
     }
 
     showAppAlert(
-      t.contactDetails,
-      `${officer.name}\n${officer.title}\n\n${t.phone}: ${officer.phone}\n${t.email}: ${officer.email}\n${t.location}: ${officer.location}`,
+      translate('contactDetails'),
+      `${officer.name}\n${officer.title}\n\n${translate('phone')}: ${officer.phone}\n${translate('common.email')}: ${officer.email}\n${translate('common.location')}: ${officer.location}`,
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.call,
+          text: translate('call'),
           onPress: () => Linking.openURL(`tel:${officer.phone}`).catch(() => {
-            showAppAlert(t.error, t.unableToCall);
+            showAppAlert(translate('common.error'), translate('unableToCall'));
           }),
         },
         {
-          text: t.emailOfficer,
+          text: translate('emailOfficer'),
           onPress: () => {
-            const emailUrl = `mailto:${officer.email}?subject=${encodeURIComponent(t.agriculturalInquiry)}`;
+            const emailUrl = `mailto:${officer.email}?subject=${encodeURIComponent(translate('agriculturalInquiry'))}`;
             Linking.openURL(emailUrl).catch(() => {
-              showAppAlert(t.email, `${t.pleaseSendEmail} ${officer.email}`);
+              showAppAlert(translate('common.email'), `${translate('common.pleaseSendEmail')} ${officer.email}`);
             });
           },
         },
@@ -357,11 +218,11 @@ export default function OfficersScreen({ navigation }) {
   const handleMessage = async (officer) => {
     if (!isAuthenticated) {
       showAppAlert(
-        t.loginRequired,
-        t.loginRequiredDesc,
+        translate('common.loginRequired'),
+        translate('loginRequiredDesc'),
         [
-          { text: t.cancel, style: 'cancel' },
-          { text: t.login, onPress: () => navigation.navigate('Login') },
+          { text: translate('cancel'), style: 'cancel' },
+          { text: translate('login'), onPress: () => navigation.navigate('Login') },
         ]
       );
       return;
@@ -375,33 +236,33 @@ export default function OfficersScreen({ navigation }) {
       });
     } catch (error) {
       console.error('Error creating conversation:', error);
-      showAppAlert(t.error, t.couldNotStartConv);
+      showAppAlert(translate('common.error'), translate('couldNotStartConv'));
     }
   };
 
   const handleShareHistory = (officer) => {
     if (!isAuthenticated) {
       showAppAlert(
-        t.loginRequired,
-        t.loginRequiredDesc,
+        translate('common.loginRequired'),
+        translate('loginRequiredDesc'),
         [
-          { text: t.cancel, style: 'cancel' },
-          { text: t.login, onPress: () => navigation.navigate('Login') },
+          { text: translate('cancel'), style: 'cancel' },
+          { text: translate('login'), onPress: () => navigation.navigate('Login') },
         ]
       );
       return;
     }
 
     showAppAlert(
-      t.shareTestHistory,
-      `${t.selectTests} with ${officer.name}?`,
+      translate('shareTestHistory'),
+      `${translate('selectTests')} with ${officer.name}?`,
       [
-        { text: t.cancel, style: 'cancel' },
+        { text: translate('cancel'), style: 'cancel' },
         {
-          text: t.send,
+          text: translate('send'),
           onPress: () => {
             // In a real app, share test history from backend
-            showAppAlert(t.testHistoryShared, t.testHistorySharedDesc);
+            showAppAlert(translate('testHistoryShared'), translate('testHistorySharedDesc'));
           },
         },
       ]
@@ -432,8 +293,8 @@ export default function OfficersScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>{t.title}</Text>
-                <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
+                <Text style={styles.headerTitle}>{translate('title')}</Text>
+                <Text style={styles.headerSubtitle}>{translate('subtitle')}</Text>
               </View>
               <View style={styles.menuButtonPlaceholder} />
             </View>
@@ -445,7 +306,7 @@ export default function OfficersScreen({ navigation }) {
               <Icon name="magnify" size={20} color="#666" style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
-                placeholder={t.searchPlaceholder}
+                placeholder={translate('searchPlaceholder')}
                 placeholderTextColor="#999"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -466,7 +327,7 @@ export default function OfficersScreen({ navigation }) {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.filterText, filter === 'all' && styles.filterTextActive]}>
-                    {t.all}
+                    {translate('all')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -475,7 +336,7 @@ export default function OfficersScreen({ navigation }) {
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.filterText, filter === 'online' && styles.filterTextActive]}>
-                    {t.onlineOnly}
+                    {translate('onlineOnly')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -492,7 +353,7 @@ export default function OfficersScreen({ navigation }) {
 
             {/* Officers List */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.sectionTitle}>{t.availableOfficers}</Text>
+              <Text style={styles.sectionTitle}>{translate('availableOfficers')}</Text>
               {loading ? (
                 <View style={styles.emptyState}>
                   <ActivityIndicator size="large" color="#0F5132" />
@@ -507,15 +368,15 @@ export default function OfficersScreen({ navigation }) {
                       onContact={handleContact}
                       onMessage={handleMessage}
                       onShareHistory={handleShareHistory}
-                      t={t}
+                      translate={translate}
                     />
                   ))}
                 </View>
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>👨‍🌾</Text>
-                  <Text style={styles.emptyStateTitle}>{t.noOfficers}</Text>
-                  <Text style={styles.emptyStateText}>{t.noOfficersDesc}</Text>
+                  <Text style={styles.emptyStateTitle}>{translate('noOfficers')}</Text>
+                  <Text style={styles.emptyStateText}>{translate('noOfficersDesc')}</Text>
                 </View>
               )}
             </Animated.View>

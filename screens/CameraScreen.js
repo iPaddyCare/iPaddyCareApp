@@ -1,33 +1,14 @@
 import React from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { useLanguage } from '../src/context/LanguageContext';
-
-const translations = {
-  English: {
-    title: 'Camera Screen',
-    subtitle: 'Camera functionality will be implemented here',
-    goBack: 'Go Back',
-  },
-  සිංහල: {
-    title: 'කැමරා තිරය',
-    subtitle: 'කැමරා ක්‍රියාකාරිත්වය මෙහි ක්‍රියාත්මක කෙරෙනු ඇත',
-    goBack: 'ආපසු යන්න',
-  },
-  தமிழ்: {
-    title: 'கேமரா திரை',
-    subtitle: 'கேமரா செயல்பாடு இங்கே செயல்படுத்தப்படும்',
-    goBack: 'திரும்பு',
-  },
-};
+import { useTranslation } from '../src/i18n/useTranslation';
 
 export default function CameraScreen({ navigation }) {
-  const { selectedLanguage } = useLanguage();
-  const t = translations[selectedLanguage] || translations.English;
+  const translate = useTranslation('camera');
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t.title}</Text>
-      <Text style={styles.subtitle}>{t.subtitle}</Text>
-      <Button title={t.goBack} onPress={() => navigation.goBack()} />
+      <Text style={styles.title}>{translate('title')}</Text>
+      <Text style={styles.subtitle}>{translate('subtitle')}</Text>
+      <Button title={translate('goBack')} onPress={() => navigation.goBack()} />
     </View>
   );
 }
