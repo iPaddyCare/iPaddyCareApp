@@ -268,7 +268,7 @@ export default function MyListingsScreen({ navigation }) {
       return;
     }
     if (!llmService.isInitialized()) {
-      const ok = await llmService.loadFromStorage().catch(() => false);
+      const ok = await llmService.loadFromEnv().catch(() => false);
       if (!ok) {
         showAppAlert(translate('aiUnavailable'), translate('aiUnavailableMsg'));
         return;

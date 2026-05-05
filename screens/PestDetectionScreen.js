@@ -50,8 +50,6 @@ export default function PestDetectionScreen({ navigation }) {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState('');
   const [showCamera, setShowCamera] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -167,8 +165,8 @@ export default function PestDetectionScreen({ navigation }) {
       // Initialize Pest Detection model
       await pestDetectionService.initializeModel();
       
-      // Try to load LLM API key from storage
-      await llmService.loadFromStorage();
+      // Load LLM API key from .env
+      await llmService.loadFromEnv();
       
       setServicesReady(true);
     } catch (error) {
@@ -421,7 +419,7 @@ export default function PestDetectionScreen({ navigation }) {
     }
 
     if (!llmService.isInitialized()) {
-      setShowApiKeyModal(true);
+      showAppAlert(translate('common.error'), 'AI service is not configured.');
       return;
     }
 
@@ -776,68 +774,6 @@ export default function PestDetectionScreen({ navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
-
-        {/* API Key Modal */}
-        <Modal
-          visible={showApiKeyModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowApiKeyModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>{translate('apiKeyRequired')}</Text>
-              <Text style={styles.modalText}>
-                {translate('apiKeyModalDesc')}
-              </Text>
-              <Text style={styles.modalLink}>{translate('apiKeyOpenAILink')}</Text>
-              <Text style={styles.modalSubtext}>
-                {translate('apiKeyEnvNote')}
-              </Text>
-              
-              <TextInput
-                style={styles.apiKeyInput}
-                placeholder={translate('enterApiKey')}
-                value={apiKeyInput}
-                onChangeText={setApiKeyInput}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonCancel]}
-                  onPress={() => {
-                    setShowApiKeyModal(false);
-                    setApiKeyInput('');
-                  }}
-                >
-                  <Text style={styles.modalButtonCancelText}>{translate('cancel')}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, styles.modalButtonSave]}
-                  onPress={async () => {
-                    if (apiKeyInput.trim()) {
-                      try {
-                        await llmService.initialize(apiKeyInput.trim());
-                        setShowApiKeyModal(false);
-                        setApiKeyInput('');
-                        showAppAlert(translate('success'), translate('apiKeySaved'));
-                      } catch (error) {
-                        showAppAlert(translate('common.error'), translate('failedSaveKey'));
-                      }
-                    } else {
-                      showAppAlert(translate('common.error'), translate('invalidApiKey'));
-                    }
-                  }}
-                >
-                  <Text style={styles.modalButtonSaveText}>{translate('save')}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
 
         {/* Camera Modal */}
         <Modal
@@ -1605,16 +1541,6 @@ const styles = StyleSheet.create({
     color: '#6B6B6B',
     marginTop: 8,
     fontStyle: 'italic',
-  },
-  apiKeyInput: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(0,0,0,0.08)',
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 16,
-    marginBottom: 24,
-    fontSize: 15,
-    backgroundColor: '#F8F9FA',
   },
   modalButtons: {
     flexDirection: 'row',

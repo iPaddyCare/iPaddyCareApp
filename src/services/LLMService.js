@@ -10,7 +10,7 @@ class LLMService {
   /**
    * Load API key from .env file
    */
-  async loadFromStorage() {
+  async loadFromEnv() {
     try {
       // Load from .env file (OpenAI API key)
       if (OPENAI_API_KEY && OPENAI_API_KEY.trim()) {
@@ -55,7 +55,7 @@ class LLMService {
    */
   async generateResponse(userQuestion, ragContext, language = 'English') {
     if (!this.apiKey) {
-      throw new Error('API key not set. Call initialize() or loadFromStorage() first.');
+      throw new Error('API key not set. Call initialize() or loadFromEnv() first.');
     }
 
     try {
@@ -170,7 +170,7 @@ class LLMService {
    */
   async inferDiseaseTagsForProduct(product, diseaseOptions) {
     if (!this.apiKey) {
-      throw new Error('API key not set. Call loadFromStorage() first.');
+      throw new Error('API key not set. Call loadFromEnv() first.');
     }
     if (!Array.isArray(diseaseOptions) || diseaseOptions.length === 0) {
       return [];

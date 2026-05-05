@@ -136,7 +136,7 @@ export default function AddProductScreen({ navigation }) {
   // having to visit PestDetectionScreen first.
   useEffect(() => {
     if (!llmService.isInitialized()) {
-      llmService.loadFromStorage().catch(() => {});
+      llmService.loadFromEnv().catch(() => {});
     }
   }, []);
 
@@ -212,7 +212,7 @@ export default function AddProductScreen({ navigation }) {
     }
 
     if (!llmService.isInitialized()) {
-      const ok = await llmService.loadFromStorage().catch(() => false);
+      const ok = await llmService.loadFromEnv().catch(() => false);
       if (!ok) {
         showAppAlert(translate('aiUnavailable'), translate('aiUnavailableMsg'));
         return;
