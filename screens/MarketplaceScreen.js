@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   Dimensions,
   TextInput,
   Modal,
-  Alert,
   Animated,
   Linking,
   Platform,
@@ -17,12 +16,14 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getApprovedProducts, incrementProductViews } from '../src/services/marketplaceService';
+import { getDiseaseMatchKeySet, diseaseLabelMatchesKeys } from '../src/services/diseaseMatching';
 import { SL_DISTRICTS } from '../src/components/CityPickerModal';
 
 const { width, height } = Dimensions.get('window');
@@ -57,6 +58,18 @@ const translations = {
     myListings: 'My Listings',
     allDistricts: 'All Cities',
     loadMore: 'Load More',
+    error: 'Error',
+    couldNotDial: 'Could not open phone dialer.',
+    loginRequired: 'Login Required',
+    loginToContact: 'Please login to contact sellers.',
+    loginToAdd: 'Please login to add products.',
+    cancel: 'Cancel',
+    login: 'Login',
+    accessRestricted: 'Access Restricted',
+    officersCannotList: 'Officers cannot list products in the marketplace.',
+    sellerDetails: 'Seller Details',
+    close: 'Close',
+    contactSeller: 'Contact Seller',
   },
   සිංහල: {
     title: 'වෙළඳපොළ',
@@ -87,6 +100,18 @@ const translations = {
     myListings: 'මගේ ලැයිස්තු',
     allDistricts: 'සියලු නගර',
     loadMore: 'තවත් පූරණය කරන්න',
+    error: 'දෝෂය',
+    couldNotDial: 'දුරකථන ඩයලරය විවෘත කළ නොහැක.',
+    loginRequired: 'පිවිසීම අවශ්‍යයි',
+    loginToContact: 'විකුණුම්කරුවන් සම්බන්ධ කර ගැනීමට පිවිසෙන්න.',
+    loginToAdd: 'නිෂ්පාදන එක් කිරීමට පිවිසෙන්න.',
+    cancel: 'අවලංගු කරන්න',
+    login: 'පිවිසෙන්න',
+    accessRestricted: 'ප්‍රවේශය සීමා කර ඇත',
+    officersCannotList: 'නිලධාරීන්ට වෙළඳපොළේ නිෂ්පාදන ලැයිස්තුගත කළ නොහැක.',
+    sellerDetails: 'විකුණුම්කරුගේ විස්තර',
+    close: 'වසන්න',
+    contactSeller: 'විකුණුම්කරු සම්බන්ධ කරන්න',
   },
   தமிழ்: {
     title: 'சந்தை',
@@ -117,6 +142,18 @@ const translations = {
     myListings: 'எனது பட்டியல்கள்',
     allDistricts: 'அனைத்து நகரங்கள்',
     loadMore: 'மேலும் ஏற்றவும்',
+    error: 'பிழை',
+    couldNotDial: 'தொலைபேசி டயலரைத் திறக்க முடியவில்லை.',
+    loginRequired: 'உள்நுழைவு தேவை',
+    loginToContact: 'விற்பனையாளர்களை தொடர்பு கொள்ள உள்நுழையவும்.',
+    loginToAdd: 'தயாரிப்புகளைச் சேர்க்க உள்நுழையவும்.',
+    cancel: 'ரத்து',
+    login: 'உள்நுழை',
+    accessRestricted: 'அணுகல் கட்டுப்படுத்தப்பட்டது',
+    officersCannotList: 'அதிகாரிகள் சந்தையில் தயாரிப்புகளை பட்டியலிட முடியாது.',
+    sellerDetails: 'விற்பனையாளர் விவரங்கள்',
+    close: 'மூடு',
+    contactSeller: 'விற்பனையாளரை தொடர்பு கொள்ளுங்கள்',
   },
 };
 
@@ -206,7 +243,11 @@ export default function MarketplaceScreen({ navigation, route }) {
       setLastDoc(result.lastDoc);
       setHasMore(result.hasMore);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      const msg = error?.message || String(error);
+      console.error('Error fetching products:', msg);
+      if (error?.code) {
+        console.error('Firestore code:', error.code);
+      }
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -226,7 +267,11 @@ export default function MarketplaceScreen({ navigation, route }) {
       setLastDoc(result.lastDoc);
       setHasMore(result.hasMore);
     } catch (error) {
-      console.error('Error refreshing products:', error);
+      const msg = error?.message || String(error);
+      console.error('Error refreshing products:', msg);
+      if (error?.code) {
+        console.error('Firestore code:', error.code);
+      }
     } finally {
       setRefreshing(false);
     }
@@ -252,14 +297,40 @@ export default function MarketplaceScreen({ navigation, route }) {
     { id: 'herbicides', label: t.herbicides, icon: '🧪' },
   ];
 
+  // Expand the search query into a set of normalized disease keys (covers aliases like
+  // "brown spot" → its model_var / display name / aliases). Empty set if query isn't a
+  // recognised disease name — in which case we just fall back to text matching.
+  const diseaseMatchKeys = React.useMemo(
+    () => (searchQuery ? getDiseaseMatchKeySet(searchQuery) : new Set()),
+    [searchQuery],
+  );
+
   const filteredProducts = [...products
     .filter((product) => {
       if (searchQuery) {
+        const q = searchQuery.toLowerCase();
         const name = (product.productName || product.title || '').toLowerCase();
         const desc = (product.description || '').toLowerCase();
         const loc = (product.location || '').toLowerCase();
-        const q = searchQuery.toLowerCase();
-        if (!name.includes(q) && !desc.includes(q) && !loc.includes(q)) return false;
+        const ingredient = (product.activeIngredient || '').toLowerCase();
+
+        const textMatch =
+          name.includes(q) ||
+          desc.includes(q) ||
+          loc.includes(q) ||
+          ingredient.includes(q);
+
+        // Disease-tag match: compare each tag on the product against the expanded key set
+        let diseaseMatch = false;
+        if (diseaseMatchKeys.size > 0) {
+          const tags = Array.isArray(product.targetDiseases) ? product.targetDiseases : [];
+          const tagsLower = Array.isArray(product.targetDiseasesLower) ? product.targetDiseasesLower : [];
+          diseaseMatch =
+            tags.some(tag => diseaseLabelMatchesKeys(tag, diseaseMatchKeys)) ||
+            tagsLower.some(tag => diseaseMatchKeys.has(tag));
+        }
+
+        if (!textMatch && !diseaseMatch) return false;
       }
       if (selectedDistrict && product.location !== selectedDistrict) return false;
       return true;
@@ -271,6 +342,32 @@ export default function MarketplaceScreen({ navigation, route }) {
     return b.createdAt - a.createdAt;
   });
 
+  // Search and district are client-side filters, so the server's `hasMore` reflects
+  // the unfiltered page — not whether more *matching* items exist. When a client filter
+  // is active and the visible list is empty, auto-paginate through the server results
+  // until matches appear or the server is exhausted, capped to avoid runaway fetches.
+  const autoLoadCountRef = useRef(0);
+  const MAX_AUTO_LOADS = 5;
+
+  useEffect(() => {
+    autoLoadCountRef.current = 0;
+  }, [searchQuery, selectedDistrict, selectedCategory]);
+
+  useEffect(() => {
+    const hasClientFilter = !!searchQuery || !!selectedDistrict;
+    if (
+      hasClientFilter &&
+      filteredProducts.length === 0 &&
+      hasMore &&
+      !loading &&
+      !loadingMore &&
+      autoLoadCountRef.current < MAX_AUTO_LOADS
+    ) {
+      autoLoadCountRef.current += 1;
+      fetchProducts(selectedCategory === 'all' ? null : selectedCategory, false);
+    }
+  }, [filteredProducts.length, hasMore, loading, loadingMore, searchQuery, selectedDistrict, selectedCategory]);
+
   const handleProductPress = (product) => {
     setSelectedProduct(product);
     setDetailModalVisible(true);
@@ -279,19 +376,19 @@ export default function MarketplaceScreen({ navigation, route }) {
 
   const handleCall = (phone) => {
     const url = Platform.OS === 'ios' ? `telprompt:${phone}` : `tel:${phone}`;
-    Linking.openURL(url).catch(() => Alert.alert('Error', 'Could not open phone dialer.'));
+    Linking.openURL(url).catch(() => showAppAlert(t.error, t.couldNotDial));
   };
 
   const handleContact = (product) => {
     if (!isAuthenticated) {
       setDetailModalVisible(false);
       setTimeout(() => {
-        Alert.alert(
-          'Login Required',
-          'Please login to contact sellers.',
+        showAppAlert(
+          t.loginRequired,
+          t.loginToContact,
           [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Login', onPress: () => navigation.navigate('Login') },
+            { text: t.cancel, style: 'cancel' },
+            { text: t.login, onPress: () => navigation.navigate('Login') },
           ]
         );
       }, 300);
@@ -302,21 +399,21 @@ export default function MarketplaceScreen({ navigation, route }) {
 
   const handleAddProduct = () => {
     if (isOfficer) {
-      Alert.alert(
-        'Access Restricted',
-        'Officers cannot list products in the marketplace.',
+      showAppAlert(
+        t.accessRestricted,
+        t.officersCannotList,
         [{ text: 'OK' }]
       );
       return;
     }
 
     if (!isAuthenticated) {
-      Alert.alert(
-        'Login Required',
-        'Please login to add products.',
+      showAppAlert(
+        t.loginRequired,
+        t.loginToAdd,
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => navigation.navigate('Login') },
+          { text: t.cancel, style: 'cancel' },
+          { text: t.login, onPress: () => navigation.navigate('Login') },
         ]
       );
     } else {
@@ -510,6 +607,8 @@ export default function MarketplaceScreen({ navigation, route }) {
                     </TouchableOpacity>
                   )}
                 </>
+              ) : loadingMore ? (
+                <ActivityIndicator size="large" color="#0F5132" style={{ marginTop: 40 }} />
               ) : (
                 <View style={styles.emptyState}>
                   <Text style={styles.emptyStateIcon}>📦</Text>
@@ -617,7 +716,7 @@ export default function MarketplaceScreen({ navigation, route }) {
 
                     {/* Seller Info */}
                     <View style={styles.modalInfoSection}>
-                      <Text style={styles.modalInfoTitle}>Seller Details</Text>
+                      <Text style={styles.modalInfoTitle}>{t.sellerDetails}</Text>
                       <View style={styles.modalInfoRow}>
                         <View style={styles.modalInfoIcon}>
                           <Icon name="account" size={18} color="#0F5132" />
@@ -647,7 +746,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                       style={styles.modalCloseBtn}
                       onPress={() => setDetailModalVisible(false)}
                     >
-                      <Text style={styles.modalCloseBtnText}>Close</Text>
+                      <Text style={styles.modalCloseBtnText}>{t.close}</Text>
                     </TouchableOpacity>
                     {selectedProduct.phone && (
                       <TouchableOpacity
@@ -655,7 +754,7 @@ export default function MarketplaceScreen({ navigation, route }) {
                         onPress={() => handleContact(selectedProduct)}
                       >
                         <Icon name="phone" size={20} color="#FFFFFF" />
-                        <Text style={styles.modalContactBtnText}>Contact Seller</Text>
+                        <Text style={styles.modalContactBtnText}>{t.contactSeller}</Text>
                       </TouchableOpacity>
                     )}
                   </View>

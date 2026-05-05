@@ -33,6 +33,7 @@ import DrawerContent from './src/components/DrawerContent';
 import BottomNavigation from './src/components/BottomNavigation';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import DeviceConnectionScreenSeedDetection from './screens/DeviceConnectionScreenSeedDetection';
+import { AppAlertHost } from './src/components/AppAlert';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -286,6 +287,7 @@ export default function App() {
           >
             <RootNavigator navigationRef={navigationRef} />
           </NavigationContainer>
+          <AppAlertHost />
         </LanguageProvider>
       </AuthProvider>
     </GestureHandlerRootView>

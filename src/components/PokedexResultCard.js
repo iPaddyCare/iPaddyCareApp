@@ -16,6 +16,61 @@ import Animated, {
 } from 'react-native-reanimated';
 import { AlertCircle, ShoppingCart, Phone, ChevronRight } from 'lucide-react-native';
 import { getApprovedProducts, getProductsByDisease } from '../services/marketplaceService';
+import { useLanguage } from '../context/LanguageContext';
+
+const TR = {
+  English: {
+    notFoundTitle: 'Not Found in Database',
+    notFoundDisease: 'The detected disease "{0}" is not in our database.',
+    notFoundPest: 'The detected pest "{0}" is not in our database.',
+    notFoundSubtext: 'Please consult with an agricultural expert for proper diagnosis and treatment.',
+    pest: 'PEST',
+    healthy: 'HEALTHY',
+    disease: 'DISEASE',
+    confidence: 'CONF',
+    lowConfidence: 'Confidence too low for reliable diagnosis. Verify with an expert.',
+    treatment: 'TREATMENT',
+    prevention: 'PREVENTION',
+    availableTreatments: 'AVAILABLE TREATMENTS',
+    loadingMarketplace: 'Loading marketplace...',
+    noTreatmentsListed: 'No treatments listed yet in the marketplace.',
+    browseAll: 'Browse All Treatments',
+  },
+  සිංහල: {
+    notFoundTitle: 'දත්ත සමුදායේ හමු නොවීය',
+    notFoundDisease: 'හඳුනාගත් රෝගය "{0}" අපගේ දත්ත සමුදායේ නොමැත.',
+    notFoundPest: 'හඳුනාගත් කෘමියා "{0}" අපගේ දත්ත සමුදායේ නොමැත.',
+    notFoundSubtext: 'නිවැරදි රෝග විනිශ්චය සහ ප්‍රතිකාර සඳහා කෘෂිකාර්මික විශේෂඥයෙකු හමුවන්න.',
+    pest: 'කෘමී',
+    healthy: 'සෞඛ්‍ය',
+    disease: 'රෝගය',
+    confidence: 'විශ්වාසය',
+    lowConfidence: 'විශ්වාසය ප්‍රමාණවත් නොවේ. විශේෂඥයෙකුගෙන් තහවුරු කරගන්න.',
+    treatment: 'ප්‍රතිකාරය',
+    prevention: 'වැළැක්වීම',
+    availableTreatments: 'ලබා ගත හැකි ප්‍රතිකාර',
+    loadingMarketplace: 'වෙළඳපොළ පූරණය වෙමින්...',
+    noTreatmentsListed: 'වෙළඳපොළේ තවමත් ප්‍රතිකාර ලැයිස්තුගත කර නැත.',
+    browseAll: 'සියලු ප්‍රතිකාර බලන්න',
+  },
+  தமிழ்: {
+    notFoundTitle: 'தரவுத்தளத்தில் இல்லை',
+    notFoundDisease: 'கண்டறியப்பட்ட நோய் "{0}" எங்கள் தரவுத்தளத்தில் இல்லை.',
+    notFoundPest: 'கண்டறியப்பட்ட பூச்சி "{0}" எங்கள் தரவுத்தளத்தில் இல்லை.',
+    notFoundSubtext: 'சரியான நோய் கண்டறிதல் மற்றும் சிகிச்சைக்கு வேளாண் நிபுணரை அணுகவும்.',
+    pest: 'பூச்சி',
+    healthy: 'ஆரோக்கியம்',
+    disease: 'நோய்',
+    confidence: 'நம்பிக்கை',
+    lowConfidence: 'நம்பகமான கண்டறிதலுக்கு நம்பிக்கை குறைவு. நிபுணரிடம் சரிபார்க்கவும்.',
+    treatment: 'சிகிச்சை',
+    prevention: 'தடுப்பு',
+    availableTreatments: 'கிடைக்கும் சிகிச்சைகள்',
+    loadingMarketplace: 'சந்தை ஏற்றப்படுகிறது...',
+    noTreatmentsListed: 'சந்தையில் இன்னும் சிகிச்சைகள் பட்டியலிடப்படவில்லை.',
+    browseAll: 'அனைத்து சிகிச்சைகளையும் பார்க்கவும்',
+  },
+};
 
 const SEVERITY_COLORS = {
   high: { bg: '#C62828', text: '#fff' },
@@ -31,7 +86,25 @@ const categoryEmojis = {
   herbicides: '🧪',
 };
 
+// Map UI language → the suffix used on translated fields in solutions-database.json.
+// English entries don't have a suffix; we just use the canonical fields directly.
+const LANG_SUFFIX = { 'සිංහල': '_si', 'தமிழ்': '_ta' };
+const pick = (obj, base, suffix) => {
+  if (!obj) return '';
+  if (suffix && obj[base + suffix]) return obj[base + suffix];
+  return obj[base] || '';
+};
+
 export default function PokedexResultCard({ imageUri, prediction, solution, navigation }) {
+  const { selectedLanguage } = useLanguage();
+  const t = TR[selectedLanguage] || TR.English;
+  const sfx = LANG_SUFFIX[selectedLanguage] || '';
+
+  // Localized views of the solution payload — fall back to English if a translation
+  // is missing (e.g. for diseases added before the translation script was run).
+  const localizedDiseaseName = pick(solution, 'diseaseName', sfx);
+  const localizedDescription = pick(solution, 'description', sfx);
+  const localizedPrevention = (sfx && solution[`prevention${sfx}`]) || solution.prevention || [];
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(false);
 
@@ -61,8 +134,10 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
     const fetchProducts = async () => {
       setProductsLoading(true);
       try {
-        const diseaseName = solution.diseaseName || prediction.disease || '';
-        const modelVar = prediction.disease || '';
+        const diseaseName =
+          typeof solution.diseaseName === 'string' ? solution.diseaseName.trim() : '';
+        const modelVar =
+          typeof prediction.disease === 'string' ? prediction.disease.trim() : '';
 
         // Try to find products tagged for this disease using multiple name variants
         let products = [];
@@ -82,7 +157,8 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
           const results = await Promise.all(
             categories.map(cat => getApprovedProducts(cat)),
           );
-          products = results.flat();
+          // getApprovedProducts returns { products, lastDoc, hasMore } — unwrap before flattening
+          products = results.flatMap(r => r?.products || []);
         }
 
         setRelatedProducts(products.slice(0, 3));
@@ -94,7 +170,17 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
     };
 
     fetchProducts();
-  }, [showDetails, isHealthy, isPest, solution, prediction]);
+    // Depend on stable scalar fields, not the whole solution/prediction objects —
+    // those get new identities on every parent render and would loop the fetch.
+  }, [
+    showDetails,
+    isHealthy,
+    isPest,
+    solution.diseaseName,
+    solution.found,
+    prediction.disease,
+    prediction.confidence,
+  ]);
 
   // Type color theming — app brand palette
   const typeColor = isHealthy ? '#0F5132' : isPest ? '#0F5132' : '#0F5132';
@@ -107,13 +193,11 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
         <View style={styles.cardInner}>
           <View style={styles.notFoundContent}>
             <AlertCircle size={32} color="#FF9800" />
-            <Text style={styles.notFoundTitle}>Not Found in Database</Text>
+            <Text style={styles.notFoundTitle}>{t.notFoundTitle}</Text>
             <Text style={styles.notFoundText}>
-              The detected {isPest ? 'pest' : 'disease'} "{prediction.disease}" is not in our database.
+              {(isPest ? t.notFoundPest : t.notFoundDisease).replace('{0}', prediction.disease)}
             </Text>
-            <Text style={styles.notFoundSubtext}>
-              Please consult with an agricultural expert for proper diagnosis and treatment.
-            </Text>
+            <Text style={styles.notFoundSubtext}>{t.notFoundSubtext}</Text>
           </View>
         </View>
       </Animated.View>
@@ -133,10 +217,13 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
           <View style={styles.topRight}>
             <View style={styles.typeBadge}>
               <Text style={styles.typeBadgeText}>
-                {isPest ? 'PEST' : isHealthy ? 'HEALTHY' : 'DISEASE'}
+                {isPest ? t.pest : isHealthy ? t.healthy : t.disease}
               </Text>
             </View>
-            {!isHealthy && solution.severity && solution.severity !== 'none' && (
+            {/* Severity badge is the pest/disease's inherent severity from the catalog,
+                not detection confidence. Hide it when confidence is too low to trust the
+                identification — otherwise "LOW conf + HIGH severity" reads as a contradiction. */}
+            {!isHealthy && solution.severity && solution.severity !== 'none' && prediction.confidence >= 0.6 && (
               <View style={[styles.severityBadge, {
                 backgroundColor: (SEVERITY_COLORS[solution.severity] || SEVERITY_COLORS.medium).bg,
               }]}>
@@ -159,7 +246,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
 
         {/* Name plate */}
         <View style={styles.namePlate}>
-          <Text style={styles.diseaseName}>{solution.diseaseName}</Text>
+          <Text style={styles.diseaseName}>{localizedDiseaseName}</Text>
           {solution.aliases && solution.aliases.length > 0 && (
             <Text style={styles.aliases}>
               {solution.aliases.join(' · ')}
@@ -170,7 +257,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
         {/* Stat bar — Pokédex style */}
         <View style={styles.statsBox}>
           <View style={styles.statRow}>
-            <Text style={styles.statLabel}>CONF</Text>
+            <Text style={styles.statLabel}>{t.confidence}</Text>
             <View style={styles.statBarTrack}>
               <View style={[
                 styles.statBarFill,
@@ -194,7 +281,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
           <View style={styles.lowConfWarning}>
             <AlertCircle size={14} color="#FF9800" />
             <Text style={styles.lowConfText}>
-              Confidence too low for reliable diagnosis. Verify with an expert.
+              {t.lowConfidence}
             </Text>
           </View>
         )}
@@ -202,15 +289,15 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
         {/* Info section */}
         {showDetails && (
           <View style={styles.infoSection}>
-            {solution.description ? (
+            {localizedDescription ? (
               <View style={styles.descBox}>
-                <Text style={styles.description}>{solution.description}</Text>
+                <Text style={styles.description}>{localizedDescription}</Text>
               </View>
             ) : null}
 
             {!isHealthy && solution.solutions && solution.solutions.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>TREATMENT</Text>
+                <Text style={styles.sectionTitle}>{t.treatment}</Text>
                 <View style={styles.divider} />
                 {solution.solutions.map((sol, i) => (
                   <View key={i} style={styles.solutionRow}>
@@ -218,19 +305,19 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
                       <Text style={styles.stepText}>{sol.step}</Text>
                     </View>
                     <View style={styles.solutionContent}>
-                      <Text style={styles.solutionTitle}>{sol.title}</Text>
-                      <Text style={styles.solutionDesc}>{sol.description}</Text>
+                      <Text style={styles.solutionTitle}>{pick(sol, 'title', sfx)}</Text>
+                      <Text style={styles.solutionDesc}>{pick(sol, 'description', sfx)}</Text>
                     </View>
                   </View>
                 ))}
               </View>
             )}
 
-            {!isHealthy && solution.prevention && solution.prevention.length > 0 && (
+            {!isHealthy && localizedPrevention.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>PREVENTION</Text>
+                <Text style={styles.sectionTitle}>{t.prevention}</Text>
                 <View style={styles.divider} />
-                {solution.prevention.map((tip, i) => (
+                {localizedPrevention.map((tip, i) => (
                   <View key={i} style={styles.preventionItem}>
                     <View style={styles.bulletDot} />
                     <Text style={styles.preventionText}>{tip}</Text>
@@ -244,13 +331,13 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
         {/* Marketplace Products */}
         {showDetails && !isHealthy && (
           <View style={styles.productsSection}>
-            <Text style={styles.sectionTitle}>AVAILABLE TREATMENTS</Text>
+            <Text style={styles.sectionTitle}>{t.availableTreatments}</Text>
             <View style={styles.divider} />
 
             {productsLoading && (
               <View style={styles.productsLoading}>
                 <ActivityIndicator size="small" color="#0F5132" />
-                <Text style={styles.productsLoadingText}>Loading marketplace...</Text>
+                <Text style={styles.productsLoadingText}>{t.loadingMarketplace}</Text>
               </View>
             )}
 
@@ -304,7 +391,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
 
             {!productsLoading && relatedProducts.length === 0 && (
               <Text style={styles.noProductsText}>
-                No treatments listed yet in the marketplace.
+                {t.noTreatmentsListed}
               </Text>
             )}
 
@@ -316,7 +403,7 @@ export default function PokedexResultCard({ imageUri, prediction, solution, navi
               >
                 <ShoppingCart size={14} color="#0F5132" />
                 <Text style={[styles.browseAllText, { color: '#0F5132' }]}>
-                  Browse All Treatments
+                  {t.browseAll}
                 </Text>
                 <ChevronRight size={14} color="#0F5132" />
               </TouchableOpacity>

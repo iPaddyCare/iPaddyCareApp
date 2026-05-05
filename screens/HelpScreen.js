@@ -7,11 +7,11 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
-  Alert,
   Platform,
   Animated,
   Linking,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -48,6 +48,23 @@ const translations = {
     supportHoursText: 'Monday - Friday: 9:00 AM - 5:00 PM',
     responseTime: 'Response Time',
     responseTimeText: 'We typically respond within 24-48 hours',
+    helpSubject: 'Help & Support Request',
+    pleaseSendEmail: 'Please send email to:',
+    ok: 'OK',
+    emailCopied: 'Email Copied',
+    emailCopiedDesc: 'Email address copied:',
+    resetConfirm: 'This will reset all app settings to default. Continue?',
+    cancel: 'Cancel',
+    reset: 'Reset',
+    success: 'Success',
+    appResetSuccess: 'App settings reset successfully',
+    clearCacheConfirm: 'This will clear all cached data. Continue?',
+    clear: 'Clear',
+    cacheClearedSuccess: 'Cache cleared successfully',
+    reportBugSubtitle: 'Report issues or bugs',
+    feedbackSubtitle: 'Share your thoughts',
+    resetAppSubtitle: 'Reset to default settings',
+    clearCacheSubtitle: 'Clear cached data',
   },
   සිංහල: {
     title: 'උදව් සහ සහාය',
@@ -76,6 +93,23 @@ const translations = {
     supportHoursText: 'සඳුදා - සිකුරාදා: පෙ.ව. 9:00 - ප.ව. 5:00',
     responseTime: 'ප්‍රතිචාර කාලය',
     responseTimeText: 'අපි සාමාන්‍යයෙන් පැය 24-48 තුළ ප්‍රතිචාර දක්වයි',
+    helpSubject: 'උදව් සහ සහාය ඉල්ලීම',
+    pleaseSendEmail: 'කරුණාකර විද්‍යුත් තැපෑල යවන්න:',
+    ok: 'හරි',
+    emailCopied: 'විද්‍යුත් තැපෑල පිටපත් කරන ලදී',
+    emailCopiedDesc: 'විද්‍යුත් තැපැල් ලිපිනය පිටපත් කරන ලදී:',
+    resetConfirm: 'මෙය සියලුම යෙදුම් සැකසුම් පෙරනිමියට යළි පිහිටුවනු ඇත. ඉදිරියට යන්නද?',
+    cancel: 'අවලංගු කරන්න',
+    reset: 'යළි පිහිටුවන්න',
+    success: 'සාර්ථකයි',
+    appResetSuccess: 'යෙදුම් සැකසුම් සාර්ථකව යළි පිහිටුවන ලදී',
+    clearCacheConfirm: 'මෙය සියලුම කෑෂ් කළ දත්ත මකා දමනු ඇත. ඉදිරියට යන්නද?',
+    clear: 'මකන්න',
+    cacheClearedSuccess: 'කෑෂ් සාර්ථකව මකා දමන ලදී',
+    reportBugSubtitle: 'ගැටළු හෝ දෝෂ වාර්තා කරන්න',
+    feedbackSubtitle: 'ඔබේ අදහස් බෙදාගන්න',
+    resetAppSubtitle: 'පෙරනිමි සැකසුම් වෙත යළි පිහිටුවන්න',
+    clearCacheSubtitle: 'කෑෂ් කළ දත්ත මකන්න',
   },
   தமிழ்: {
     title: 'உதவி மற்றும் ஆதரவு',
@@ -104,6 +138,23 @@ const translations = {
     supportHoursText: 'திங்கள் - வெள்ளி: காலை 9:00 - மாலை 5:00',
     responseTime: 'பதிலளிக்கும் நேரம்',
     responseTimeText: 'நாங்கள் பொதுவாக 24-48 மணி நேரத்திற்குள் பதிலளிக்கிறோம்',
+    helpSubject: 'உதவி மற்றும் ஆதரவு கோரிக்கை',
+    pleaseSendEmail: 'தயவுசெய்து மின்னஞ்சல் அனுப்பவும்:',
+    ok: 'சரி',
+    emailCopied: 'மின்னஞ்சல் நகலெடுக்கப்பட்டது',
+    emailCopiedDesc: 'மின்னஞ்சல் முகவரி நகலெடுக்கப்பட்டது:',
+    resetConfirm: 'இது அனைத்து பயன்பாட்டு அமைப்புகளையும் இயல்புநிலைக்கு மீட்டமைக்கும். தொடரவா?',
+    cancel: 'ரத்து',
+    reset: 'மீட்டமை',
+    success: 'வெற்றி',
+    appResetSuccess: 'பயன்பாட்டு அமைப்புகள் வெற்றிகரமாக மீட்டமைக்கப்பட்டன',
+    clearCacheConfirm: 'இது அனைத்து கேச் செய்யப்பட்ட தரவையும் அழிக்கும். தொடரவா?',
+    clear: 'அழி',
+    cacheClearedSuccess: 'கேச் வெற்றிகரமாக அழிக்கப்பட்டது',
+    reportBugSubtitle: 'சிக்கல்கள் அல்லது பிழைகளைப் புகாரளி',
+    feedbackSubtitle: 'உங்கள் எண்ணங்களைப் பகிர்',
+    resetAppSubtitle: 'இயல்புநிலை அமைப்புகளுக்கு மீட்டமை',
+    clearCacheSubtitle: 'கேச் செய்யப்பட்ட தரவை அழி',
   },
 };
 
@@ -166,8 +217,8 @@ export default function HelpScreen({ navigation }) {
   }, [fadeAnim]);
 
   const handleSendEmail = async () => {
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Help & Support Request')}`;
-    
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t.helpSubject)}`;
+
     if (Platform.OS === 'ios') {
       // On iOS, check if we can open the URL first
       try {
@@ -181,10 +232,10 @@ export default function HelpScreen({ navigation }) {
               // But we can't really detect this reliably, so we'll just try
             }, 100);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              t.email,
+              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+              [{ text: t.ok }]
             );
           }
         } else {
@@ -192,10 +243,10 @@ export default function HelpScreen({ navigation }) {
           try {
             await Linking.openURL(emailUrl);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              t.email,
+              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+              [{ text: t.ok }]
             );
           }
         }
@@ -204,10 +255,10 @@ export default function HelpScreen({ navigation }) {
         try {
           await Linking.openURL(emailUrl);
         } catch (openErr) {
-          Alert.alert(
-            'Email',
-            `Please send email to: ${SUPPORT_EMAIL}`,
-            [{ text: 'OK' }]
+          showAppAlert(
+            t.email,
+            `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+            [{ text: t.ok }]
           );
         }
       }
@@ -216,44 +267,44 @@ export default function HelpScreen({ navigation }) {
       try {
         await Linking.openURL(emailUrl);
       } catch (err) {
-        Alert.alert(
-          'Email',
-          `Please send email to: ${SUPPORT_EMAIL}`,
-          [{ text: 'OK' }]
+        showAppAlert(
+          t.email,
+          `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+          [{ text: t.ok }]
         );
       }
     }
   };
 
   const handleCopyEmail = () => {
-    Alert.alert('Email Copied', `Email address copied: ${SUPPORT_EMAIL}`);
+    showAppAlert(t.emailCopied, `${t.emailCopiedDesc} ${SUPPORT_EMAIL}`);
   };
 
   const handleResetApp = () => {
-    Alert.alert(
+    showAppAlert(
       t.resetApp,
-      'This will reset all app settings to default. Continue?',
+      t.resetConfirm,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Reset',
+          text: t.reset,
           style: 'destructive',
-          onPress: () => Alert.alert('Success', 'App settings reset successfully'),
+          onPress: () => showAppAlert(t.success, t.appResetSuccess),
         },
       ]
     );
   };
 
   const handleClearCache = () => {
-    Alert.alert(
+    showAppAlert(
       t.clearCache,
-      'This will clear all cached data. Continue?',
+      t.clearCacheConfirm,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.cancel, style: 'cancel' },
         {
-          text: 'Clear',
+          text: t.clear,
           style: 'destructive',
-          onPress: () => Alert.alert('Success', 'Cache cleared successfully'),
+          onPress: () => showAppAlert(t.success, t.cacheClearedSuccess),
         },
       ]
     );
@@ -347,28 +398,28 @@ export default function HelpScreen({ navigation }) {
               <SupportCard
                 icon="bug"
                 title={t.reportBug}
-                subtitle="Report issues or bugs"
+                subtitle={t.reportBugSubtitle}
                 onPress={handleSendEmail}
                 color="#E91E63"
               />
               <SupportCard
                 icon="message-text-outline"
                 title={t.feedback}
-                subtitle="Share your thoughts"
+                subtitle={t.feedbackSubtitle}
                 onPress={handleSendEmail}
                 color="#2196F3"
               />
               <SupportCard
                 icon="refresh"
                 title={t.resetApp}
-                subtitle="Reset to default settings"
+                subtitle={t.resetAppSubtitle}
                 onPress={handleResetApp}
                 color="#FF6D00"
               />
               <SupportCard
                 icon="delete-outline"
                 title={t.clearCache}
-                subtitle="Clear cached data"
+                subtitle={t.clearCacheSubtitle}
                 onPress={handleClearCache}
                 color="#607D8B"
               />

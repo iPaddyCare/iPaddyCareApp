@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
   TextInput,
   Dimensions,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
 import PHSensorService from '../src/utils/phSensorService';
@@ -312,7 +312,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           if (!hasPermission) {
             const permissionGranted = await BluetoothPermissionService.requestPermissions();
             if (!permissionGranted) {
-              Alert.alert(
+              showAppAlert(
                 t.bluetoothPermission || 'Permission Required',
                 t.bluetoothPermissionMessage || 'Bluetooth permissions are required to scan for devices. Please grant permissions in app settings.'
               );
@@ -340,7 +340,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           );
 
           if (devices.length === 0) {
-            Alert.alert(
+            showAppAlert(
               t.noDevicesFound || 'No Devices Found',
               'No ESP32-Soil-Sensor devices were found. Make sure:\n\n• ESP32 sensor is powered on\n• Bluetooth is enabled on your phone\n• ESP32 sensor is in range'
             );
@@ -354,7 +354,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                 // Check if Bluetooth is enabled (iOS can't enable programmatically)
                 const isEnabled = await BLEService.isBluetoothEnabled();
                 if (!isEnabled) {
-                  Alert.alert(
+                  showAppAlert(
                     t.bluetoothRequired,
                     t.enableBluetooth,
                     [{ text: t.ok }]
@@ -365,7 +365,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                 // If enabled but not initialized, try enabling (Android only)
                 const enabled = await BLEService.enableBluetooth();
                 if (!enabled) {
-                  Alert.alert(
+                  showAppAlert(
                     t.bluetoothRequired,
                     t.enableBluetooth,
                     [{ text: t.ok }]
@@ -378,31 +378,31 @@ export default function DeviceConnectionScreen({ navigation, route }) {
             } catch (error) {
               const errorMessage = error.message || '';
               if (errorMessage.includes('not available') || errorMessage.includes('NativeEventEmitter')) {
-                Alert.alert(
+                showAppAlert(
                   t.bluetoothNotLinked,
                   t.bluetoothNotLinkedMessage,
                   [{ text: t.ok }]
                 );
               } else if (errorMessage.includes('not supported') || errorMessage.includes('Unsupported')) {
-                Alert.alert(
+                showAppAlert(
                   t.bluetoothNotSupported,
                   t.bluetoothNotSupportedMessage,
                   [{ text: t.ok }]
                 );
               } else if (errorMessage.includes('not enabled') || errorMessage.includes('Bluetooth state') || errorMessage.includes('PoweredOff')) {
-                Alert.alert(
+                showAppAlert(
                   t.bluetoothNotEnabled,
                   t.bluetoothNotEnabledMessage,
                   [{ text: t.ok }]
                 );
               } else if (errorMessage.includes('Unauthorized') || errorMessage.includes('permissions')) {
-                Alert.alert(
+                showAppAlert(
                   t.bluetoothPermission,
                   t.bluetoothPermissionMessage,
                   [{ text: t.ok }]
                 );
               } else {
-                Alert.alert(
+                showAppAlert(
                   t.connectionError,
                   errorMessage || t.bluetoothPermissionMessage
                 );
@@ -425,7 +425,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           );
 
           if (devices.length === 0) {
-            Alert.alert(
+            showAppAlert(
               t.noDevicesFound || 'No Devices Found',
               'No Seed Moisture Detector devices were found via Bluetooth. Make sure:\n\n• Device is powered on\n• Bluetooth is enabled on the device\n• Device is in BLE advertising mode\n• Device is within range'
             );
@@ -448,14 +448,14 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         );
 
         if (devices.length === 0) {
-          Alert.alert(
+          showAppAlert(
             t.noDevicesFound || 'No Devices Found',
             'No Seed Moisture Detector devices were found on your network. Make sure:\n\n• Device is powered on\n• Device is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry'
           );
         }
       }
     } catch (error) {
-      Alert.alert(t.connectionError || 'Scan Error', error.message || 'Failed to scan for devices');
+      showAppAlert(t.connectionError || 'Scan Error', error.message || 'Failed to scan for devices');
     } finally {
       setIsScanning(false);
     }
@@ -514,7 +514,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //           const storedData = BleScanServiceEsp32.getLatestData();
   //           console.log('Stored data after receiving:', storedData);
             
-  //           Alert.alert(
+  //           showAppAlert(
   //             'Connected!',
   //             `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
   //             [
@@ -533,7 +533,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //           console.log('No data in promise, but checking stored data:', storedData);
             
   //           if (storedData) {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data available!`,
   //               [
@@ -546,7 +546,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //               ]
   //             );
   //           } else {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
   //               [
@@ -561,7 +561,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //           }
   //         }
   //       } else {
-  //         Alert.alert('Connection Failed', result.error || 'Could not connect to device');
+  //         showAppAlert('Connection Failed', result.error || 'Could not connect to device');
   //       }
   //     } else {
   //       // WiFi connection
@@ -569,7 +569,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //       const testResult = await service.testConnection();
         
   //       if (testResult) {
-  //         Alert.alert(
+  //         showAppAlert(
   //           'Connected!',
   //           `Successfully connected to ${device.name || device.ip}`,
   //           [
@@ -582,11 +582,11 @@ export default function DeviceConnectionScreen({ navigation, route }) {
   //           ]
   //         );
   //       } else {
-  //         Alert.alert('Connection Failed', 'Could not connect to device');
+  //         showAppAlert('Connection Failed', 'Could not connect to device');
   //       }
   //     }
   //   } catch (error) {
-  //     Alert.alert('Connection Error', error.message || 'Failed to connect');
+  //     showAppAlert('Connection Error', error.message || 'Failed to connect');
   //   }
   // };
   const handleConnect = async (device) => {
@@ -603,7 +603,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           });
   
           if (!result.success) {
-            Alert.alert(t.connectionFailed || 'Connection Failed', result.error || t.couldNotConnect || 'Could not connect to device');
+            showAppAlert(t.connectionFailed || 'Connection Failed', result.error || t.couldNotConnect || 'Could not connect to device');
             return;
           }
   
@@ -616,13 +616,13 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           const firstData = await result.firstDataPromise;
   
           if (firstData) {
-            Alert.alert(
+            showAppAlert(
               t.connectedSuccess || 'Connected!',
               `${t.successfullyConnected || 'Successfully connected to'} ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
               [{ text: t.ok || 'OK', onPress: () => navigation.goBack() }]
             );
           } else {
-            Alert.alert(
+            showAppAlert(
               t.connectedSuccess || 'Connected!',
               `Connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
               [{ text: t.ok || 'OK', onPress: () => navigation.goBack() }]
@@ -636,7 +636,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
             // Test reading data
             const dataResult = await BLEService.readMoistureData();
             
-            Alert.alert(
+            showAppAlert(
               t.connectedSuccess,
               `${t.successfullyConnected} ${device.name || 'Seed Moisture Detector'} ${t.viaBluetooth}`,
               [
@@ -649,7 +649,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
               ]
             );
           } else {
-            Alert.alert(t.connectionFailed, result.error || t.couldNotConnect);
+            showAppAlert(t.connectionFailed, result.error || t.couldNotConnect);
           }
         }
       } else {
@@ -658,7 +658,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
         const testResult = await ESP32Service.testConnection();
         
         if (testResult) {
-          Alert.alert(
+          showAppAlert(
             t.connectedSuccess,
             `${t.successfullyConnected} ${device.name || device.ip}`,
             [
@@ -671,17 +671,17 @@ export default function DeviceConnectionScreen({ navigation, route }) {
             ]
           );
         } else {
-          Alert.alert(t.connectionFailed, t.couldNotConnect);
+          showAppAlert(t.connectionFailed, t.couldNotConnect);
         }
       }
     } catch (error) {
-      Alert.alert(t.connectionError, error.message || t.failedToConnect);
+      showAppAlert(t.connectionError, error.message || t.failedToConnect);
     }
   };
   
 
   const handleDisconnect = () => {
-    Alert.alert(
+    showAppAlert(
       t.disconnectDevice,
       t.disconnectConfirm,
       [
@@ -703,7 +703,7 @@ export default function DeviceConnectionScreen({ navigation, route }) {
               ESP32Service.disconnect();
             }
             setFoundDevices([]);
-            Alert.alert(t.disconnected, t.disconnectedMessage);
+            showAppAlert(t.disconnected, t.disconnectedMessage);
           },
         },
       ]
@@ -712,14 +712,14 @@ export default function DeviceConnectionScreen({ navigation, route }) {
 
   const handleManualTest = async () => {
     if (!manualIp.trim()) {
-      Alert.alert(t.error, t.enterIp);
+      showAppAlert(t.error, t.enterIp);
       return;
     }
 
     // Validate IP format (basic)
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(manualIp.trim())) {
-      Alert.alert(t.invalidIp, t.validIpHint);
+      showAppAlert(t.invalidIp, t.validIpHint);
       return;
     }
 
@@ -733,15 +733,15 @@ export default function DeviceConnectionScreen({ navigation, route }) {
           }
           return [...prev, device];
         });
-        Alert.alert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
+        showAppAlert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
       } else {
-        Alert.alert(
+        showAppAlert(
           t.deviceNotFound,
           `${t.deviceNotAtIp} ${manualIp.trim()}. ${t.deviceNotAtIpHint}`
         );
       }
     } catch (error) {
-      Alert.alert(t.error, error.message || t.failedToTest);
+      showAppAlert(t.error, error.message || t.failedToTest);
     } finally {
       setTestingManual(false);
     }
@@ -1012,15 +1012,15 @@ export default function DeviceConnectionScreen({ navigation, route }) {
                       }
                       return [...prev, device];
                     });
-                    Alert.alert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
+                    showAppAlert(t.deviceFound, `${t.deviceFound} ${device.ip}`);
                   } else {
-                    Alert.alert(
+                    showAppAlert(
                       t.deviceNotFound,
                       `${t.apModeDeviceNotFound} ${apIp}. ${t.apModeDeviceNotFoundHint}`
                     );
                   }
                 } catch (error) {
-                  Alert.alert(t.error, error.message || t.failedToTest);
+                  showAppAlert(t.error, error.message || t.failedToTest);
                 } finally {
                   setTestingManual(false);
                 }

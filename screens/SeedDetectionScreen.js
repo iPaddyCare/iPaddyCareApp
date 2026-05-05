@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   ActivityIndicator,
   Dimensions,
   Platform,
   Animated,
   StatusBar,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -141,7 +141,7 @@ export default function SeedDetectionScreen({ navigation }) {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.errorCode) {
-        Alert.alert(t.error, response.errorMessage || t.photoPermissionMessage);
+        showAppAlert(t.error, response.errorMessage || t.photoPermissionMessage);
       } else if (response.assets && response.assets[0]) {
         const asset = response.assets[0];
         const mime = asset.type || 'image/jpeg';
@@ -165,13 +165,13 @@ export default function SeedDetectionScreen({ navigation }) {
 
   const handleProcessImage = async () => {
     if (!selectedImage) {
-      Alert.alert(t.error, t.selectImageFirst);
+      showAppAlert(t.error, t.selectImageFirst);
       return;
     }
 
     const imageBase64 = selectedImage.imageBase64;
     if (!imageBase64) {
-      Alert.alert(t.error, t.selectImageFirst);
+      showAppAlert(t.error, t.selectImageFirst);
       return;
     }
 
@@ -193,11 +193,11 @@ export default function SeedDetectionScreen({ navigation }) {
           qualityScore,
         });
       } else {
-        Alert.alert(t.error, result.error || 'Detection failed');
+        showAppAlert(t.error, result.error || 'Detection failed');
       }
     } catch (err) {
       console.error('Process image error:', err);
-      Alert.alert(t.error, err.message || 'Detection failed');
+      showAppAlert(t.error, err.message || 'Detection failed');
     } finally {
       setProcessing(false);
     }

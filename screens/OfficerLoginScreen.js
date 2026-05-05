@@ -10,9 +10,9 @@ import {
   Platform,
   ScrollView,
   Animated,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import auth from '@react-native-firebase/auth';
@@ -43,6 +43,11 @@ const translations = {
     backToNormalLogin: 'Back to Normal Login',
     officerOnly: 'Officer Access Only',
     invalidEmail: 'Only @agri.gov.lk email addresses are allowed',
+    success: 'Success',
+    error: 'Error',
+    registrationFailed: 'Registration Failed',
+    accessDenied: 'Access Denied',
+    passwordResetSent: 'Password reset email sent!',
   },
   සිංහල: {
     welcomeBack: 'ආපසු සාදරයෙන් පිළිගනිමු, නිලධාරියා',
@@ -66,6 +71,11 @@ const translations = {
     backToNormalLogin: 'සාමාන්‍ය පිවිසීමට ආපසු යන්න',
     officerOnly: 'නිලධාරී ප්‍රවේශය පමණි',
     invalidEmail: '@agri.gov.lk විද්‍යුත් තැපැල් ලිපින පමණක් අවසර දී ඇත',
+    success: 'සාර්ථකයි',
+    error: 'දෝෂය',
+    registrationFailed: 'ලියාපදිංචිය අසාර්ථකයි',
+    accessDenied: 'ප්‍රවේශය ප්‍රතික්ෂේපිතයි',
+    passwordResetSent: 'මුරපදය නැවත සැකසීමේ විද්‍යුත් තැපෑල යවන ලදී!',
   },
   தமிழ்: {
     welcomeBack: 'மீண்டும் வரவேற்கிறோம், அதிகாரி',
@@ -89,6 +99,11 @@ const translations = {
     backToNormalLogin: 'சாதாரண உள்நுழைவுக்கு திரும்ப',
     officerOnly: 'அதிகாரி அணுகல் மட்டும்',
     invalidEmail: '@agri.gov.lk மின்னஞ்சல் முகவரிகள் மட்டுமே அனுமதிக்கப்படுகின்றன',
+    success: 'வெற்றி',
+    error: 'பிழை',
+    registrationFailed: 'பதிவு தோல்வியடைந்தது',
+    accessDenied: 'அணுகல் மறுக்கப்பட்டது',
+    passwordResetSent: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சல் அனுப்பப்பட்டது!',
   },
 };
 
@@ -170,11 +185,11 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     if (isResetPassword) {
       const result = await resetPassword(formData.email);
       if (result.success) {
-        Alert.alert('Success', result.message || 'Password reset email sent!');
+        showAppAlert(t.success, result.message || t.passwordResetSent);
         setIsResetPassword(false);
         setFormData({ ...formData, email: '' });
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(t.error, result.error);
       }
       return;
     }
@@ -187,7 +202,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
         if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
         console.error('Officer registration failed:', result.error);
-        Alert.alert('Registration Failed', result.error);
+        showAppAlert(t.registrationFailed, result.error);
       }
     } else {
       const result = await signInAsOfficer(formData.email, formData.password);
@@ -195,7 +210,7 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
         const currentUser = auth().currentUser;
         if (currentUser) saveOfficerProfile(currentUser).catch(console.error);
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(t.error, result.error);
       }
     }
   };
@@ -205,12 +220,12 @@ export default function OfficerLoginScreen({ navigation, onSkip }) {
     if (result.success) {
       // Check if email is @agri.gov.lk
       if (result.user?.email && !result.user.email.endsWith('@agri.gov.lk')) {
-        Alert.alert('Access Denied', t.invalidEmail);
+        showAppAlert(t.accessDenied, t.invalidEmail);
         // Sign out if not officer email
         await signOut();
       }
     } else if (!result.cancelled) {
-      Alert.alert('Error', result.error);
+      showAppAlert(t.error, result.error);
     }
   };
 

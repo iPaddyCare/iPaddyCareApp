@@ -3,6 +3,12 @@
  */
 import firestore from '@react-native-firebase/firestore';
 import RNFS from 'react-native-fs';
+import {
+  getDiseaseMatchKeySet,
+  diseaseLabelMatchesKeys,
+  normalizeTargetDiseasesForStorage,
+  normalizeDiseaseForMatch,
+} from './diseaseMatching';
 
 const productsCollection = firestore().collection('products');
 
@@ -12,8 +18,9 @@ const PAGE_SIZE = 20;
  * Derive stock status from quantity
  */
 function getStockStatus(quantity) {
-  if (quantity <= 0) return 'out_of_stock';
-  if (quantity <= 5) return 'low_stock';
+  const n = Number(quantity);
+  if (!Number.isFinite(n) || n <= 0) return 'out_of_stock';
+  if (n <= 5) return 'low_stock';
   return 'in_stock';
 }
 
@@ -68,7 +75,7 @@ export async function addProduct(productData, user) {
     imageUrl: productData.imageUrl || null,
     activeIngredient: productData.activeIngredient || '',
     targetDiseases: productData.targetDiseases || [],
-    targetDiseasesLower: (productData.targetDiseases || []).map(d => d.toLowerCase().trim()),
+    targetDiseasesLower: normalizeTargetDiseasesForStorage(productData.targetDiseases || []),
     quantity: Number(productData.quantity) || 0,
     unit: productData.unit || 'units',
     stockStatus: getStockStatus(Number(productData.quantity) || 0),
@@ -90,10 +97,13 @@ export async function addProduct(productData, user) {
  * Returns { products, lastDoc, hasMore }.
  */
 export async function getApprovedProducts(category = null, lastDoc = null, pageSize = PAGE_SIZE) {
-  let query = productsCollection
-    .where('status', '==', 'approved')
-    .orderBy('createdAt', 'desc')
-    .limit(pageSize);
+  let query = productsCollection.where('status', '==', 'approved');
+
+  if (category && category !== 'all') {
+    query = query.where('category', '==', category);
+  }
+
+  query = query.orderBy('createdAt', 'desc').limit(pageSize);
 
   if (lastDoc) {
     query = query.startAfter(lastDoc);
@@ -101,15 +111,11 @@ export async function getApprovedProducts(category = null, lastDoc = null, pageS
 
   const snapshot = await query.get();
 
-  let results = snapshot.docs.map(doc => ({
+  const results = snapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data(),
     createdAt: doc.data().createdAt?.toDate?.() || new Date(),
   }));
-
-  if (category && category !== 'all') {
-    results = results.filter(p => p.category === category);
-  }
 
   return {
     products: results,
@@ -153,58 +159,174 @@ export async function getPendingProducts() {
 /**
  * Update product status (approve/decline)
  */
-export async function updateProductStatus(productId, newStatus) {
-  await productsCollection.doc(productId).update({
-    status: newStatus,
-    updatedAt: firestore.FieldValue.serverTimestamp(),
-  });
+export async function updateProductStatus(productId, newStatus, declineReason = null) {
+  console.log('[marketplace] updateProductStatus →', { productId, newStatus, hasReason: !!declineReason });
+  if (!productId) {
+    console.warn('[marketplace] updateProductStatus called with empty productId');
+  }
+  try {
+    const ref = productsCollection.doc(productId);
+    const snap = await ref.get();
+    console.log('[marketplace] updateProductStatus exists?', snap.exists, 'path=', ref.path);
+    if (!snap.exists) {
+      throw new Error(`Product not found: ${ref.path}`);
+    }
+    const payload = {
+      status: newStatus,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    };
+    if (newStatus === 'declined' && declineReason && declineReason.trim()) {
+      payload.declineReason = declineReason.trim();
+    }
+    // Approving clears any prior decline reason so it doesn't linger on a re-approved doc.
+    if (newStatus === 'approved') {
+      payload.declineReason = firestore.FieldValue.delete();
+    }
+    await ref.update(payload);
+    console.log('[marketplace] updateProductStatus OK', productId);
+  } catch (e) {
+    console.error('[marketplace] updateProductStatus FAILED', {
+      productId,
+      code: e?.code,
+      message: e?.message,
+    });
+    throw e;
+  }
 }
 
 /**
  * Update product fields
  */
 export async function updateProduct(productId, data) {
-  await productsCollection.doc(productId).update({
-    ...data,
-    updatedAt: firestore.FieldValue.serverTimestamp(),
-  });
+  console.log('[marketplace] updateProduct →', { productId, keys: Object.keys(data || {}) });
+  if (!productId) {
+    console.warn('[marketplace] updateProduct called with empty productId');
+  }
+  try {
+    const ref = productsCollection.doc(productId);
+    const snap = await ref.get();
+    console.log('[marketplace] updateProduct exists?', snap.exists, 'path=', ref.path);
+    if (!snap.exists) {
+      throw new Error(`Product not found: ${ref.path}`);
+    }
+    await ref.update({
+      ...data,
+      updatedAt: firestore.FieldValue.serverTimestamp(),
+    });
+    console.log('[marketplace] updateProduct OK', productId);
+  } catch (e) {
+    console.error('[marketplace] updateProduct FAILED', {
+      productId,
+      code: e?.code,
+      message: e?.message,
+    });
+    throw e;
+  }
 }
 
 /**
- * Increment the view counter for a product (fire-and-forget safe)
+ * Increment the view counter for a product (fire-and-forget safe).
+ * Uses set({ merge: true }) so a missing doc won't throw firestore/not-found.
  */
 export async function incrementProductViews(productId) {
-  await productsCollection.doc(productId).update({
-    views: firestore.FieldValue.increment(1),
-  });
+  console.log('[marketplace] incrementProductViews →', productId);
+  if (!productId) {
+    console.warn('[marketplace] incrementProductViews called with empty productId');
+    return;
+  }
+  try {
+    const ref = productsCollection.doc(productId);
+    await ref.set(
+      { views: firestore.FieldValue.increment(1) },
+      { merge: true },
+    );
+    console.log('[marketplace] incrementProductViews OK', productId);
+  } catch (e) {
+    console.error('[marketplace] incrementProductViews FAILED', {
+      productId,
+      code: e?.code,
+      message: e?.message,
+    });
+  }
 }
 
 /**
  * Get approved products that target a specific disease/pest
  */
 export async function getProductsByDisease(diseaseName) {
-  const normalized = diseaseName.toLowerCase().trim();
+  if (!diseaseName || typeof diseaseName !== 'string') {
+    return [];
+  }
 
-  // Fetch all approved products and filter client-side for robust matching
-  const snapshot = await productsCollection
-    .where('status', '==', 'approved')
-    .orderBy('createdAt', 'desc')
-    .get();
+  let trimmed;
+  try {
+    trimmed = diseaseName.trim();
+  } catch {
+    return [];
+  }
+  if (!trimmed) {
+    return [];
+  }
 
-  const results = snapshot.docs
-    .map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.() || new Date(),
-    }))
-    .filter(product => {
-      const diseases = product.targetDiseases || [];
-      const diseasesLower = product.targetDiseasesLower || [];
-      return diseasesLower.includes(normalized)
-        || diseases.some(d => d.toLowerCase().trim() === normalized);
-    });
+  let matchKeys;
+  try {
+    matchKeys = getDiseaseMatchKeySet(trimmed);
+  } catch (err) {
+    console.warn('getProductsByDisease: building match keys failed', err);
+    matchKeys = new Set();
+  }
 
-  return results;
+  const fallbackKey = normalizeDiseaseForMatch(trimmed);
+  if ((!matchKeys || matchKeys.size === 0) && fallbackKey) {
+    matchKeys = new Set([fallbackKey]);
+  }
+  if (!matchKeys || matchKeys.size === 0) {
+    return [];
+  }
+
+  let snapshot;
+  try {
+    snapshot = await productsCollection
+      .where('status', '==', 'approved')
+      .orderBy('createdAt', 'desc')
+      .get();
+  } catch (err) {
+    console.warn('getProductsByDisease: Firestore query failed', err);
+    return [];
+  }
+
+  const rows = [];
+  try {
+    for (const doc of snapshot.docs) {
+      let data;
+      try {
+        data = doc.data();
+      } catch {
+        continue;
+      }
+      rows.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt?.toDate?.() || new Date(),
+      });
+    }
+  } catch (err) {
+    console.warn('getProductsByDisease: mapping docs failed', err);
+    return [];
+  }
+
+  return rows.filter(product => {
+    try {
+      const diseases = Array.isArray(product.targetDiseases) ? product.targetDiseases : [];
+      const diseasesLower = Array.isArray(product.targetDiseasesLower)
+        ? product.targetDiseasesLower
+        : [];
+      const labels = [...diseases, ...diseasesLower];
+      return labels.some(label => diseaseLabelMatchesKeys(label, matchKeys));
+    } catch {
+      return false;
+    }
+  });
 }
 
 /**

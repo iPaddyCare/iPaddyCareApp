@@ -9,9 +9,9 @@ import {
   Dimensions,
   TextInput,
   RefreshControl,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
@@ -43,6 +43,8 @@ const translations = {
     yesterday: 'Yesterday',
     markAsRead: 'Mark as Read',
     delete: 'Delete',
+    error: 'Error',
+    failedDelete: 'Failed to delete conversation.',
   },
   සිංහල: {
     inbox: 'එන ලිපි',
@@ -61,6 +63,8 @@ const translations = {
     yesterday: 'ඊයේ',
     markAsRead: 'කියවූ ලෙස සලකුණු කරන්න',
     delete: 'මකන්න',
+    error: 'දෝෂය',
+    failedDelete: 'සංවාදය මැකීමට අසමත් විය.',
   },
   தமிழ்: {
     inbox: 'இன்பாக்ஸ்',
@@ -79,6 +83,8 @@ const translations = {
     yesterday: 'நேற்று',
     markAsRead: 'படித்ததாகக் குறிக்க',
     delete: 'நீக்கு',
+    error: 'பிழை',
+    failedDelete: 'உரையாடலை நீக்க முடியவில்லை.',
   },
 };
 
@@ -171,7 +177,7 @@ export default function OfficerInboxScreen({ navigation }) {
   };
 
   const handleDelete = (conversationId) => {
-    Alert.alert(
+    showAppAlert(
       t.delete,
       'Are you sure you want to delete this conversation?',
       [
@@ -187,7 +193,7 @@ export default function OfficerInboxScreen({ navigation }) {
               );
             } catch (err) {
               console.error('Error deleting conversation:', err);
-              Alert.alert('Error', 'Failed to delete conversation.');
+              showAppAlert(t.error, t.failedDelete);
             }
           },
         },

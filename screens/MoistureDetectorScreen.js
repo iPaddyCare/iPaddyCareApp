@@ -6,12 +6,12 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  Alert,
   RefreshControl,
   Animated,
   Dimensions,
   StatusBar,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
@@ -380,7 +380,7 @@ export default function MoistureDetectorScreen({ navigation }) {
   // Start reading session
   const startReading = async () => {
     if (!connected) {
-      Alert.alert(t.error, t.noDeviceConnected);
+      showAppAlert(t.error, t.noDeviceConnected);
       return;
     }
 

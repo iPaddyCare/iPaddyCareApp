@@ -5,12 +5,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   Dimensions,
   StatusBar,
   Platform,
   ScrollView,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, useCameraDevice, useCameraPermission } from 'react-native-vision-camera';
 import RNFS from 'react-native-fs';
@@ -127,12 +127,12 @@ export default function SeedCameraScreen({ navigation }) {
         });
         setDetections(list);
       } else {
-        Alert.alert(t.error, result.error || t.noDetection);
+        showAppAlert(t.error, result.error || t.noDetection);
       }
     } catch (err) {
       console.error('Capture & analyze error:', err);
       const message = err.message || 'Failed to analyze photo';
-      Alert.alert(t.error, message);
+      showAppAlert(t.error, message);
     } finally {
       setIsProcessing(false);
     }

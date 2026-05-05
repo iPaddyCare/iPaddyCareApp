@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -8,9 +9,9 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
-  Alert,
   Platform,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -145,7 +146,7 @@ const navigateToRootRoute = (navigation, routeName) => {
 const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
-      Alert.alert(
+      showAppAlert(
         'Login Required',
         'Please login to access this feature.',
         [
@@ -229,7 +230,7 @@ const FeatureCard = ({ feature, index, fadeAnim, slideAnim, navigation, isAuthen
 const QuickActionButton = ({ action, index, fadeAnim, slideAnim, navigation, isAuthenticated, requireAuth }) => {
   const handlePress = () => {
     if (requireAuth && !isAuthenticated) {
-      Alert.alert(
+      showAppAlert(
         'Login Required',
         'Please login to access this feature.',
         [
@@ -350,37 +351,39 @@ export default function HomeScreen({ navigation }) {
     fetchWeatherData();
   }, []);
 
-  // Fetch dashboard stats from Firestore
-  useEffect(() => {
+  // Fetch dashboard stats from Firestore (also re-runs every time Home regains focus
+  // so the pending-products badge clears after an officer approves/declines a listing).
+  const fetchStats = useCallback(async () => {
     if (!isAuthenticated || !user) return;
-
-    const fetchStats = async () => {
-      try {
-        if (isOfficer) {
-          const [pending, conversations] = await Promise.all([
-            getPendingProducts(),
-            getConversations(user.uid, 'officer'),
-          ]);
-          setDashboardStats(prev => ({
-            ...prev,
-            pendingProducts: pending.length,
-            inboxCount: conversations.length,
-          }));
-        } else {
-          const officers = await getOfficers();
-          const onlineCount = officers.filter(o => o.status === 'online').length;
-          setDashboardStats(prev => ({
-            ...prev,
-            officersOnline: onlineCount,
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+    try {
+      if (isOfficer) {
+        const [pending, conversations] = await Promise.all([
+          getPendingProducts(),
+          getConversations(user.uid, 'officer'),
+        ]);
+        setDashboardStats(prev => ({
+          ...prev,
+          pendingProducts: pending.length,
+          inboxCount: conversations.length,
+        }));
+      } else {
+        const officers = await getOfficers();
+        const onlineCount = officers.filter(o => o.status === 'online').length;
+        setDashboardStats(prev => ({
+          ...prev,
+          officersOnline: onlineCount,
+        }));
       }
-    };
-
-    fetchStats();
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    }
   }, [isAuthenticated, isOfficer, user]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchStats();
+    }, [fetchStats])
+  );
 
   const mainFeatures = [
     {

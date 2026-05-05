@@ -8,8 +8,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Switch,
-  Alert,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -70,6 +70,14 @@ const translations = {
     noSchedule: 'No drying schedule needed',
     scheduleTime: 'Time',
     scheduleDate: 'Date',
+    permissionRequired: 'Permission Required',
+    permissionRequiredMsg: 'Please enable notifications in your device settings to receive schedule reminders.',
+    notificationsScheduled: 'Notifications Scheduled',
+    notificationsScheduledMsg: 'You will be notified when the drying schedule starts and ends for both days.',
+    error: 'Error',
+    failedToSchedule: 'Failed to schedule some notifications. Please try again.',
+    notificationsCancelled: 'Notifications Cancelled',
+    notificationsCancelledMsg: 'Drying schedule notifications have been cancelled.',
   },
   සිංහල: {
     title: 'කියවීමේ ප්‍රතිඵල',
@@ -121,6 +129,14 @@ const translations = {
     noSchedule: 'වියළීමේ කාලසටහනක් අවශ්‍ය නොවේ',
     scheduleTime: 'වේලාව',
     scheduleDate: 'දිනය',
+    permissionRequired: 'අවසරය අවශ්‍යයි',
+    permissionRequiredMsg: 'කාලසටහන් මතක් කිරීම් ලබා ගැනීමට කරුණාකර ඔබේ උපාංග සැකසුම් තුළ දැනුම්දීම් සක්‍රිය කරන්න.',
+    notificationsScheduled: 'දැනුම්දීම් උපලේඛනගත කරන ලදී',
+    notificationsScheduledMsg: 'දින දෙක සඳහාම වියළීමේ කාලසටහන ආරම්භ වන විට සහ අවසන් වන විට ඔබට දැනුම් දෙනු ඇත.',
+    error: 'දෝෂය',
+    failedToSchedule: 'සමහර දැනුම්දීම් උපලේඛනගත කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    notificationsCancelled: 'දැනුම්දීම් අවලංගු කරන ලදී',
+    notificationsCancelledMsg: 'වියළීමේ කාලසටහන් දැනුම්දීම් අවලංගු කර ඇත.',
   },
   தமிழ்: {
     title: 'வாசிப்பு முடிவுகள்',
@@ -172,6 +188,14 @@ const translations = {
     noSchedule: 'உலர்த்தல் அட்டவணை தேவையில்லை',
     scheduleTime: 'நேரம்',
     scheduleDate: 'தேதி',
+    permissionRequired: 'அனுமதி தேவை',
+    permissionRequiredMsg: 'அட்டவணை நினைவூட்டல்களைப் பெற உங்கள் சாதன அமைப்புகளில் அறிவிப்புகளை இயக்கவும்.',
+    notificationsScheduled: 'அறிவிப்புகள் திட்டமிடப்பட்டன',
+    notificationsScheduledMsg: 'இரண்டு நாட்களுக்கும் உலர்த்தும் அட்டவணை தொடங்கும் மற்றும் முடியும் போது உங்களுக்கு அறிவிக்கப்படும்.',
+    error: 'பிழை',
+    failedToSchedule: 'சில அறிவிப்புகளை திட்டமிட முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    notificationsCancelled: 'அறிவிப்புகள் ரத்து செய்யப்பட்டன',
+    notificationsCancelledMsg: 'உலர்த்தும் அட்டவணை அறிவிப்புகள் ரத்து செய்யப்பட்டன.',
   },
 };
 
@@ -240,9 +264,9 @@ export default function ReadingResultsScreen({ route, navigation }) {
       if (granted) {
         await scheduleNotifications();
       } else {
-        Alert.alert(
-          'Permission Required',
-          'Please enable notifications in your device settings to receive schedule reminders.'
+        showAppAlert(
+          t.permissionRequired,
+          t.permissionRequiredMsg
         );
         setNotificationsEnabled(false);
       }
@@ -274,14 +298,14 @@ export default function ReadingResultsScreen({ route, navigation }) {
     const day2Success = await NotificationService.scheduleDryingNotifications(day2Schedule);
     
     if (day1Success && day2Success) {
-      Alert.alert(
-        'Notifications Scheduled',
-        'You will be notified when the drying schedule starts and ends for both days.'
+      showAppAlert(
+        t.notificationsScheduled,
+        t.notificationsScheduledMsg
       );
     } else {
-      Alert.alert(
-        'Error',
-        'Failed to schedule some notifications. Please try again.'
+      showAppAlert(
+        t.error,
+        t.failedToSchedule
       );
       setNotificationsEnabled(false);
     }
@@ -290,7 +314,7 @@ export default function ReadingResultsScreen({ route, navigation }) {
   const cancelNotifications = async () => {
     const success = await NotificationService.cancelAllNotifications();
     if (success) {
-      Alert.alert('Notifications Cancelled', 'Drying schedule notifications have been cancelled.');
+      showAppAlert(t.notificationsCancelled, t.notificationsCancelledMsg);
     }
   };
 

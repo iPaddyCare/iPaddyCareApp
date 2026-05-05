@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,13 @@ import {
   StyleSheet,
   Dimensions,
   TextInput,
-  Alert,
   Animated,
   KeyboardAvoidingView,
   Platform,
   Modal,
   Pressable,
+  ActivityIndicator,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -24,6 +25,10 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import ImageResizer from 'react-native-image-resizer';
 import { addProduct, uploadProductImage } from '../src/services/marketplaceService';
 import CityPickerModal from '../src/components/CityPickerModal';
+import llmService from '../src/services/LLMService';
+import { showAppAlert } from '../src/components/AppAlert';
+import PhoneInput from '../src/components/PhoneInput';
+import PriceQuantitySheet from '../src/components/PriceQuantitySheet';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,7 +42,7 @@ const translations = {
     productNamePlaceholder: 'e.g., Premium Paddy Seeds',
     category: 'Category',
     selectCategory: 'Select Category',
-    price: 'Price (Rs.)',
+    price: 'Price',
     pricePlaceholder: 'Enter price',
     description: 'Description',
     descriptionPlaceholder: 'Describe your product...',
@@ -64,6 +69,35 @@ const translations = {
     minDescription: 'Description must be at least 10 characters',
     maxPrice: 'Price cannot exceed Rs. 9,999,999',
     invalidPhone: 'Please enter a valid Sri Lankan phone number (e.g., 0771234567)',
+    activeIngredient: 'Active Ingredient / Chemical Composition',
+    activeIngredientHint: 'e.g., Mancozeb 64% + Metalaxyl 8% WP',
+    activeIngredientPlaceholder: 'Enter chemical composition',
+    targetDiseases: 'Target Diseases / Pests',
+    targetDiseasesHint: 'Select which diseases or pests this product treats',
+    selectDiseases: 'Select diseases / pests',
+    nSelected: '{0} selected',
+    suggest: 'Suggest',
+    priceAndQuantity: 'Price & Quantity',
+    quantityLabel: 'Quantity',
+    priceLabel: 'Price',
+    tapAddPhoto: 'Tap to add photo',
+    aiSuggestNoSignal: 'Fill in product name, active ingredient, or description first so we can suggest diseases.',
+    aiNotEnoughInfo: 'Not enough info',
+    aiUnavailable: 'AI unavailable',
+    aiUnavailableMsg: 'OpenAI key not configured. Add OPENAI_API_KEY to your .env file to enable suggestions.',
+    aiNoMatches: 'No confident matches',
+    aiNoMatchesMsg: 'The AI could not confidently match this product to any disease. Try adding more detail to the active ingredient or description.',
+    aiAlreadyTagged: 'Already tagged',
+    aiAlreadyTaggedMsg: 'The AI suggested only diseases you have already selected.',
+    aiSuggestionsAdded: 'Suggestions added',
+    aiAddedPrefix: 'Added: ',
+    aiSuggestionFailed: 'Suggestion failed',
+    aiCouldNotReach: 'Could not reach the AI service.',
+    accessRestricted: 'Access Restricted',
+    officersCannotList: 'Officers cannot list products in the marketplace.',
+    failedSubmit: 'Failed to submit product. Please try again.',
+    selectUnit: 'Select Unit',
+    selectDiseasesHeader: 'Select Diseases / Pests',
   },
   සිංහල: {
     title: 'නිෂ්පාදනයක් එක් කරන්න',
@@ -72,7 +106,7 @@ const translations = {
     productNamePlaceholder: 'උදා: විශේෂ වී බීජ',
     category: 'කාණ්ඩය',
     selectCategory: 'කාණ්ඩයක් තෝරන්න',
-    price: 'මිල (රු.)',
+    price: 'මිල',
     pricePlaceholder: 'මිල ඇතුළත් කරන්න',
     description: 'විස්තරය',
     descriptionPlaceholder: 'ඔබේ නිෂ්පාදනය විස්තර කරන්න...',
@@ -99,6 +133,35 @@ const translations = {
     minDescription: 'විස්තරය අවම වශයෙන් අකුරු 10ක් විය යුතුය',
     maxPrice: 'මිල රු. 9,999,999 ඉක්මවිය නොහැක',
     invalidPhone: 'කරුණාකර වලංගු ශ්‍රී ලංකා දුරකථන අංකයක් ඇතුළත් කරන්න (උදා: 0771234567)',
+    activeIngredient: 'ක්‍රියාකාරී අමුද්‍රව්‍ය / රසායනික සංයුතිය',
+    activeIngredientHint: 'උදා: මැන්කොසෙබ් 64% + මෙටලැක්සිල් 8% WP',
+    activeIngredientPlaceholder: 'රසායනික සංයුතිය ඇතුළත් කරන්න',
+    targetDiseases: 'ඉලක්ක රෝග / කෘමීන්',
+    targetDiseasesHint: 'මෙම නිෂ්පාදනය ප්‍රතිකාර කරන රෝග හෝ කෘමීන් තෝරන්න',
+    selectDiseases: 'රෝග / කෘමීන් තෝරන්න',
+    nSelected: '{0} ක් තෝරා ඇත',
+    suggest: 'යෝජනා කරන්න',
+    priceAndQuantity: 'මිල සහ ප්‍රමාණය',
+    quantityLabel: 'ප්‍රමාණය',
+    priceLabel: 'මිල',
+    tapAddPhoto: 'ඡායාරූපය එක් කිරීමට ස්පර්ශ කරන්න',
+    aiSuggestNoSignal: 'යෝජනා කිරීමට පළමුව නිෂ්පාදන නම, ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරය පුරවන්න.',
+    aiNotEnoughInfo: 'ප්‍රමාණවත් තොරතුරු නැත',
+    aiUnavailable: 'AI ලබා ගත නොහැක',
+    aiUnavailableMsg: 'OpenAI යතුර වින්‍යාසගත කර නැත. යෝජනා සක්‍රීය කිරීමට .env ගොනුවට OPENAI_API_KEY එක් කරන්න.',
+    aiNoMatches: 'විශ්වාසනීය ගැළපීම් නැත',
+    aiNoMatchesMsg: 'AI හට මෙම නිෂ්පාදනය කිසිම රෝගයකට විශ්වාසනීයව ගැළපීමට නොහැකි විය. ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරයට වැඩිපුර තොරතුරු එක් කරන්න.',
+    aiAlreadyTagged: 'දැනටමත් ටැග් කර ඇත',
+    aiAlreadyTaggedMsg: 'AI විසින් යෝජනා කළේ ඔබ දැනටමත් තෝරාගෙන ඇති රෝග පමණි.',
+    aiSuggestionsAdded: 'යෝජනා එක් කරන ලදී',
+    aiAddedPrefix: 'එක් කරන ලදී: ',
+    aiSuggestionFailed: 'යෝජනා අසාර්ථකයි',
+    aiCouldNotReach: 'AI සේවාවට සම්බන්ධ වීමට නොහැකි විය.',
+    accessRestricted: 'ප්‍රවේශය සීමා කර ඇත',
+    officersCannotList: 'නිලධාරීන්ට වෙළඳපොළේ නිෂ්පාදන ලැයිස්තුගත කළ නොහැක.',
+    failedSubmit: 'නිෂ්පාදනය ඉදිරිපත් කිරීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    selectUnit: 'ඒකකය තෝරන්න',
+    selectDiseasesHeader: 'රෝග / කෘමීන් තෝරන්න',
   },
   தமிழ்: {
     title: 'தயாரிப்பைச் சேர்க்கவும்',
@@ -107,7 +170,7 @@ const translations = {
     productNamePlaceholder: 'எ.கா., பிரீமியம் நெல் விதைகள்',
     category: 'வகை',
     selectCategory: 'வகையைத் தேர்ந்தெடுக்கவும்',
-    price: 'விலை (ரூ.)',
+    price: 'விலை',
     pricePlaceholder: 'விலையை உள்ளிடவும்',
     description: 'விளக்கம்',
     descriptionPlaceholder: 'உங்கள் தயாரிப்பை விவரிக்கவும்...',
@@ -134,6 +197,35 @@ const translations = {
     minDescription: 'விளக்கம் குறைந்தது 10 எழுத்துகளாக இருக்க வேண்டும்',
     maxPrice: 'விலை ரூ. 9,999,999 ஐ தாண்டக்கூடாது',
     invalidPhone: 'தயவுசெய்து சரியான இலங்கை தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா., 0771234567)',
+    activeIngredient: 'செயலில் உள்ள பொருள் / இரசாயன கலவை',
+    activeIngredientHint: 'எ.கா., மான்கோசெப் 64% + மெட்டாலாக்சில் 8% WP',
+    activeIngredientPlaceholder: 'இரசாயன கலவையை உள்ளிடவும்',
+    targetDiseases: 'இலக்கு நோய்கள் / பூச்சிகள்',
+    targetDiseasesHint: 'இந்த தயாரிப்பு எந்த நோய்கள் அல்லது பூச்சிகளுக்கு சிகிச்சை அளிக்கிறது என்பதைத் தேர்ந்தெடுக்கவும்',
+    selectDiseases: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
+    nSelected: '{0} தேர்ந்தெடுக்கப்பட்டது',
+    suggest: 'பரிந்துரை',
+    priceAndQuantity: 'விலை & அளவு',
+    quantityLabel: 'அளவு',
+    priceLabel: 'விலை',
+    tapAddPhoto: 'புகைப்படத்தைச் சேர்க்க தொடவும்',
+    aiSuggestNoSignal: 'நாங்கள் நோய்களை பரிந்துரைக்க முதலில் தயாரிப்பு பெயர், செயலில் உள்ள பொருள் அல்லது விளக்கத்தை நிரப்பவும்.',
+    aiNotEnoughInfo: 'போதிய தகவல் இல்லை',
+    aiUnavailable: 'AI கிடைக்கவில்லை',
+    aiUnavailableMsg: 'OpenAI விசை உள்ளமைக்கப்படவில்லை. பரிந்துரைகளை இயக்க .env கோப்பில் OPENAI_API_KEY ஐச் சேர்க்கவும்.',
+    aiNoMatches: 'நம்பகமான பொருத்தங்கள் இல்லை',
+    aiNoMatchesMsg: 'இந்த தயாரிப்பை எந்த நோய்க்கும் நம்பகமாக பொருத்த AI ஆல் முடியவில்லை. செயலில் உள்ள பொருள் அல்லது விளக்கத்தில் கூடுதல் விவரங்களைச் சேர்க்க முயற்சிக்கவும்.',
+    aiAlreadyTagged: 'ஏற்கனவே குறிக்கப்பட்டது',
+    aiAlreadyTaggedMsg: 'AI நீங்கள் ஏற்கனவே தேர்ந்தெடுத்த நோய்களை மட்டுமே பரிந்துரைத்தது.',
+    aiSuggestionsAdded: 'பரிந்துரைகள் சேர்க்கப்பட்டன',
+    aiAddedPrefix: 'சேர்க்கப்பட்டது: ',
+    aiSuggestionFailed: 'பரிந்துரை தோல்வியடைந்தது',
+    aiCouldNotReach: 'AI சேவையை அடைய முடியவில்லை.',
+    accessRestricted: 'அணுகல் கட்டுப்படுத்தப்பட்டது',
+    officersCannotList: 'அதிகாரிகள் சந்தையில் தயாரிப்புகளை பட்டியலிட முடியாது.',
+    failedSubmit: 'தயாரிப்பை சமர்ப்பிக்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    selectUnit: 'அலகைத் தேர்ந்தெடுக்கவும்',
+    selectDiseasesHeader: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
   },
 };
 
@@ -178,6 +270,35 @@ export default function AddProductScreen({ navigation }) {
   const [fadeAnim] = useState(new Animated.Value(0));
 
   const scrollRef = useRef(null);
+  const phoneRowRef = useRef(null);
+  const phoneFocusedRef = useRef(false);
+
+  // Bring the phone input above the keyboard. We can't rely on Android's auto-scroll —
+  // it only nudges enough to expose the field, not enough to clear the label above it.
+  // Using a ref+listener approach because onFocus alone only fires reliably on the
+  // first tap; subsequent taps on the same input race the keyboard show event.
+  const scrollPhoneIntoView = () => {
+    if (!phoneRowRef.current || !scrollRef.current) return;
+    const scrollNode = scrollRef.current.getInnerViewNode?.() ?? scrollRef.current;
+    phoneRowRef.current.measureLayout(
+      scrollNode,
+      (_x, y) => {
+        scrollRef.current.scrollTo({ y: Math.max(0, y - 80), animated: true });
+      },
+      () => {},
+    );
+  };
+
+  // Re-scroll any time the keyboard shows while the phone field is focused — covers
+  // the "second tap" case where onFocus doesn't fire but the keyboard re-appears.
+  useEffect(() => {
+    const sub = Keyboard.addListener('keyboardDidShow', () => {
+      if (phoneFocusedRef.current) {
+        scrollPhoneIntoView();
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -201,6 +322,16 @@ export default function AddProductScreen({ navigation }) {
   const [showCityPicker, setShowCityPicker] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [suggestingDiseases, setSuggestingDiseases] = useState(false);
+  const [showPriceSheet, setShowPriceSheet] = useState(false);
+
+  // Lazily load OpenAI key from .env so the Suggest button works without the user
+  // having to visit PestDetectionScreen first.
+  useEffect(() => {
+    if (!llmService.isInitialized()) {
+      llmService.loadFromStorage().catch(() => {});
+    }
+  }, []);
 
   const closeAllPickers = () => {
     setShowCategoryPicker(false);
@@ -210,9 +341,9 @@ export default function AddProductScreen({ navigation }) {
 
   React.useEffect(() => {
     if (isOfficer) {
-      Alert.alert(
-        'Access Restricted',
-        'Officers cannot list products in the marketplace.',
+      showAppAlert(
+        t.accessRestricted,
+        t.officersCannotList,
         [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
       return;
@@ -259,6 +390,65 @@ export default function AddProductScreen({ navigation }) {
       return { ...prev, targetDiseases: updated };
     });
     setFieldErrors(prev => ({ ...prev, targetDiseases: undefined }));
+  };
+
+  // Ask the LLM which diseases this product likely treats, based on whatever the seller
+  // has typed so far. Suggestions get merged with existing selections (never overwrites).
+  const handleSuggestDiseases = async () => {
+    const hasSignal =
+      formData.productName.trim() ||
+      formData.activeIngredient.trim() ||
+      formData.description.trim();
+    if (!hasSignal) {
+      showAppAlert(t.aiNotEnoughInfo, t.aiSuggestNoSignal);
+      return;
+    }
+
+    if (!llmService.isInitialized()) {
+      const ok = await llmService.loadFromStorage().catch(() => false);
+      if (!ok) {
+        showAppAlert(t.aiUnavailable, t.aiUnavailableMsg);
+        return;
+      }
+    }
+
+    setSuggestingDiseases(true);
+    try {
+      const suggested = await llmService.inferDiseaseTagsForProduct(
+        {
+          productName: formData.productName,
+          activeIngredient: formData.activeIngredient,
+          description: formData.description,
+          category: formData.category,
+        },
+        DISEASE_OPTIONS,
+      );
+
+      if (suggested.length === 0) {
+        showAppAlert(t.aiNoMatches, t.aiNoMatchesMsg);
+        return;
+      }
+
+      // Merge: keep existing selections, add new ones, preserve order.
+      const existing = new Set(formData.targetDiseases);
+      const added = suggested.filter(d => !existing.has(d));
+      if (added.length === 0) {
+        showAppAlert(t.aiAlreadyTagged, t.aiAlreadyTaggedMsg);
+        return;
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        targetDiseases: [...prev.targetDiseases, ...added],
+      }));
+      setFieldErrors(prev => ({ ...prev, targetDiseases: undefined }));
+      showAppAlert(t.aiSuggestionsAdded, `${t.aiAddedPrefix}${added.join(', ')}`);
+    } catch (err) {
+      console.error('[AddProduct] disease suggestion failed:', err);
+      showAppAlert(t.aiSuggestionFailed, err?.message || t.aiCouldNotReach);
+    } finally {
+      setSuggestingDiseases(false);
+    }
   };
 
   const showDiseaseField = formData.category === 'pesticides' || formData.category === 'herbicides';
@@ -343,7 +533,7 @@ export default function AddProductScreen({ navigation }) {
     } catch (error) {
       setImageUploading(false);
       console.error('Error adding product:', error);
-      Alert.alert(t.error, 'Failed to submit product. Please try again.');
+      showAppAlert(t.error, t.failedSubmit);
     } finally {
       setSubmitting(false);
     }
@@ -370,10 +560,14 @@ export default function AddProductScreen({ navigation }) {
         <View style={styles.statusBarContainer} />
       </SafeAreaView>
       <SafeAreaView style={styles.safeAreaContent} edges={['left', 'right']}>
+        {/* Android handles keyboard via AndroidManifest's adjustResize; using
+            KeyboardAvoidingView here too caused the form to over-scroll on Android
+            (e.g. tapping the phone field jumped the input off-screen). iOS still
+            needs KAV with 'padding' to lift the input above the keyboard. */}
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
         >
         <ScrollView
           ref={scrollRef}
@@ -398,14 +592,14 @@ export default function AddProductScreen({ navigation }) {
                 <Text style={styles.headerTitle}>{t.title}</Text>
                 <Text style={styles.headerSubtitle}>{t.subtitle}</Text>
               </View>
-              <View style={styles.backButton} />
+              <View style={styles.headerSpacer} />
             </View>
           </View>
 
           <View style={styles.innerContent}>
             {/* Product Name */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.productName} *</Text>
+              <Text style={styles.label}>{t.productName}</Text>
               <TextInput
                 style={inputStyle('productName')}
                 placeholder={t.productNamePlaceholder}
@@ -420,7 +614,7 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Category */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.category} *</Text>
+              <Text style={styles.label}>{t.category}</Text>
               <TouchableOpacity
                 style={selectorStyle('category')}
                 onPress={() => setShowCategoryPicker(!showCategoryPicker)}
@@ -434,41 +628,52 @@ export default function AddProductScreen({ navigation }) {
               {fieldErrors.category && (
                 <Text style={styles.fieldError}>{fieldErrors.category}</Text>
               )}
-              {showCategoryPicker && (
-                <View style={styles.categoryPicker}>
-                  {categories.map((category) => (
-                    <TouchableOpacity
-                      key={category.id}
-                      style={[
-                        styles.categoryOption,
-                        formData.category === category.id && styles.categoryOptionActive,
-                      ]}
-                      onPress={() => handleCategorySelect(category.id)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.categoryOptionIcon}>{category.icon}</Text>
-                      <Text
-                        style={[
-                          styles.categoryOptionText,
-                          formData.category === category.id && styles.categoryOptionTextActive,
-                        ]}
-                      >
-                        {category.label[selectedLanguage]}
-                      </Text>
-                      {formData.category === category.id && (
-                        <Icon name="check" size={20} color="#0F5132" />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
             </Animated.View>
+
+            {/* Active Ingredient — only for pesticides/herbicides.
+                Sits above Target Diseases so it can power the AI Suggest button below. */}
+            {showDiseaseField && (
+              <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
+                <Text style={styles.label}>{t.activeIngredient}</Text>
+                <Text style={styles.optionalLabel}>{t.activeIngredientHint}</Text>
+                <TextInput
+                  style={inputStyle('activeIngredient')}
+                  placeholder={t.activeIngredientPlaceholder}
+                  placeholderTextColor="#999"
+                  value={formData.activeIngredient}
+                  onChangeText={(text) => setField('activeIngredient', text)}
+                  onFocus={closeAllPickers}
+                />
+                {fieldErrors.activeIngredient && (
+                  <Text style={styles.fieldError}>{fieldErrors.activeIngredient}</Text>
+                )}
+              </Animated.View>
+            )}
 
             {/* Target Diseases — only for pesticides/herbicides */}
             {showDiseaseField && (
               <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                <Text style={styles.label}>Target Diseases / Pests *</Text>
-                <Text style={styles.optionalLabel}>Select which diseases or pests this product treats</Text>
+                <View style={styles.suggestRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.label}>{t.targetDiseases}</Text>
+                    <Text style={styles.optionalLabel}>{t.targetDiseasesHint}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.suggestBtn, suggestingDiseases && styles.suggestBtnDisabled]}
+                    onPress={handleSuggestDiseases}
+                    disabled={suggestingDiseases}
+                    activeOpacity={0.7}
+                  >
+                    {suggestingDiseases ? (
+                      <ActivityIndicator size="small" color="#0F5132" />
+                    ) : (
+                      <>
+                        <Icon name="auto-fix" size={16} color="#0F5132" />
+                        <Text style={styles.suggestBtnText}>{t.suggest}</Text>
+                      </>
+                    )}
+                  </TouchableOpacity>
+                </View>
                 <TouchableOpacity
                   style={selectorStyle('targetDiseases')}
                   onPress={() => setShowDiseasePicker(!showDiseasePicker)}
@@ -476,8 +681,8 @@ export default function AddProductScreen({ navigation }) {
                 >
                   <Text style={[styles.categoryText, formData.targetDiseases.length === 0 && styles.categoryPlaceholder]}>
                     {formData.targetDiseases.length > 0
-                      ? `${formData.targetDiseases.length} selected`
-                      : 'Select diseases / pests'}
+                      ? t.nSelected.replace('{0}', formData.targetDiseases.length)
+                      : t.selectDiseases}
                   </Text>
                   <Icon name={showDiseasePicker ? 'chevron-up' : 'chevron-down'} size={24} color="#666" />
                 </TouchableOpacity>
@@ -500,136 +705,50 @@ export default function AddProductScreen({ navigation }) {
                     ))}
                   </View>
                 )}
-                {showDiseasePicker && (
-                  <View style={styles.categoryPicker}>
-                    <ScrollView nestedScrollEnabled style={{ maxHeight: 250 }}>
-                      {DISEASE_OPTIONS.map((disease) => {
-                        const isSelected = formData.targetDiseases.includes(disease);
-                        return (
-                          <TouchableOpacity
-                            key={disease}
-                            style={[styles.categoryOption, isSelected && styles.categoryOptionActive]}
-                            onPress={() => toggleDisease(disease)}
-                            activeOpacity={0.7}
-                          >
-                            <Icon
-                              name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                              size={20}
-                              color={isSelected ? '#0F5132' : '#999'}
-                              style={{ marginRight: 12 }}
-                            />
-                            <Text style={[styles.categoryOptionText, isSelected && styles.categoryOptionTextActive]}>
-                              {disease}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                    <TouchableOpacity
-                      style={styles.pickerDoneBtn}
-                      onPress={() => setShowDiseasePicker(false)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.pickerDoneText}>Done</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
               </Animated.View>
             )}
 
-            {/* Active Ingredient — only for pesticides/herbicides */}
-            {showDiseaseField && (
-              <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-                <Text style={styles.label}>Active Ingredient / Chemical Composition *</Text>
-                <Text style={styles.optionalLabel}>e.g., Mancozeb 64% + Metalaxyl 8% WP</Text>
-                <TextInput
-                  style={inputStyle('activeIngredient')}
-                  placeholder="Enter chemical composition"
-                  placeholderTextColor="#999"
-                  value={formData.activeIngredient}
-                  onChangeText={(text) => setField('activeIngredient', text)}
-                  onFocus={closeAllPickers}
-                />
-                {fieldErrors.activeIngredient && (
-                  <Text style={styles.fieldError}>{fieldErrors.activeIngredient}</Text>
-                )}
-              </Animated.View>
-            )}
-
-            {/* Price & Quantity Row */}
+            {/* Price + Quantity + Unit — tappable summary opens an alarm-style wheel sheet */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <View style={styles.rowFields}>
-                {/* Price */}
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>{t.price} *</Text>
-                  <View style={[styles.priceContainer, fieldErrors.price && styles.inputError]}>
-                    <Text style={styles.currencySymbol}>Rs.</Text>
-                    <TextInput
-                      style={[styles.input, styles.priceInput]}
-                      placeholder={t.pricePlaceholder}
-                      placeholderTextColor="#999"
-                      value={formData.price}
-                      onChangeText={(text) => setField('price', text.replace(/[^0-9.]/g, ''))}
-                      keyboardType="numeric"
-                      onFocus={closeAllPickers}
-                    />
-                  </View>
-                  {fieldErrors.price && (
-                    <Text style={styles.fieldError}>{fieldErrors.price}</Text>
-                  )}
+              <Text style={styles.label}>{t.priceAndQuantity}</Text>
+              <TouchableOpacity
+                style={[
+                  styles.priceQtySummary,
+                  (fieldErrors.price || fieldErrors.quantity) && styles.inputError,
+                ]}
+                onPress={() => {
+                  closeAllPickers();
+                  setShowPriceSheet(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.priceQtyCol}>
+                  <Text style={styles.priceQtyHint}>{t.priceLabel}</Text>
+                  <Text style={styles.priceQtyValue}>
+                    Rs. {formData.price ? Number(formData.price).toLocaleString() : '—'}
+                  </Text>
                 </View>
-                {/* Quantity */}
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Quantity *</Text>
-                  <View style={styles.quantityRow}>
-                    <TextInput
-                      style={[inputStyle('quantity'), { flex: 1, marginRight: 6 }]}
-                      placeholder="e.g., 50"
-                      placeholderTextColor="#999"
-                      value={formData.quantity}
-                      onChangeText={(text) => setField('quantity', text.replace(/[^0-9]/g, ''))}
-                      keyboardType="numeric"
-                      onFocus={closeAllPickers}
-                    />
-                    <TouchableOpacity
-                      style={styles.unitSelector}
-                      onPress={() => setShowUnitPicker(!showUnitPicker)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.unitText}>{formData.unit}</Text>
-                      <Icon name="chevron-down" size={14} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-                  {fieldErrors.quantity && (
-                    <Text style={styles.fieldError}>{fieldErrors.quantity}</Text>
-                  )}
-                  {showUnitPicker && (
-                    <View style={[styles.categoryPicker, { zIndex: 10 }]}>
-                      {UNIT_OPTIONS.map(u => (
-                        <TouchableOpacity
-                          key={u}
-                          style={[styles.categoryOption, formData.unit === u && styles.categoryOptionActive]}
-                          onPress={() => {
-                            setField('unit', u);
-                            setShowUnitPicker(false);
-                          }}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={[styles.categoryOptionText, formData.unit === u && styles.categoryOptionTextActive]}>
-                            {u}
-                          </Text>
-                          {formData.unit === u && <Icon name="check" size={16} color="#0F5132" />}
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
+                <View style={styles.priceQtyDivider} />
+                <View style={styles.priceQtyCol}>
+                  <Text style={styles.priceQtyHint}>{t.quantityLabel}</Text>
+                  <Text style={styles.priceQtyValue}>
+                    {formData.quantity !== undefined && formData.quantity !== null && formData.quantity !== ''
+                      ? `${formData.quantity} ${formData.unit}`
+                      : '—'}
+                  </Text>
                 </View>
-              </View>
+                <Icon name="chevron-down" size={20} color="#666" />
+              </TouchableOpacity>
+              {(fieldErrors.price || fieldErrors.quantity) && (
+                <Text style={styles.fieldError}>
+                  {fieldErrors.price || fieldErrors.quantity}
+                </Text>
+              )}
             </Animated.View>
 
             {/* Description */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.description} *</Text>
+              <Text style={styles.label}>{t.description}</Text>
               <TextInput
                 style={[inputStyle('description'), styles.textArea]}
                 placeholder={t.descriptionPlaceholder}
@@ -648,7 +767,7 @@ export default function AddProductScreen({ navigation }) {
 
             {/* Location — city picker */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-              <Text style={styles.label}>{t.location} *</Text>
+              <Text style={styles.label}>{t.location}</Text>
               <TouchableOpacity
                 style={selectorStyle('location')}
                 onPress={() => {
@@ -669,20 +788,26 @@ export default function AddProductScreen({ navigation }) {
             </Animated.View>
 
             {/* Contact Info */}
-            <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
+            <Animated.View
+              ref={phoneRowRef}
+              style={[styles.section, { opacity: fadeAnim }]}
+            >
               <Text style={styles.sectionTitle}>{t.contactInfo}</Text>
-              <Text style={styles.label}>{t.phone} *</Text>
-              <TextInput
-                style={inputStyle('phone')}
-                placeholder={t.phonePlaceholder}
-                placeholderTextColor="#999"
+              <Text style={styles.label}>{t.phone}</Text>
+              <PhoneInput
                 value={formData.phone}
-                onChangeText={(text) => setField('phone', text.replace(/[^0-9]/g, ''))}
-                keyboardType="phone-pad"
-                maxLength={10}
+                onChangeText={(next) => setField('phone', next)}
+                error={!!fieldErrors.phone}
                 onFocus={() => {
+                  phoneFocusedRef.current = true;
                   closeAllPickers();
-                  setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 300);
+                  // First tap: keyboard isn't open yet, so onFocus fires before
+                  // keyboardDidShow. Trigger a scroll here too in case the listener
+                  // missed the first event for any reason.
+                  setTimeout(scrollPhoneIntoView, 250);
+                }}
+                onBlur={() => {
+                  phoneFocusedRef.current = false;
                 }}
               />
               {fieldErrors.phone && (
@@ -693,30 +818,32 @@ export default function AddProductScreen({ navigation }) {
             {/* Product Image */}
             <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
               <Text style={styles.label}>{t.addImage} <Text style={styles.optionalLabel}>({t.imageOptional})</Text></Text>
-              <TouchableOpacity
-                style={styles.imagePicker}
-                onPress={handlePickImage}
-                activeOpacity={0.7}
-              >
-                {imageUri ? (
-                  <Image source={{ uri: imageUri }} style={styles.imagePreview} />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Icon name="camera-plus" size={32} color="#0F5132" />
-                    <Text style={styles.imagePlaceholderText}>Tap to add photo</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              {imageUri && (
+              <View style={styles.imagePickerWrapper}>
                 <TouchableOpacity
-                  style={styles.removeImageBtn}
-                  onPress={() => setImageUri(null)}
+                  style={styles.imagePicker}
+                  onPress={handlePickImage}
                   activeOpacity={0.7}
                 >
-                  <Icon name="close-circle" size={16} color="#EF4444" />
-                  <Text style={styles.removeImageText}>Remove photo</Text>
+                  {imageUri ? (
+                    <Image source={{ uri: imageUri }} style={styles.imagePreview} />
+                  ) : (
+                    <View style={styles.imagePlaceholder}>
+                      <Icon name="camera-plus" size={32} color="#0F5132" />
+                      <Text style={styles.imagePlaceholderText}>{t.tapAddPhoto}</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
-              )}
+                {imageUri && (
+                  <TouchableOpacity
+                    style={styles.imageRemoveFab}
+                    onPress={() => setImageUri(null)}
+                    activeOpacity={0.8}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Icon name="close" size={18} color="#FFFFFF" />
+                  </TouchableOpacity>
+                )}
+              </View>
             </Animated.View>
 
             {/* Submit Button */}
@@ -737,6 +864,187 @@ export default function AddProductScreen({ navigation }) {
         </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Category Picker — bottom sheet so it doesn't push form content around */}
+      <Modal
+        visible={showCategoryPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowCategoryPicker(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <TouchableOpacity
+            style={styles.sheetDismissArea}
+            activeOpacity={1}
+            onPress={() => setShowCategoryPicker(false)}
+          />
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={styles.sheetDragHandle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{t.selectCategory}</Text>
+              <TouchableOpacity
+                style={styles.sheetCloseBtn}
+                onPress={() => setShowCategoryPicker(false)}
+                activeOpacity={0.7}
+              >
+                <Icon name="close" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              style={styles.sheetList}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              showsVerticalScrollIndicator={false}
+            >
+              {categories.map((category) => {
+                const isSelected = formData.category === category.id;
+                return (
+                  <TouchableOpacity
+                    key={category.id}
+                    style={[styles.sheetRow, isSelected && styles.sheetRowSelected]}
+                    onPress={() => handleCategorySelect(category.id)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.categoryOptionIcon}>{category.icon}</Text>
+                    <Text style={[styles.sheetRowText, isSelected && styles.sheetRowTextSelected]}>
+                      {category.label[selectedLanguage]}
+                    </Text>
+                    {isSelected && <Icon name="check" size={20} color="#0F5132" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Unit Picker — bottom sheet */}
+      <Modal
+        visible={showUnitPicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowUnitPicker(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <TouchableOpacity
+            style={styles.sheetDismissArea}
+            activeOpacity={1}
+            onPress={() => setShowUnitPicker(false)}
+          />
+          <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={styles.sheetDragHandle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{t.selectUnit}</Text>
+              <TouchableOpacity
+                style={styles.sheetCloseBtn}
+                onPress={() => setShowUnitPicker(false)}
+                activeOpacity={0.7}
+              >
+                <Icon name="close" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              style={styles.sheetList}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              showsVerticalScrollIndicator={false}
+            >
+              {UNIT_OPTIONS.map((u) => {
+                const isSelected = formData.unit === u;
+                return (
+                  <TouchableOpacity
+                    key={u}
+                    style={[styles.sheetRow, isSelected && styles.sheetRowSelected]}
+                    onPress={() => {
+                      setField('unit', u);
+                      setShowUnitPicker(false);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.sheetRowText, isSelected && styles.sheetRowTextSelected]}>{u}</Text>
+                    {isSelected && <Icon name="check" size={20} color="#0F5132" />}
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Disease Picker — bottom sheet, multi-select with Done button */}
+      <Modal
+        visible={showDiseasePicker}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setShowDiseasePicker(false)}
+      >
+        <View style={styles.sheetOverlay}>
+          <TouchableOpacity
+            style={styles.sheetDismissArea}
+            activeOpacity={1}
+            onPress={() => setShowDiseasePicker(false)}
+          />
+          <View style={[styles.sheet, styles.sheetTall, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+            <View style={styles.sheetDragHandle} />
+            <View style={styles.sheetHeader}>
+              <Text style={styles.sheetTitle}>{t.selectDiseasesHeader}</Text>
+              <TouchableOpacity
+                style={styles.sheetCloseBtn}
+                onPress={() => setShowDiseasePicker(false)}
+                activeOpacity={0.7}
+              >
+                <Icon name="close" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              style={styles.sheetList}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              showsVerticalScrollIndicator
+            >
+              {DISEASE_OPTIONS.map((disease) => {
+                const isSelected = formData.targetDiseases.includes(disease);
+                return (
+                  <TouchableOpacity
+                    key={disease}
+                    style={[styles.sheetRow, isSelected && styles.sheetRowSelected]}
+                    onPress={() => toggleDisease(disease)}
+                    activeOpacity={0.7}
+                  >
+                    <Icon
+                      name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                      size={20}
+                      color={isSelected ? '#0F5132' : '#999'}
+                      style={{ marginRight: 12 }}
+                    />
+                    <Text style={[styles.sheetRowText, isSelected && styles.sheetRowTextSelected]}>{disease}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+            <TouchableOpacity
+              style={styles.sheetDoneBtn}
+              onPress={() => setShowDiseasePicker(false)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.sheetDoneText}>
+                Done {formData.targetDiseases.length > 0 ? `(${formData.targetDiseases.length})` : ''}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Price + Quantity + Unit alarm-style wheel picker */}
+      <PriceQuantitySheet
+        visible={showPriceSheet}
+        price={formData.price}
+        quantity={formData.quantity}
+        unit={formData.unit}
+        unitOptions={UNIT_OPTIONS}
+        onClose={() => setShowPriceSheet(false)}
+        onConfirm={({ price, quantity, unit }) => {
+          setFormData(prev => ({ ...prev, price, quantity, unit }));
+          setFieldErrors(prev => ({ ...prev, price: undefined, quantity: undefined }));
+        }}
+      />
 
       {/* City Picker Modal */}
       <CityPickerModal
@@ -871,6 +1179,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
   },
+  headerSpacer: {
+    width: 48,
+    height: 48,
+  },
   headerText: {
     flex: 1,
     alignItems: 'center',
@@ -996,6 +1308,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1A1A1A',
   },
+  priceQtySummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 64,
+  },
+  priceQtyCol: {
+    flex: 1,
+  },
+  priceQtyHint: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  priceQtyValue: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  priceQtyDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    marginHorizontal: 12,
+  },
   categorySelector: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1074,6 +1419,89 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#0F5132',
+  },
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  sheetDismissArea: {
+    flex: 1,
+  },
+  sheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    maxHeight: '60%',
+  },
+  sheetTall: {
+    maxHeight: '80%',
+  },
+  sheetDragHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    marginBottom: 8,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    marginBottom: 4,
+  },
+  sheetTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  sheetCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+  },
+  sheetList: {
+    flexGrow: 0,
+  },
+  sheetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  sheetRowSelected: {
+    backgroundColor: '#F0F7F3',
+  },
+  sheetRowText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  sheetRowTextSelected: {
+    color: '#0F5132',
+    fontWeight: '700',
+  },
+  sheetDoneBtn: {
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#0F5132',
+  },
+  sheetDoneText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   modalOverlay: {
     flex: 1,
@@ -1157,6 +1585,34 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 10,
   },
+  suggestRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 4,
+  },
+  suggestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.25)',
+    minWidth: 92,
+    justifyContent: 'center',
+  },
+  suggestBtnDisabled: {
+    opacity: 0.6,
+  },
+  suggestBtnText: {
+    fontSize: 13,
+    color: '#0F5132',
+    fontWeight: '600',
+  },
   diseaseTag: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1219,16 +1675,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#0F5132',
   },
-  removeImageBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 8,
-    alignSelf: 'flex-end',
+  imagePickerWrapper: {
+    position: 'relative',
   },
-  removeImageText: {
-    fontSize: 13,
-    color: '#EF4444',
-    fontWeight: '600',
+  imageRemoveFab: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
   },
 });

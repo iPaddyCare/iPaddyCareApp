@@ -2,34 +2,58 @@
   {
     "name": "Blast (Magnaporthe grisea)",
     "model_var": "blast",
-    "aliases": ["blast", "rice blast", "leaf blast"],
+    "aliases": [
+      "blast",
+      "rice blast",
+      "leaf blast"
+    ],
     "description": "A fungal disease caused by Magnaporthe grisea, affecting leaves, stems, and panicles, which can cause severe yield reduction.",
     "severity": "high",
     "solutions": [
       {
         "step": 1,
         "title": "Kasugamycin 20 g/l SL",
-        "description": "Dilution rate: 15 ml/10L, Application rate: Low canopy 475-600 ml/ha, High canopy 750-900 ml/ha. Spray interval: 5-10 days. Pre-harvest interval (PHI): 14 days."
+        "description": "Dilution rate: 15 ml/10L, Application rate: Low canopy 475-600 ml/ha, High canopy 750-900 ml/ha. Spray interval: 5-10 days. Pre-harvest interval (PHI): 14 days.",
+        "title_si": "Kasugamycin 20 g/l SL",
+        "description_si": "අවශේෂ අනුපාතය: 15 ml/10L, යෙදුම් අනුපාතය: අඩු කුඩු 475-600 ml/ha, උස කුඩු 750-900 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාර්තා: 5-10 දින. පළාත්-අස්වැන්න අන්තර්වාර්තා (PHI): 14 දින.",
+        "title_ta": "Kasugamycin 20 g/l SL",
+        "description_ta": "தரவியல் விகிதம்: 15 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பு 475-600 ml/ha, உயர்ந்த கம்பு 750-900 ml/ha. தெளிக்கும் இடைவெளி: 5-10 நாட்கள். அறுவடை முன் இடைவெளி (PHI): 14 நாட்கள்."
       },
       {
         "step": 2,
         "title": "Tebuconazole 250 g/l EW",
-        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days."
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days.",
+        "title_si": "Tebuconazole 250 g/l EW",
+        "description_si": "අවශේෂ අනුපාතය: 6 ml/10L, යෙදුම් අනුපාතය: අඩු කුඩු 200-250 ml/ha, උස කුඩු 300-350 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාර්තා: 7-10 දින. PHI: 21 දින.",
+        "title_ta": "Tebuconazole 250 g/l EW",
+        "description_ta": "தரவியல் விகிதம்: 6 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பு 200-250 ml/ha, உயர்ந்த கம்பு 300-350 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 21 நாட்கள்."
       },
       {
         "step": 3,
         "title": "Isoprothiolane 400 g/l EC",
-        "description": "Dilution rate: 12.5 ml/10L, Application rate: Low canopy 400-500 ml/ha, High canopy 625-750 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 12.5 ml/10L, Application rate: Low canopy 400-500 ml/ha, High canopy 625-750 ml/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Isoprothiolane 400 g/l EC",
+        "description_si": "අවශේෂ අනුපාතය: 12.5 ml/10L, යෙදුම් අනුපාතය: අඩු කුඩු 400-500 ml/ha, උස කුඩු 625-750 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාර්තා: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Isoprothiolane 400 g/l EC",
+        "description_ta": "தரவியல் விகிதம்: 12.5 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பு 400-500 ml/ha, உயர்ந்த கம்பு 625-750 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 4,
         "title": "Carbendazim 50% WG or 500 g/l SC",
-        "description": "Dilution rate: 7 g or 7 ml/10L, Application rate: Low canopy 225-275 g/ml/ha, High canopy 350-425 g/ml/ha. Spray interval: 10-14 days. PHI: 14 days."
+        "description": "Dilution rate: 7 g or 7 ml/10L, Application rate: Low canopy 225-275 g/ml/ha, High canopy 350-425 g/ml/ha. Spray interval: 10-14 days. PHI: 14 days.",
+        "title_si": "Carbendazim 50% WG හෝ 500 g/l SC",
+        "description_si": "අවශේෂ අනුපාතය: 7 g හෝ 7 ml/10L, යෙදුම් අනුපාතය: අඩු කුඩු 225-275 g/ml/ha, උස කුඩු 350-425 g/ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාර්තා: 10-14 දින. PHI: 14 දින.",
+        "title_ta": "Carbendazim 50% WG அல்லது 500 g/l SC",
+        "description_ta": "தரவியல் விகிதம்: 7 g அல்லது 7 ml/10L, ���யன்பாட்டு விகிதம்: குறைந்த கம்பு 225-275 g/ml/ha, உயர்ந்த கம்பு 350-425 g/ml/ha. தெளிக்கும் இடைவெளி: 10-14 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 5,
         "title": "Tricyclazole 75% WP",
-        "description": "Dilution rate: 6 g/10L, Application rate: Low canopy 200-250 g/ha, High canopy 300-350 g/ha. Spray interval: 10-14 days. PHI: 14 days."
+        "description": "Dilution rate: 6 g/10L, Application rate: Low canopy 200-250 g/ha, High canopy 300-350 g/ha. Spray interval: 10-14 days. PHI: 14 days.",
+        "title_si": "Tricyclazole 75% WP",
+        "description_si": "අවශේෂ අනුපාතය: 6 g/10L, යෙදුම් අනුපාතය: අඩු කුඩු 200-250 g/ha, උස කුඩු 300-350 g/ha. වතුර කුඩු කිරීමේ අන්තර්වාර්තා: 10-14 දින. PHI: 14 දින.",
+        "title_ta": "Tricyclazole 75% WP",
+        "description_ta": "தரவியல் விகிதம்: 6 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பு 200-250 g/ha, உயர்ந்த கம்பு 300-350 g/ha. தெளிக்கும் இடைவெளி: 10-14 நாட்கள். PHI: 14 நாட்கள்."
       }
     ],
     "prevention": [
@@ -38,38 +62,79 @@
       "Avoid excessive nitrogen fertilization",
       "Ensure timely drainage to avoid waterlogging",
       "Remove and destroy infected plant debris to reduce pathogen sources"
+    ],
+    "name_si": "බ්ලැස්ට් (Magnaporthe grisea)",
+    "name_ta": "பிளாஸ்ட் (Magnaporthe grisea)",
+    "description_si": "Magnaporthe grisea මගින් ඇතිවන ෆංගල් රෝගයක් වන අතර, පත්‍ර, කුඩු සහ පැනික්කල් වලට බලපායි, එය දැඩි ආදායම් අඩු කිරීමක් ඇති කරයි.",
+    "description_ta": "Magnaporthe grisea மூலம் ஏற்படும் ஒரு பூஞ்சை நோயாகும், இது இலைகள், தண்டு மற்றும் பானிக்கல்களை பாதிக்கிறது, இது கடுமையான விளைச்சல் குறைபாட்டை ஏற்படுத்தலாம்.",
+    "prevention_si": [
+      "ප්‍රතිරෝධී වර���ග වගා කරන්න",
+      "සුවිසල් වාතය සහ ආලෝකය ඇතුළුවීම සඳහා නිවැරදි වගා අන්තර්ගතය පවත්වා ගන්න",
+      "අධික නයිට්‍රජන් පොහොර යෙදීමෙන් වළක්වන්න",
+      "ජලය පිරී යාම වැළැක්වීම සඳහා කාලීන වාතය සහිත වාතය සකස් කරන්න",
+      "රෝගී පැළෑටි කුඩු ඉවත් කර විනාශ කරන්න"
+    ],
+    "prevention_ta": [
+      "எதிர்ப்பு வகைகளை பயிரிடுங்கள்",
+      "காற்றோட்டம் மற்றும் ஒளி ஊடுருவலுக்கு சரியான பயிர் இடைவெளியை பராமரிக்கவும்",
+      "அதிக நைட்ரஜன் உரத்தை தவிர்க்கவும்",
+      "நீர் நிறுத்தத்தை தவிர்க்க காலத்திற்கேற்ப நீர் வெளியேற்றத்தை உறுதி செய்ய��ும்",
+      "பாதிக்கப்பட்ட செடியின் கழிவுகளை அகற்றி அழிக்கவும்"
     ]
   },
   {
     "name": "Sheath Blight (Rhizoctonia solani)",
-    "aliases": ["sheath blight", "Rhizoctonia sheath blight"],
+    "aliases": [
+      "sheath blight",
+      "Rhizoctonia sheath blight"
+    ],
     "description": "A fungal disease caused by Rhizoctonia solani, primarily affecting sheaths but can also infect leaves and panicles, leading to lodging and yield reduction.",
     "severity": "high",
     "solutions": [
       {
         "step": 1,
         "title": "Tebuconazole 250 g/l EW",
-        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days. Spray should be directed at the sheaths."
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days. Spray should be directed at the sheaths.",
+        "title_si": "Tebuconazole 250 g/l EW",
+        "description_si": "අවශේෂ අනුපාතය: 6 ml/10L, යෙදීමේ අනුපාතය: පහළ කුඩු 200-250 ml/ha, ඉහළ කුඩු 300-350 ml/ha. වාෂ්ප කාලය: 7-10 දින. PHI: 21 දින. වාෂ්පය පැහැති කුඩු වෙත යොමු කළ යුතුය.",
+        "title_ta": "Tebuconazole 250 g/l EW",
+        "description_ta": "தரவு விகிதம்: 6 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 200-250 ml/ha, உயர்ந்த கம்பம் 300-350 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 21 நாட்கள். தெளிப்ப��� சேதங்களுக்கு நேரடியாக செய்ய வேண்டும்."
       },
       {
         "step": 2,
         "title": "Pencycuron 25% WP",
-        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-14 days. PHI: 14 days."
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-14 days. PHI: 14 days.",
+        "title_si": "Pencycuron 25% WP",
+        "description_si": "අවශේෂ අනුපාතය: 20 g/10L, යෙදීමේ අනුපාතය: පහළ කුඩු 650-800 g/ha, ඉහළ කුඩු 1000-1200 g/ha. වාෂ්ප කාලය: 7-14 දින. PHI: 14 දින.",
+        "title_ta": "Pencycuron 25% WP",
+        "description_ta": "தரவு விகிதம்: 20 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 650-800 g/ha, உயர்ந்த கம்பம் 1000-1200 g/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 3,
         "title": "Hexaconazole 50 g/l EC",
-        "description": "Dilution rate: 20 ml/10L, Application rate: Low canopy 650-800 ml/ha, High canopy 1000-1200 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
+        "description": "Dilution rate: 20 ml/10L, Application rate: Low canopy 650-800 ml/ha, High canopy 1000-1200 ml/ha. Spray interval: 7-14 days. PHI: 21 days.",
+        "title_si": "Hexaconazole 50 g/l EC",
+        "description_si": "අවශේෂ අනුපාතය: 20 ml/10L, යෙදීමේ අනුපාතය: පහළ කුඩු 650-800 ml/ha, ඉහළ කුඩු 1000-1200 ml/ha. වාෂ්ප කාලය: 7-14 දින. PHI: 21 දින.",
+        "title_ta": "Hexaconazole 50 g/l EC",
+        "description_ta": "தரவு விகிதம்: 20 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 650-800 ml/ha, உயர்ந்த கம்பம் 1000-1200 ml/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்கள். PHI: 21 நாட்கள்."
       },
       {
         "step": 4,
         "title": "Thiophanate-methyl 70% WP",
-        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 14 days."
+        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 14 days.",
+        "title_si": "Thiophanate-methyl 70% WP",
+        "description_si": "අවශේෂ අනුපාතය: 10 g/10L, යෙදීමේ අනුපාතය: පහළ කුඩු 325-400 g/ha, ඉහළ කුඩු 500-600 g/ha. වාෂ්ප කාලය: 7-14 දින. PHI: 14 දින.",
+        "title_ta": "Thiophanate-methyl 70% WP",
+        "description_ta": "தரவு விகிதம்: 10 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 325-400 g/ha, உயர்ந்த கம்பம் 500-600 g/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்க���். PHI: 14 நாட்கள்."
       },
       {
         "step": 5,
         "title": "Propiconazole 250 g/l EC",
-        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
+        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days.",
+        "title_si": "Propiconazole 250 g/l EC",
+        "description_si": "අවශේෂ අනුපාතය: 10 ml/10L, යෙදීමේ අනුපාතය: පහළ කුඩු 325-400 ml/ha, ඉහළ කුඩු 500-600 ml/ha. වාෂ්ප කාලය: 7-14 දින. PHI: 21 දින.",
+        "title_ta": "Propiconazole 250 g/l EC",
+        "description_ta": "தரவு விகிதம்: 10 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 325-400 ml/ha, உயர்ந்த கம்பம் 500-600 ml/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்கள். PHI: 21 நாட்கள்."
       }
     ],
     "prevention": [
@@ -78,39 +143,81 @@
       "Ensure timely drainage to reduce field humidity",
       "Remove and destroy infected plant debris and weeds",
       "Practice crop rotation with non-host crops"
+    ],
+    "name_si": "පැහැති කුඩු (Rhizoctonia solani)",
+    "name_ta": "சேதம் காய்ச்சல் (Rhizoctonia solani)",
+    "description_si": "Rhizoctonia solani මගින් ඇතිවන ෆංගල් රෝගයක්, ප්‍රධාන වශයෙන් පැහැති කුඩු වලට බලපාන නමුත් පත්‍ර සහ පැනික්කල් වලටද ආසාදනය විය හැක, එමඟින් කුඩු වැටීම සහ ප්‍රතිඵල අඩු වීම සිදුවේ.",
+    "description_ta": "Rhizoctonia solani மூலம் ஏற்படும் ஒரு பூஞ்சை நோய், முதன்மையாக சேதங்களில் தாக்கம் செலுத்துகிறது, ஆனால் இலைகளையும் மற்றும் பானிக்கல்களையும் பாதிக்கலாம், இதனால் மண் விழுந்து, விளைச்சல் குறைவாகிறது.",
+    "prevention_si": [
+      "පැළෑන්ගේ නිවැරදි ඉඩකඩ පවත්වා ගන්න",
+      "අධික නයිට්‍රජන් පොහොර යෙදීමෙන් වළකිනු",
+      "පැළෑන්ගේ වාෂ්පය අඩු කිරීමට කාලීන වාහන ඉවත් කරන්න",
+      "අ��ාදිත පැළෑන්ගේ කුඩු සහ කුඩු ඉවත් කර විනාශ කරන්න",
+      "අමුත්තන්ගේ පැළෑන් සමඟ කෘෂි ව්‍යාපාරය අනුගමනය කරන්න"
+    ],
+    "prevention_ta": [
+      "விவசாயத்திற்கான சரியான தாவர இடைவெளியை பராமரிக்கவும்",
+      "அதிக நைட்ரஜன் உரத்தை தவிர்க்கவும்",
+      "மண்ணின் ஈரப்பதத்தை குறைக்க காலத்தில் நீரேற்றம் செய்யவும்",
+      "பாதிக்கப்பட்ட தாவரங்களின் கழிவுகள் மற்றும் கீரைகளை அகற்றவும் அழிக்கவும்",
+      "மற்ற தாவரங்களுடன் பயிர் மாறுதலை நடைமுறைப்படுத்தவும்"
     ]
   },
   {
     "name": "Brown spot",
     "model_var": "brown_spot",
-    "aliases": ["Leaf spot", "Alternaria", "Cercospora"],
+    "aliases": [
+      "Leaf spot",
+      "Alternaria",
+      "Cercospora"
+    ],
     "description": "Refers to leaf spot diseases caused by various fungi (such as Alternaria, Cercospora, Mycosphaerella, etc.), characterized by brown or gray spots on leaves.",
     "severity": "medium",
     "solutions": [
       {
         "step": 1,
         "title": "Mancozeb 75% WG or Maneb 80% WP",
-        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Mancozeb 75% WG හෝ Maneb 80% WP",
+        "description_si": "අවශේෂ අනුපාතය: 20 g/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 650-800 g/ha, උස කාන්තා 1000-1200 g/ha. වතුර කුඩු කිරීමේ අන්තර්වාරය: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Mancozeb 75% WG அல்லது Maneb 80% WP",
+        "description_ta": "தரவியல் விகிதம்: 20 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 650-800 g/ha, உயர்ந்த கம்பம் 1000-1200 g/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 2,
         "title": "Tebuconazole 250 g/l EW",
-        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days."
+        "description": "Dilution rate: 6 ml/10L, Application rate: Low canopy 200-250 ml/ha, High canopy 300-350 ml/ha. Spray interval: 7-10 days. PHI: 21 days.",
+        "title_si": "Tebuconazole 250 g/l EW",
+        "description_si": "අවශේෂ අනුපාතය: 6 ml/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 200-250 ml/ha, උස කාන්තා 300-350 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාරය: 7-10 දින. PHI: 21 දින.",
+        "title_ta": "Tebuconazole 250 g/l EW",
+        "description_ta": "தரவியல் விகிதம்: 6 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 200-250 ml/ha, உயர்ந்த கம்பம் 300-350 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 21 நாட்கள்."
       },
       {
         "step": 3,
         "title": "Thiophanate-methyl 70% WP",
-        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 21 days."
+        "description": "Dilution rate: 10 g/10L, Application rate: Low canopy 325-400 g/ha, High canopy 500-600 g/ha. Spray interval: 7-14 days. PHI: 21 days.",
+        "title_si": "Thiophanate-methyl 70% WP",
+        "description_si": "අවශේෂ අනුපාතය: 10 g/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 325-400 g/ha, උස කාන්තා 500-600 g/ha. වතුර කුඩු කිරීමේ අන්තර්වාරය: 7-14 දින. PHI: 21 දින.",
+        "title_ta": "Thiophanate-methyl 70% WP",
+        "description_ta": "தரவியல் விகிதம்: 10 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 325-400 g/ha, உயர்ந்த கம்பம் 500-600 g/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்கள். PHI: 21 நாட்கள்."
       },
       {
         "step": 4,
         "title": "Propiconazole 250 g/l EC",
-        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days."
+        "description": "Dilution rate: 10 ml/10L, Application rate: Low canopy 325-400 ml/ha, High canopy 500-600 ml/ha. Spray interval: 7-14 days. PHI: 21 days.",
+        "title_si": "Propiconazole 250 g/l EC",
+        "description_si": "අවශේෂ අනුපාතය: 10 ml/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 325-400 ml/ha, උස කාන්තා 500-600 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාරය: 7-14 දින. PHI: 21 දින.",
+        "title_ta": "Propiconazole 250 g/l EC",
+        "description_ta": "தரவியல் விகிதம்: 10 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 325-400 ml/ha, உயர்ந்த கம்பம் 500-600 ml/ha. தெளிக்கும் இடைவெளி: 7-14 நாட்கள். PHI: 21 நாட்கள்."
       },
       {
         "step": 5,
         "title": "Chlorothalonil 500g/l SC",
-        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Chlorothalonil 500g/l SC",
+        "description_si": "අවශේෂ අනුපාතය: 30 ml/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 950-1200 ml/ha, උස කාන්තා 1500-1800 ml/ha. වතුර කුඩු කිරීමේ අන්තර්වාරය: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Chlorothalonil 500g/l SC",
+        "description_ta": "தரவியல் விகிதம்: 30 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பம் 950-1200 ml/ha, உயர்ந்த கம்பம் 1500-1800 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       }
     ],
     "prevention": [
@@ -119,39 +226,81 @@
       "Maintain field hygiene by removing infected plant debris",
       "Practice proper irrigation to avoid prolonged leaf wetness",
       "Rotate with non-host crops"
+    ],
+    "name_si": "කළු ලක්ෂණය",
+    "name_ta": "கறுப்பு மச்சம்",
+    "description_si": "විවිධ ෆංගි (උදාහරණයක් ලෙස Alternaria, Cercospora, Mycosphaerella, ආදිය) මගින් ඇතිවන පත්‍ර ලක්ෂණ රෝගයන්ට යොමු වේ, පත්‍ර මත කළු හෝ අළු පැහැති ලක්ෂණ වලින් ලක්ෂණය වේ.",
+    "description_ta": "பல வகையான பூஞ்சைகள் (எடுத்துக்காட்டாக Alternaria, Cercospora, Mycosphaerella, மற்றும் பிற) காரணமாக ஏற்படும் இலை மச்சம் நோய்களை குறிக்கிறது, இலைகளில் கறுப்பு அல்லது சாம்பல் மச்சங்கள் மூலம் அடையாளம் காணப்படுகிறது.",
+    "prevention_si": [
+      "ප්‍රතිර���ධී වර්ග තෝරන්න",
+      "සමතුලිත පොහොර යෙදීම සහ අධික නයිට්‍රජන් වලින් වළකිනු",
+      "අසාදිත ශාක කුඩු ඉවත් කරමින් ක්ෂේත්‍රයේ පිරිසිදුකම රැකීම",
+      "පත්‍ර තෙතමනය දිගු කාලයක් වළක්වා නිවැරදි ජලය ලබා දීම",
+      "අමුත්තන්ගේ ශාක සමඟ ව්‍යාපාරය කරන්න"
+    ],
+    "prevention_ta": [
+      "எதிர்ப்பு வகைகளை தேர்ந்தெடுக்கவும்",
+      "சமநிலையான உரத்தை பயன்படுத்தவும் மற்றும் அதிக நைட்ரஜனை தவிர்க்கவும்",
+      "பாதிக்கப்பட்ட தாவரங்களின் கழிவுகளை அகற்றுவதன் மூலம் நிலத்தின் சுகாதாரத்தை பராமரிக்கவும்",
+      "இலைகளின் நீண்ட கால ஈரத்தன்மையை தவிர்க்க சரியான நீர்ப்பாசனத்தை நடைமுறைப்படுத்தவும்",
+      "மற்ற தாவரங்களுடன் மாறுபாடு செய்யவும்"
     ]
   },
   {
     "name": "Downy Mildew",
     "model_var": "downy_mildew",
-    "aliases": ["Downy Mildew", "Peronospora", "Pseudoperonospora"],
+    "aliases": [
+      "Downy Mildew",
+      "Peronospora",
+      "Pseudoperonospora"
+    ],
     "description": "A disease caused by oomycete fungi (such as Peronospora, Pseudoperonospora), characterized by grayish-white mold on the underside of leaves.",
     "severity": "medium",
     "solutions": [
       {
         "step": 1,
         "title": "Mancozeb 75% WG or Maneb 80% WP",
-        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Mancozeb 75% WG හෝ Maneb 80% WP",
+        "description_si": "අවශේෂ අනුපාතය: 20 g/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 650-800 g/ha, උසස් කාන්තා 1000-1200 g/ha. වාසනාවීම් අන්තර්වාර්තා: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Mancozeb 75% WG அல்லது Maneb 80% WP",
+        "description_ta": "தரவியல் விகிதம்: 20 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பி 650-800 g/ha, உ��ர்ந்த கம்பி 1000-1200 g/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 2,
         "title": "Mancozeb 64% + Metalaxyl 8% WP",
-        "description": "Dilution rate: 12.5 g/10L, Application rate: Low canopy 400-500 g/ha, High canopy 625-750 g/ha. Spray interval: 12-14 days. PHI: 14 days."
+        "description": "Dilution rate: 12.5 g/10L, Application rate: Low canopy 400-500 g/ha, High canopy 625-750 g/ha. Spray interval: 12-14 days. PHI: 14 days.",
+        "title_si": "Mancozeb 64% + Metalaxyl 8% WP",
+        "description_si": "අවශේෂ අනුපාතය: 12.5 g/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 400-500 g/ha, උසස් කාන්තා 625-750 g/ha. වාසනාවීම් අන්තර්වාර්තා: 12-14 දින. PHI: 14 දින.",
+        "title_ta": "Mancozeb 64% + Metalaxyl 8% WP",
+        "description_ta": "தரவியல் விகிதம்: 12.5 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பி 400-500 g/ha, உயர்ந்த கம்பி 625-750 g/ha. தெளிக்கும் இடைவெளி: 12-14 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 3,
         "title": "Propineb 70% WP",
-        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Propineb 70% WP",
+        "description_si": "අවශේෂ අනුපාතය: 20 g/10L, යෙදුම් අනුපාතය: ��ඩු කාන්තා 650-800 g/ha, උසස් කාන්තා 1000-1200 g/ha. වාසනාවීම් අන්තර්වාර්තා: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Propineb 70% WP",
+        "description_ta": "தரவியல் விகிதம்: 20 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பி 650-800 g/ha, உயர்ந்த கம்பி 1000-1200 g/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 4,
         "title": "Propanocarb 607 g/l SL",
-        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 30 ml/10L, Application rate: Low canopy 950-1200 ml/ha, High canopy 1500-1800 ml/ha. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "Propanocarb 607 g/l SL",
+        "description_si": "අවශේෂ අනුපාතය: 30 ml/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 950-1200 ml/ha, උසස් කාන්තා 1500-1800 ml/ha. වාසනාවීම් අන්තර්වාර්තා: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "Propanocarb 607 g/l SL",
+        "description_ta": "தரவியல் விகிதம்: 30 ml/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பி 950-1200 ml/ha, உயர்ந்த கம்பி 1500-1800 ml/ha. தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 5,
         "title": "Captan 50% WP",
-        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 6-8 days. PHI: 14 days."
+        "description": "Dilution rate: 20 g/10L, Application rate: Low canopy 650-800 g/ha, High canopy 1000-1200 g/ha. Spray interval: 6-8 days. PHI: 14 days.",
+        "title_si": "Captan 50% WP",
+        "description_si": "අවශේෂ අනුපාතය: 20 g/10L, යෙදුම් අනුපාතය: අඩු කාන්තා 650-800 g/ha, උසස් කාන්තා 1000-1200 g/ha. වාසනාවීම් අන්තර්වාර්තා: 6-8 දින. PHI: 14 දින.",
+        "title_ta": "Captan 50% WP",
+        "description_ta": "தரவியல் விகிதம்: 20 g/10L, பயன்பாட்டு விகிதம்: குறைந்த கம்பி 650-800 g/ha, உயர்ந்த கம்பி 1000-1200 g/ha. தெளிக்கும் இடைவெளி: 6-8 நாட்கள். PHI: 14 நாட்கள்."
       }
     ],
     "prevention": [
@@ -160,44 +309,91 @@
       "Practice proper irrigation to avoid prolonged leaf wetness",
       "Remove and destroy infected plant debris and weeds",
       "Rotate with non-host crops"
+    ],
+    "name_si": "ඩවුනි මිල්ඩියු",
+    "name_ta": "டவுனி மில்்டியூ",
+    "description_si": "Peronospora, Pseudoperonospora වැනි oomycete කුඹුරු මඟින් ඇතිවන රෝගයක්, පත්‍ර වල පහළ පැත්තේ දුඹුරු-සුදු මෝල්ඩ් මගින් ලක්ෂණය වේ.",
+    "description_ta": "Peronospora, Pseudoperonospora போன்ற oomycete பூஞ்சைகள் காரணமாக ஏற்படும் ஒரு நோய், இலைகளின் கீழ் பகுதியிலுள்ள சாம்பல்-வெள்ளை பூஞ்சை மூலம் அடையாளம் காணப்படுகிறது.",
+    "prevention_si": [
+      "ප්‍රතිරෝධී වර්ග වගා කරන්න",
+      "සුවිසල් වගා කිරීමෙන් වළකිනු, වාතය සහ ආලෝකය ඇතුළුවීම සහතික කරන්න",
+      "පත්‍ර දිගු කාලයක් තෙතමනයෙන් වළකිනු සඳහා ��ිවැරදි ජලය ලබා දීම අනුගමනය කරන්න",
+      "අසාදිත ශාක කුඩු සහ කුඩා ශාක ඉවත් කර විනාශ කරන්න",
+      "අමුත්තන්ගේ වගා සමඟ ව්‍යාජ වගා කරන්න"
+    ],
+    "prevention_ta": [
+      "எதிர்ப்பு வகைகளை பயிரிடுங்கள்",
+      "காற்றோட்டம் மற்றும் ஒளி புகுத்துவதற்காக அடர்த்தியான பயிரிடலை தவிர்க்கவும்",
+      "இலைகள் நீண்ட காலம் ஈரமாக இருக்காமல் இருக்க சரியான நீர்ப்பாசனத்தை நடைமுறைப்படுத்தவும்",
+      "பாதிக்கப்பட்ட தாவரக் கழிவுகள் மற்றும் கீரைகளை அகற்றி அழிக்கவும்",
+      "மற்ற தாவரங்களுடன் மாறுபட���ட பயிர்களை நடவும்"
     ]
   },
   {
     "name": "Bacterial Leaf Blight",
     "model_var": "bacterial_leaf_blight",
-    "aliases": ["Bacterial Leaf Blight", "Bacterial Blight", "BLB", "Xanthomonas Blight"],
+    "aliases": [
+      "Bacterial Leaf Blight",
+      "Bacterial Blight",
+      "BLB",
+      "Xanthomonas Blight"
+    ],
     "description": "A bacterial disease caused by Xanthomonas oryzae pv. oryzae, producing water-soaked orange/yellow stripes on leaves, wilting in seedlings (kresek), and bacterial ooze from tissue.",
     "severity": "high",
     "solutions": [
       {
         "step": 1,
         "title": "Copper Oxychloride 50% WP",
-        "description": "Dilution rate: 0.3% (30 g per 10 L water). Spray when first symptoms appear. Spray interval: 7-10 days. PHI: 14 days. Ensure thorough leaf coverage."
+        "description": "Dilution rate: 0.3% (30 g per 10 L water). Spray when first symptoms appear. Spray interval: 7-10 days. PHI: 14 days. Ensure thorough leaf coverage.",
+        "title_si": "කොපර් ඔක්සික්ලෝරයිඩ් 50% WP",
+        "description_si": "අවශේෂ අනුපාතය: 0.3% (10 L ජලයට 30 g). පළමු ලක්ෂණ පෙනී යන විට වතුර කුඩු කරන්න. වතුර කුඩු කිරීමේ අන්තර්වාසය: 7-10 දින. PHI: 14 දින. පත්‍ර සම්පූර්ණයෙන් ආවරණය වීම සහතික කරන්න.",
+        "title_ta": "காப்பர் ஆக்ஸிகிளோரைடு 50% WP",
+        "description_ta": "தரவு வீதம்: 0.3% (10 L நீருக்கு 30 g). முதல் அறிகுறிகள் தோன்றும் போது தெளிக்கவும். தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள். இலை முழுவதும் மூடியிருப்பதை உறுதி செய்யவும்."
       },
       {
         "step": 2,
         "title": "Streptomycin 20% SC",
-        "description": "Dilution rate: 0.05% (5 ml per 10 L water). Apply in combination with copper oxychloride for severe outbreaks. Spray interval: 7-10 days. PHI: 14 days."
+        "description": "Dilution rate: 0.05% (5 ml per 10 L water). Apply in combination with copper oxychloride for severe outbreaks. Spray interval: 7-10 days. PHI: 14 days.",
+        "title_si": "ස්ට්‍රෙප්ටොමයිසින් 20% SC",
+        "description_si": "අවශේෂ අනුපාතය: 0.05% (10 L ජලයට 5 ml). දැඩි ව්‍යාප්තිය ���ඳහා කොපර් ඔක්සික්ලෝරයිඩ් සමඟ එකට යෙදවන්න. වතුර කුඩු කිරීමේ අන්තර්වාසය: 7-10 දින. PHI: 14 දින.",
+        "title_ta": "ஸ்ட்ரெப்டோமைசின் 20% SC",
+        "description_ta": "தரவு வீதம்: 0.05% (10 L நீருக்கு 5 ml). கடுமையான பரவலுக்கு காப்பர் ஆக்ஸிகிளோரைடு உடன் சேர்த��து பயன்படுத்தவும். தெளிக்கும் இடைவெளி: 7-10 நாட்கள். PHI: 14 நாட்கள்."
       },
       {
         "step": 3,
         "title": "Field Sanitation & Cultural Practices",
-        "description": "Remove and destroy infected leaves and weeds immediately. Drain fields promptly. Avoid prolonged standing water. Avoid excess nitrogen application. Prevent water from infected fields from entering healthy fields."
+        "description": "Remove and destroy infected leaves and weeds immediately. Drain fields promptly. Avoid prolonged standing water. Avoid excess nitrogen application. Prevent water from infected fields from entering healthy fields.",
+        "title_si": "මැදුරේ පිරිසිදු කිරීම සහ සංස්කෘතික ක්‍රියාමාර්ග",
+        "description_si": "අසාත්මික පත්‍ර සහ කුඩු ඉක්මනින් ඉවත් කර විනාශ කරන්න. ක්ෂේත්‍ර ඉක්මනින් වියළන්න. දිගු කාලයක් ජලය නැවත නැවත නොවන්න. අධික නයිට්‍රජන් යෙදීමෙන් වළක්වන්න. අසාත්මික ක්ෂේත්‍ර වලින් සෞඛ්‍ය ක්ෂේත්‍ර වලට ජලය ඇතුළුවීම වැලැක්වන්න.",
+        "title_ta": "வளையத்திற்கான சுத்தம் மற்றும் கலாச்சார நடைமுறைகள்",
+        "description_ta": "பாதிக்கப்பட்ட இலைகளை மற்றும் களஞ்சியங்களை உடனடியாக அகற்றவும் மற்றும் அழிக்கவும். நிலங்களை உடனடியாக காலி செய்யவும். நீர் நிலை நீண்ட காலமாக நிற்காமல் இருக்கவும். அதிக நைட்ரஜன் பயன்பாட்டை தவிர்க்கவும். பாதிக்கப்பட்ட நிலங்களில் இருந்து சுகாதார நிலங்களுக்கு நீர் செல்லாமல் இருக்கவும்."
       },
       {
         "step": 4,
         "title": "Balanced Fertilization",
-        "description": "Apply potassium fertilizer to improve plant resistance. Use leaf colour chart for nitrogen application to avoid over-fertilization."
+        "description": "Apply potassium fertilizer to improve plant resistance. Use leaf colour chart for nitrogen application to avoid over-fertilization.",
+        "title_si": "සමතුලිත පොහොර යෙදීම",
+        "description_si": "ආලේපන ප්‍රතිරෝධය වැඩිදියුණු කිරීමට පොටෑසියම් පොහොර යෙදන්න. අධික පොහොර යෙදීම වැලැක්වීම සඳහා නයිට්‍රජන් යෙදීම සඳහා පත්‍ර වර්ණ පුවරුව භාවිතා කරන්න.",
+        "title_ta": "சமநிலைப்படுத்தப்பட்ட உரம்",
+        "description_ta": "தாவர எதிர்ப்பு அதிகரிக்க காஷியம் உரத்தை பயன்படுத்தவும். அதிக உரம் பயன்படுத்தாமல் இருக்க நைட்ரஜன் பயன்பாட்டிற்கான இலை நிற அட்டவணையை பயன்படுத்தவும்."
       },
       {
         "step": 5,
         "title": "Seed Treatment",
-        "description": "Soak seeds for 8 hours in Agrimycin (0.025%) + wettable Ceresan (0.05%), followed by hot water treatment for 30 min at 52–54°C; or soak seeds in Ceresan (0.1%) + Streptocyclin (3 g/L). Apply bleaching powder @ 100 g/L and zinc sulfate 2%. Optional foliar sprays: Streptomycin sulfate + Tetracycline (300 g) + Copper oxychloride (1.25 kg/ha), repeat after 15 days if necessary."
+        "description": "Soak seeds for 8 hours in Agrimycin (0.025%) + wettable Ceresan (0.05%), followed by hot water treatment for 30 min at 52–54°C; or soak seeds in Ceresan (0.1%) + Streptocyclin (3 g/L). Apply bleaching powder @ 100 g/L and zinc sulfate 2%. Optional foliar sprays: Streptomycin sulfate + Tetracycline (300 g) + Copper oxychloride (1.25 kg/ha), repeat after 15 days if necessary.",
+        "title_si": "බීජ ප්‍රතිකාර",
+        "description_si": "Agrimycin (0.025%) + wettable Ceresan (0.05%) යුගලයෙන් බීජ 8 පැය කුඩු කරන්න, පසුව 52–54°C දී 30 මිනිත්තු කාන්තා ජල ප්‍රතිකාරයක් කරන්න; හෝ Ceresan (0.1%) + Streptocyclin (3 g/L) යුගලයෙන් බීජ කුඩු කරන්න. bleaching powder @ 100 g/L සහ zinc sulfate 2% යෙදන්න. විකල්ප පත්‍ර කුඩු: Streptomycin sulfate + Tetracycline (300 g) + Copper oxychloride (1.25 kg/ha), අවශ්‍ය නම් 15 දිනකට පසුව නැවත කරන්න.",
+        "title_ta": "விதை சிகிச்சை",
+        "description_ta": "Agrimycin (0.025%) + wettable Ceresan (0.05%) இல் 8 மணி நேரம் விதைகளை ஊறவிடவும், பிறகு 52–54°C இல் 30 நிமிடங்கள் வெந்நீரில் சிகிச்சை செய்யவும்; அல்லது Ceresan (0.1%) + Streptocyclin (3 g/L) இல் விதைகளை ஊறவிடவும். bleaching powder @ 100 g/L மற்றும் zinc sulfate 2% பயன்படுத்தவும். விருப்பமான இலை தெளிப்பு: Streptomycin sulfate + Tetracycline (300 g) + Copper oxychloride (1.25 kg/ha), தேவையானால் 15 நாட்களுக்கு பிறகு மீண்டும் செய்யவும்."
       },
       {
         "step": 6,
         "title": "Foliar Control",
-        "description": "Spray neem oil 3% or NSKE 5%, or fresh cow dung extract (20 g in 1 L water, use supernatant) starting from initial appearance of disease, repeat at fortnightly intervals."
+        "description": "Spray neem oil 3% or NSKE 5%, or fresh cow dung extract (20 g in 1 L water, use supernatant) starting from initial appearance of disease, repeat at fortnightly intervals.",
+        "title_si": "පත්‍ර පාලනය",
+        "description_si": "රෝගයේ ආරම්භක පෙනුම සිට neem oil 3% හෝ NSKE 5% හෝ නව ගොවිපොළ කුඩු (1 L ජලයට 20 g, supernatant භාවිතා කරන්න) වතුර කුඩු කරන්න, මාසික අන්තර්වාසයකින් නැවත ���රන්න.",
+        "title_ta": "இலை கட்டுப்பாடு",
+        "description_ta": "நோயின் ஆரம்ப தோற்றத்திலிருந்து neem oil 3% அல்லது NSKE 5% அல்லது புதிய மாடு மலம் சாறு (1 L நீருக்கு 20 g, மேல்நிலைப் பயன்படுத்தவும்) தெளிக்கவும், 15 நாட்களுக்கு இடைவெளியில் மீண்டும் செய்யவும்."
       }
     ],
     "prevention": [
@@ -209,12 +405,41 @@
       "Keep fields clean and remove weeds",
       "Ensure good field drainage",
       "Prevent water from infected fields entering healthy fields"
+    ],
+    "name_si": "බැක්ටීරියානු පත්‍ර කුඩු",
+    "name_ta": "பாக்டீரியா இலை மஞ்சள்",
+    "description_si": "Xanthomonas oryzae pv. oryzae මගින් ඇතිවන බැක්ටීරියානු රෝගයක්, පත්‍ර මත ජලය ගැඹුරු කළ කහ/කොළ පැහැති තීරු නිපදවමින්, වගා කරන බීජ වියළීම (ක්‍රෙසේක්) සහ පටකයෙන් බැක්ටීරියානු වියළීම.",
+    "description_ta": "Xanthomonas oryzae pv. oryzae மூலம் ஏற்படும் பாக��டீரியா நோய், இலைகளில் நீர் ஊறிய ஆரஞ்சு/மஞ்சள் கோடுகளை உருவாக்குகிறது, விதைத் தாவரங்களில் (கிரெசெக்) மஞ்சள் மற்றும் திசுக்களில் இருந்து பாக்டீரியா வெளியேறும்.",
+    "prevention_si": [
+      "සහතික කළ රෝග රහිත බීජ භාවිතා කරන්න",
+      "සහනශීලී/ප්‍රතිරෝධී වර්ග වගා කරන්න (උදා: IR20, IR72, Ponmani, TKM6, Bg 250, At 362)",
+      "නිවැරදි ශාක අන්තර්ගතය පවත්වා ගන්න",
+      "අධික නයිට්‍රජන් පොහොර යෙදීමෙන් වළක්වන්න",
+      "අනෙකුත් ආහාර වගා සමඟ වගා පරිවර්තනය කරන්න",
+      "ක්ෂේත්‍ර පිරිසිදු තබා කුඩු ඉවත් කරන්න",
+      "හොඳ ක්ෂේත්‍ර ජල නිකුත් කිරීම සහතික කරන්න",
+      "අසාත්මික ක්ෂේත්‍ර වලින් සෞඛ්‍ය ක්ෂේත්‍ර වලට ජලය ඇතුළුවීම වැලැක්වන්න"
+    ],
+    "prevention_ta": [
+      "சான்றிதழ் பெற்ற நோய் இல்லாத விதைகளைப் பயன்படுத்தவும்",
+      "தாங்கும்/எதிர்ப்பு வகைகளை வளர்க்கவும் (எடுத்துக்காட்டாக: IR20, IR72, Ponmani, TKM6, Bg 250, At 362)",
+      "சரியான தாவர இடைவெளியை பராமரிக்கவும்",
+      "அதிக நைட்ரஜன் உரத்தை தவிர்க்கவும்",
+      "மற்ற மக்கிழ் பயிர்களுடன் பயிர் மாறுதல் செய்யவும்",
+      "நிலங்களை சுத்தமாக வைத்திருக்கவும் மற்றும் களஞ்சியங்களை அகற்றவும்",
+      "நல்ல நில நீர்வீழ்ச்சி உறுதி செய்யவும்",
+      "பாதிக்கப்பட்ட நிலங்களில் இருந்து சுகாதார நிலங்களுக்கு நீர் செல்லாமல் இருக்கவும்"
     ]
   },
   {
     "name": "Bacterial Leaf Streak",
     "model_var": "bacterial_leaf_streak",
-    "aliases": ["Bacterial Leaf Streak", "Leaf Streak", "BLS", "Xanthomonas oryzicola streak"],
+    "aliases": [
+      "Bacterial Leaf Streak",
+      "Leaf Streak",
+      "BLS",
+      "Xanthomonas oryzicola streak"
+    ],
     "description": "A bacterial disease caused by Xanthomonas oryzae pv. oryzicola, producing narrow interveinal brownish-yellow streaks on rice leaves. Favors warm, humid conditions, heavy rain, clay soils, and high nitrogen applications.",
     "severity": "high",
     "monitoring": [
@@ -249,27 +474,47 @@
       {
         "step": 1,
         "title": "Copper Oxychloride 50% WP",
-        "description": "Dilution rate: 0.25% (25 g per 10 L water). Spray when disease symptoms first appear. Spray interval: 7 days. PHI (pre-harvest interval): 14 days. Apply in early morning or late afternoon for better coverage."
+        "description": "Dilution rate: 0.25% (25 g per 10 L water). Spray when disease symptoms first appear. Spray interval: 7 days. PHI (pre-harvest interval): 14 days. Apply in early morning or late afternoon for better coverage.",
+        "title_si": "Copper Oxychloride 50% WP",
+        "description_si": "මිශ්‍ර අනුපාතය: 0.25% (ජලය 10 L කට 25 g). රෝග ලක්ෂණ ප්‍රථමයෙන් පෙනෙන විට ඉසින්න. ඉසීමේ අන්තරය: 7 days. PHI (අස්වැන්න පෙර අන්තරය): 14 days. හොඳ ආවරණයක් සඳහා උදේ පාන්දර හෝ සවස් කාලයේ යොදන්න.",
+        "title_ta": "Copper Oxychloride 50% WP",
+        "description_ta": "கலவை விகிதம்: 0.25% (10 L நீருக்கு 25 g). நோய் அறிகுறிகள் முதலில் தோன்றும்போது தெளிக்கவும். தெளிப்பு இடைவெளி: 7 days. PHI (அறுவடைக்கு முன் இடைவெளி): 14 days. சிறந்த மூடுதலுக்காக அதிகாலை அல்லது மாலை நேரத்தில் பயன்படுத்தவும்."
       },
       {
         "step": 2,
         "title": "Copper Hydroxide 77% WP",
-        "description": "Dilution rate: 0.2% (20 g per 10 L water). Spray once symptoms detected. Repeat every 7–10 days until control achieved, avoiding excessive use to protect beneficial microbes. PHI: 14 days."
+        "description": "Dilution rate: 0.2% (20 g per 10 L water). Spray once symptoms detected. Repeat every 7–10 days until control achieved, avoiding excessive use to protect beneficial microbes. PHI: 14 days.",
+        "title_si": "Copper Hydroxide 77% WP",
+        "description_si": "මිශ්‍ර අනුපාතය: 0.2% (ජලය 10 L කට 20 g). ලක්ෂණ පෙනුණු වහාම ඉසින්න. පාලනය ලැබෙනතුරු සෑම 7–10 days කට වරක් නැවත ඉසින්න; ප්‍රයෝජනවත් ක්ෂුද්‍ර ජීවීන් රැකීම සඳහා අධික ලෙස භාවිත කිරීමෙන් වළකින්න. PHI: 14 days.",
+        "title_ta": "Copper Hydroxide 77% WP",
+        "description_ta": "கலவை விகிதம்: 0.2% (10 L நீருக்கு 20 g). அறிகுறிகள் தென்பட்டவுடன் தெளிக்கவும். கட்டுப்பாடு கிடைக்கும் வரை ஒவ்வொரு 7–10 days க்கும் மீண்டும் தெளிக்கவும்; பயனுள்ள நுண்ணுயிரிகளைப் பாதுகாக்க அதிகமாகப் பயன்படுத்துவதைத் தவிர்க்கவும். PHI: 14 days."
       },
       {
         "step": 3,
         "title": "Copper Sulfate 20% WP",
-        "description": "Dilution rate: 0.15–0.2% (15–20 g per 10 L water). Use at first sign of disease. Spray interval: 7 days. PHI: 14 days. Ensure good coverage of leaf surfaces."
+        "description": "Dilution rate: 0.15–0.2% (15–20 g per 10 L water). Use at first sign of disease. Spray interval: 7 days. PHI: 14 days. Ensure good coverage of leaf surfaces.",
+        "title_si": "Copper Sulfate 20% WP",
+        "description_si": "මිශ්‍ර අනුපාතය: 0.15–0.2% (ජලය 10 L කට 15–20 g). රෝගයේ පළමු සලකුණේදීම යොදන්න. ඉසීමේ අන්තරය: 7 days. PHI: 14 days. පත්‍ර මතු පිට හොඳින් ආවරණය වන සේ සහතික කරන්න.",
+        "title_ta": "Copper Sulfate 20% WP",
+        "description_ta": "கலவை விகிதம்: 0.15–0.2% (10 L நீருக்கு 15–20 g). நோயின் முதல் அறிகுறியிலேயே பயன்படுத்தவும். தெளிப்பு இடைவெளி: 7 days. PHI: 14 days. இலை மேற்பரப்பில் நல்ல மூடுதலை உறுதி செய்யவும்."
       },
       {
         "step": 4,
         "title": "Bactericide Rotation for Resistance Management",
-        "description": "Rotate copper products with different active ingredients to avoid bacterial resistance: e.g., Copper Oxychloride → Copper Hydroxide → combined product. Do not exceed three applications per season without extension guidance."
+        "description": "Rotate copper products with different active ingredients to avoid bacterial resistance: e.g., Copper Oxychloride → Copper Hydroxide → combined product. Do not exceed three applications per season without extension guidance.",
+        "title_si": "ප්‍රතිරෝධතාව කළමනාකරණය සඳහා බැක්ටීරියානාශක මාරුව",
+        "description_si": "බැක්ටීරියා ප්‍රතිරෝධය වැළැක්වීම සඳහා විවිධ ක්‍රියාකාරී අමුද්‍රව්‍ය සහිත තඹ නිෂ්පාදන මාරුවෙන් මාරුවට යොදන්න: උදා, Copper Oxychloride → Copper Hydroxide → සංයුක්ත නිෂ්පාදනය. ව්‍යාප්ති නිලධාරීගේ උපදෙස් නොමැතිව සමයකට යෙදුම් තුනකට වැඩි නොකරන්න.",
+        "title_ta": "எதிர்ப்புத் திறன் மேலாண்மைக்கான பாக்டீரியா எதிர்ப்பு மருந்து சுழற்சி",
+        "description_ta": "பாக்டீரியா எதிர்ப்புத் திறனைத் தவிர்க்க வெவ்வேறு செயலி பொருட்கள் கொண்ட காப்பர் தயாரிப்புகளை சுழற்சி முறையில் பயன்படுத்தவும்: எ.கா., Copper Oxychloride → Copper Hydroxide → கூட்டுத் தயாரிப்பு. விரிவாக்க அதிகாரியின் வழிகாட்டுதல் இல்லாமல் ஒரு பருவத்தில் மூன்றுக்கு மேல் பயன்பாடு செய்ய வேண்டாம்."
       },
       {
         "step": 5,
         "title": "Field Sanitation After Detection",
-        "description": "Immediately remove heavily infected leaves and debris. Do not drain water from infected rice fields into adjacent fields. Maintain clean field borders and remove weeds promptly."
+        "description": "Immediately remove heavily infected leaves and debris. Do not drain water from infected rice fields into adjacent fields. Maintain clean field borders and remove weeds promptly.",
+        "title_si": "හඳුනා ගැනීමෙන් පසු කුඹුරේ පිරිසිදුකම",
+        "description_si": "දරුණු ලෙස රෝගී වූ පත්‍ර සහ කසළ වහාම ඉවත් කරන්න. රෝගී කුඹුරුවල ජලය යාබද කුඹුරුවලට බැස යාමට ඉඩ නොදෙන්න. කුඹුරු දාර පිරිසිදුව තබාගෙන වල් පැළෑටි ඉක්මනින් ඉවත් කරන්න.",
+        "title_ta": "கண்டறிந்த பிறகு வயல் சுத்தம்",
+        "description_ta": "கடுமையாக பாதிக்கப்பட்ட இலைகள் மற்றும் கழிவுகளை உடனடியாக அகற்றவும். பாதிக்கப்பட்ட நெல் வயல்களில் இருந்து அருகிலுள்ள வயல்களுக்கு நீர் வெளியேற விடாதீர்கள். வயல் எல்லைகளை சுத்தமாக வைத்திருந்து களைகளை விரைவில் அகற்றவும்."
       }
     ],
     "restrictions": [
@@ -277,12 +522,42 @@
       "Avoid overuse of any single bactericide to prevent resistance development",
       "Follow label instructions and extension officer guidance strictly",
       "Ensure no water from treated fields flows into neighboring healthy fields during chemical application"
+    ],
+    "name_si": "බැක්ටීරියා පත්‍ර ඉරි රෝගය",
+    "name_ta": "பாக்டீரியா இலை கோடு நோய்",
+    "description_si": "Xanthomonas oryzae pv. oryzicola මගින් ඇතිවන බැක්ටීරියා රෝගයක් වන අතර, වී පත්‍රවල නහර අතර පටු දුඹුරු-කහ පැහැති ඉරි ඇති කරයි. උෂ්ණ, තෙතමනය වැඩි කාලගුණය, අධික වර්ෂාව, මැටි පස, සහ අධික නයිට්‍රජන් යෙදීම වර්ධනයට හිතකර වේ.",
+    "description_ta": "Xanthomonas oryzae pv. oryzicola மூலம் ஏற்படும் ஒரு பாக்டீரியா நோயாகும், இது நெல் இலைகளில் நரம்புகளுக்கு இடையே குறுகிய பழுப்பு-மஞ்சள் கோடுகளை ஏற்படுத்துகிறது. வெப்பமான, ஈரப்பதமான சூழ்நிலை, கனமழை, களிமண் மண் மற்றும் அதிக நைட்ரஜன் பயன்பாடு இந்நோயை ஊக்குவிக்கும்.",
+    "prevention_si": [
+      "කුඹුරේ පිරිසිදුකම: පස පෙරළා හිරු එළියට නිරාවරණය කරන්න",
+      "අවදානම් ප්‍රදේශවල සංවේදී වර්ග වළක්වන්න (උදා, RD47, RD41, PSL2, KDML105, RD15, RD6)",
+      "එක ම වී ප්‍රභේදයක් පමණක් එක දිගට වගා නොකර, ප්‍රභේද මිශ්‍ර කරන්න හෝ මාරුවෙන් මාරුවට වගා කරන්න",
+      "වපුරන්නේ නම්, බීජ අනුපාතය 15–20 kg/rai ලෙස භාවිත කරන්න",
+      "අඩු නයිට්‍රජන් මාත්‍රාවන් යොදන්න (පොහොසත් පසේ <25 kg/rai)",
+      "නයිට්‍රජන් පොහොර යෙදුම් දෙකකට බෙදන්න (එක් වරකට ~10 kg/rai බැගින්)",
+      "හොඳ ජලාපවහනයක් පවත්වා දිගු කාලයක් ජලය නවතා නොතබන්න",
+      "රෝගී කුඹුරුවල ජලය නිරෝගී කුඹුරුවලට ගලා යාම වළක්වන්න",
+      "වල් පැළෑටි සහ අතුරු සත්කාරක ශාක ඉක්මනින් ඉවත් කරන්න"
+    ],
+    "prevention_ta": [
+      "வயல் சுத்தம்: மண்ணை உழுது சூரிய ஒளிக்கு வெளிப்படுத்தவும்",
+      "ஆபத்து உள்ள பகுதிகளில் பாதிப்படையும் ரகங்களைத் தவிர்க்கவும் (எ.கா., RD47, RD41, PSL2, KDML105, RD15, RD6)",
+      "ஒரே நெல் ரகத்தை மட்டும் வளர்க்காமல், ரகங்களை கலந்து அல்லது சுழற்சி முறையில் பயிரிடவும்",
+      "விதைப்பு செய்யும்போது, விதை விகிதம் 15–20 kg/rai பயன்படுத்தவும்",
+      "குறைந்த நைட்ரஜன் அளவை பயன்படுத்தவும் (வளமான மண்ணில் <25 kg/rai)",
+      "நைட்ரஜன் உரத்தை இரண்டு பயன்பாடுகளாக பிரிக்கவும் (ஒவ்வொரு முறையும் ~10 kg/rai)",
+      "நல்ல வடிகால் வசதியை பராமரித்து, நீர் நீண்ட நேரம் தேங்காமல் பார்த்துக்கொள்ளவும்",
+      "பாதிக்கப்பட்ட வயல்களில் இருந்து ஆரோக்கியமான வயல்களுக்கு நீர் ஓடாமல் தடுக்கவும்",
+      "களைகள் மற்றும் மற்ற தொற்று தாவரங்களை விரைவில் அகற்றவும்"
     ]
   },
   {
     "name": "Bacterial Panicle Blight",
     "model_var": "bacterial_panicle_blight",
-    "aliases": ["Bacterial Panicle Blight", "Panicle Blight", "Burkholderia glumae infection"],
+    "aliases": [
+      "Bacterial Panicle Blight",
+      "Panicle Blight",
+      "Burkholderia glumae infection"
+    ],
     "description": "A bacterial disease of rice caused by Burkholderia glumae, leading to panicle and grain rot, discoloration, flower sterility, and yield loss. The bacteria thrive under warm temperatures (30–37°C) and high humidity, especially at flowering.",
     "severity": "critical",
     "symptoms": [
@@ -322,22 +597,36 @@
       {
         "step": 1,
         "title": "Oxolinic Acid (Starner 20 WP)",
-        "description": "Preventive foliar application at panicle initiation. Apply at **500–1000 ppm (0.05–0.10%) dilution** (5–10 g of Starner 20 WP per 10 L of water). If risk is very high, research indicates up to **1500 ppm (0.15%)** can be effective under controlled conditions. Spray interval: **10–14 days** before symptoms appear. Follow product label for PHI and safety."
+        "description": "Preventive foliar application at panicle initiation. Apply at **500–1000 ppm (0.05–0.10%) dilution** (5–10 g of Starner 20 WP per 10 L of water). If risk is very high, research indicates up to **1500 ppm (0.15%)** can be effective under controlled conditions. Spray interval: **10–14 days** before symptoms appear. Follow product label for PHI and safety.",
+        "title_si": "Copper Hydroxide 77% WP (සිඩ් ප්‍රතිකාරය)",
+        "description_si": "සිඩ් බීජ පෝෂණය කිරීමට පෙර Burkholderia glumae ජනනය අඩු කිරීමට **5% විසරණයක්** තුළ බීජ බිඳීම් කරන්න. පිරිසිදු ජලය භාවිතා කරන්න, සුදුසු කාලයක් බිඳීම් කරන්න, පසුව බීජ වියළුවන්න.",
+        "title_ta": "Oxolinic Acid (Starner 20 WP)",
+        "description_ta": "**பானிக்கல் ஆரம்பத்தில்** தடுப்பூசி பத்திரிகை பயன்பாடு. **500–1000 ppm (0.05–0.10%)** கலவையில் (10 L நீருக்கு Starner 20 WP 5–10 g) பயன்படுத்தவும். ஆபத்து மிகவும் உயர்ந்தால், கட்டுப்படுத்தப்பட்ட சூழ்நிலைகளில் **1500 ppm (0.15%)** வரை பயனுள்ளதாக இருக்கலாம் என ஆராய்ச்சி காட்டுகிறது. அறிகுறிகள் தோன்றுவதற்கு **10–14 நாட்கள்** முன்பு தெளிக்கவும்."
       },
       {
         "step": 2,
         "title": "Copper Hydroxide 77% WP (Seed Treatment)",
-        "description": "Soak seeds in **5% solution** of copper hydroxide fungicide for seed disinfection prior to sowing to reduce seedborne Burkholderia glumae populations. Use clean water, soak for appropriate time, then dry seeds before sowing."
+        "description": "Soak seeds in **5% solution** of copper hydroxide fungicide for seed disinfection prior to sowing to reduce seedborne Burkholderia glumae populations. Use clean water, soak for appropriate time, then dry seeds before sowing.",
+        "title_si": "උණුසුම් ජල බීජ ප්‍රතිකාරය",
+        "description_si": "පිරිසිදු ජලයේ බීජ බිඳීම් කරන්න, පසුව **52–54°C 30 මිනිත්තු** කාලයක් උණුසුම් ජලයෙන් ප්‍රතිකාර කරන්න. ප්‍රතිකාරයෙන් පසු, බීජ වියළුවන්න.",
+        "title_ta": "Copper Hydroxide 77% WP (விதை சிகிச்சை)",
+        "description_ta": "விதைகளை விதைப்பதற்கு முன்பு Burkholderia glumae மக்கள் தொகையை குறைக்க **5% தீர்வில்** விதைகளை மூழ்கவிடவும். தூய நீரைப் பயன்படுத்தவும், உரிய காலத்திற்கு மூழ்கவிடவும், பிறகு விதைகளை உலர்த்தவும்."
       },
       {
         "step": 3,
         "title": "Hot Water Seed Treatment",
-        "description": "Soak seeds in clean water then treat with hot water at **52–54°C for 30 minutes** to reduce seedborne bacteria. After treatment, cool seeds before sowing."
+        "description": "Soak seeds in clean water then treat with hot water at **52–54°C for 30 minutes** to reduce seedborne bacteria. After treatment, cool seeds before sowing.",
+        "title_si": "සංයුක්ත ක්ෂේත්‍ර කළමනාකරණය",
+        "description_si": "ප්‍රතිරෝධක පත්‍රිකා යෙදීම + සමාන්‍ය පෝෂණය + වඩාත් සුදුසු ජලය සහ පිරිසිදු කිරීම එකට කරන්න. රෝග පීඩනය ඉහළ වූ විට රසායනිකව පමණක් විශ්වාස නොකරන්න; ප්‍රතිපත්ති යෙදීමේදී කළමනාකරණ යුක්ති භාවිතා කරන්න.",
+        "title_ta": "சூடான நீர் விதை சிகிச்சை",
+        "description_ta": "தூய நீரில் விதைகளை மூழ்கவிடவும், பிறகு **52–54°C 30 நிமிடங்கள்** சூடான நீரில் சிகிச்சை செய்யவும். சிகிச்சைக்கு பிறகு, விதைகளை உலர்த்தவும்."
       },
       {
         "step": 4,
         "title": "Integrated Field Management",
-        "description": "Combine preventive foliar spray + balanced nutrition + improved drainage and sanitation. Do not rely solely on chemicals once disease pressure is high; use management strategies before outbreak."
+        "description": "Combine preventive foliar spray + balanced nutrition + improved drainage and sanitation. Do not rely solely on chemicals once disease pressure is high; use management strategies before outbreak.",
+        "title_ta": "இணைக்கப்பட்ட நில மேலாண்மை",
+        "description_ta": "தடுப்பூசி தெளிப்பு + சமநிலையான ஊட்டச்சத்து + மேம்பட்ட நீர்வீழ்ச்சி மற்றும் சுகாதாரம் ஒன்றிணைக்கவும். நோய் அழுத்தம் அதிகமாக இருக்கும் போது ரசாயனங்களில் மட்டும் நம்ப வேண்டாம்; பரவலுக்கு முன் மேலாண��மை உத்திகளைப் பயன்படுத்தவும்."
       }
     ],
     "restrictions": [
@@ -345,12 +634,38 @@
       "Always follow product label instructions for dose, PHI, and application timing",
       "Avoid chemical application once symptoms are widespread (control is preventive, not curative at advanced stages)",
       "Do not drain water from infected fields into healthy fields during chemical application or field operations"
+    ],
+    "name_si": "බැක්ටීරියානු පැනික්කල් බ්ලයිට්",
+    "name_ta": "பாக்டீரியா பானிக்கல் பிளைட்",
+    "description_si": "Burkholderia glumae මගින් ඇතිවන අස්වැන්නක් වන බැක්ටීරියානු රෝගයක්, පැනික්කල් සහ අස්වැන්න සීනී, වර්ණ විකෘතිය, මල් නිෂ්ප්‍රභාවය සහ අස්වැන්න අහිමි වීමක් ඇති කරයි. මෙම බැක්ටීරියා උණුසුම් උෂ්ණත්වයන් (30–37°C) සහ ඉහළ ආර්ද්‍රතාවය යටතේ වර්ධනය වේ, විශේෂයෙන් මල් පැළිමේදී.",
+    "description_ta": "Burkholderia glumae மூலம் ஏற்படும் அரிசி நோய், பானிக்கல் மற்றும் தானிய சிதைவு, நிறம் மாறுதல், மலர் சீரற்ற தன்மை மற்றும் விளைச்சல் இழப்பு ஏற்படுத்துகிறது. இந்த பாக்டீரியங்கள் வெப்பமான வெப்பநிலைகளில் (30–37°C) மற்றும் உயர் ஈரப்பதத்தில் வளரும், குறிப்பாக மலர்ச்சி நேரத்தில்.",
+    "prevention_si": [
+      "සහතික කළ රෝග රහිත බීජ භාවිතා කරන්න (බැක්ටීරියානු ආසාදන මූලාශ්‍රය අඩු කරන්න)",
+      "නොමැති ආශ්‍රිත වගා සමඟ වගා පරිවර්තනය කරන්න (මැයිස්, පෝෂක)",
+      "ඉක්මනින් හෝ කෙටි කාලීන අස්වැන්න වර්ග වගා කරන්න, රෝගයේ උද්ගත කාලය වලක්වා ගැනීමට",
+      "මොනෝකල්චර් වලින් වළකිනු, ආසාදනීය වර්ග මාරු කරන්න",
+      "පැළෑවක නිවැරදි ව්‍යාප්තිය පවත්වා ගැනීමට සහ සම්බන්ධ ආර්ද්‍රතාවය අඩු කරන්න",
+      "අධික නයිට්‍රජන් වලින් වළකිනු, සමාන්‍ය පෝෂණය කළමනාකරණය කරන්න",
+      "ක්ෂේත්‍රයේ ජලය වඩාත් සුදුසු ලෙස පවත්වා ගැනීමට සහ මල් පැළිමේදී නැවත නැවත ජලය වළකිනු"
+    ],
+    "prevention_ta": [
+      "சான்றிதழ் பெற்ற நோய் இல்லாத விதைகளைப் பயன்படுத்தவும் (பாக்டீரியா தொற்றின் மூலதனம் குறைக்கவும்)",
+      "மற்றும் இல்லாத பயிர்களுடன் பயிர் மாறுதல் செய்யவும் (மக்காச்சோளம், பருத்தி)",
+      "உச்ச நோய் காலங்களை தவிர்க்க விரைவில் அல்லது குறுகிய கால அரிசி வகைகளை நடுங்கள்",
+      "மோனோகல்ச்சர் தவிர்க்கவும் மற்றும் பாதிக்கப்படும் வகைகளை மாறுங்கள்",
+      "தரமான தாவர இடைவெளியை பராமரிக்கவும் மற்றும் கம்பத்தில் தொடர்புடைய ஈரப்பதத்தை குறைக்கவும்",
+      "அதிக நைட்ரஜனை தவிர்க்கவும் மற்றும் சமநிலையான உரத்தை நிர்வகிக்கவும்",
+      "நிலத்தின் நீர்வீழ்ச்சியை மேம்படுத்தவும் மற்றும் மலர்ச்சி நேரத்தில் நிற்கும் நீரை தவிர்க்கவும்"
     ]
   },
   {
     "name": "Dead Heart",
     "model_var": "dead_heart",
-    "aliases": ["Dead Heart", "Stem Borer Damage", "Yellow Stem Borer (YSB)"],
+    "aliases": [
+      "Dead Heart",
+      "Stem Borer Damage",
+      "Yellow Stem Borer (YSB)"
+    ],
     "description": "A symptom in rice caused by stem borer insects (especially Yellow Stem Borer, Scirpophaga incertulas) where the central shoot (tiller) becomes yellow and dies due to larval feeding inside the stem. This leads to yield loss and tiller death.",
     "severity": "high",
     "symptoms": [
@@ -388,27 +703,47 @@
       {
         "step": 1,
         "title": "Fipronil 0.3% Granules (Soil/Seed Treatment)",
-        "description": "Apply Fipronil 0.3% G at **4–5 kg/ha**, incorporated into soil or applied at transplanting near base of plants. Controls early larval establishment and reduces dead heart incidence."
+        "description": "Apply Fipronil 0.3% G at **4–5 kg/ha**, incorporated into soil or applied at transplanting near base of plants. Controls early larval establishment and reduces dead heart incidence.",
+        "title_si": "Fipronil 0.3% Granules (මැටි/වීන් ප්‍රතිකාරය)",
+        "description_si": "Fipronil 0.3% G **4–5 kg/ha** ලෙස යෙදීම, මැටි තුළ එකතු කර හෝ ශාක වල පදනමට ආසන්නව ප්‍රතිස්ථාපනය කරන විට යෙදෙන්න. ආරම්භක කුඹුරු කීටකයන්ගේ ස්ථාපනය පාලනය කරයි සහ මිය ගැසුණු හෘදය සිදුවීම් අඩු කරයි.",
+        "title_ta": "Fipronil 0.3% Granules (மண்/விதை சிகிச்சை)",
+        "description_ta": "Fipronil 0.3% G-ஐ **4–5 kg/ha** என்ற அளவில், மண்ணில் சேர்க்கவும் அல்லது செடிகளின் அடிப்படையில் நட்டு வைக்கும்போது பயன்படுத்தவும். ஆரம்ப கீட்டகங்களின் நிறுவலை கட்டுப்படுத்துகிறது மற்றும் இறந்த இதயத்தின் நிகழ்வுகளை குறைக்கிறது."
       },
       {
         "step": 2,
         "title": "Chlorantraniliprole 18.5% SC Foliar Spray",
-        "description": "Prepare **200–300 ml per 100 L water (0.04–0.06%)** and apply as a **foliar spray at tillering stage** when stem borer activity begins. Re‑spray only if larvae counts exceed threshold at 10–14 day intervals."
+        "description": "Prepare **200–300 ml per 100 L water (0.04–0.06%)** and apply as a **foliar spray at tillering stage** when stem borer activity begins. Re‑spray only if larvae counts exceed threshold at 10–14 day intervals.",
+        "title_si": "Chlorantraniliprole 18.5% SC Foliar Spray",
+        "description_si": "**200–300 ml per 100 L ජලය (0.04–0.06%)** සකස් කර **තීලය වර්ධන අවස්ථාවේදී** කොළඹ කුඹුරු ක්‍රියාකාරීත්වය ආරම්භ වන විට කොළ මත වතුර යෙදෙන්න. කුඹුරු ගණන තීරය ඉක්මවා ගිය විට පමණක් නැවත වතුර යෙදන්න, 10–14 දින කාල සීමාවන්හිදී.",
+        "title_ta": "Chlorantraniliprole 18.5% SC Foliar Spray",
+        "description_ta": "**200–300 ml per 100 L நீர் (0.04–0.06%)** தயாரித்து, தண்டு கீட்டக செயல்பாடு தொடங்கும் போது **தில்லர் நிலை** இல் ஒரு **கோல்மூட்டில்** பயன்படுத்தவும். கீட்டக எண்ணிக்கை 10–14 நாட்களில் மிதிவெளியை மீறினால் மட்டுமே மீண்டும் பூசவும்."
       },
       {
         "step": 3,
         "title": "Carbosulfan 200g/l SC Foliar Spray",
-        "description": "Dilute **250–300 ml per 100 L water (0.05–0.06%)** and spray evenly across the crop when stem borer larval activity is confirmed. Repeat after 10–14 days if needed and justified by monitoring."
+        "description": "Dilute **250–300 ml per 100 L water (0.05–0.06%)** and spray evenly across the crop when stem borer larval activity is confirmed. Repeat after 10–14 days if needed and justified by monitoring.",
+        "title_si": "Carbosulfan 200g/l SC Foliar Spray",
+        "description_si": "**250–300 ml per 100 L ජලය (0.05–0.06%)** දිය කර තීල කුඹුරු කීටකයන්ගේ ක්‍රියාකාරීත්වය තහවුරු වූ විට වගාව පුරා සමානව වතුර යෙදෙන්න. අවශ්‍ය නම් සහ නිරීක්ෂණය මගින් සාධාරණ කරන්නේ නම් 10–14 දිනකට පසුව නැවත කරන්න.",
+        "title_ta": "Carbosulfan 200g/l SC Foliar Spray",
+        "description_ta": "**250–300 ml per 100 L நீர் (0.05–0.06%)** இனைத் தண்ணீரில் கலக்கி, தண்டு கீட்டக செயல்பாடு உறுதிப்படுத்தப்பட்டால் பயிர் முழுவதும் சமமாக பூசவும். தேவையானால் மற்றும் கண்காணிப்பின் அடிப்படையில் 10–14 நாட்களுக்கு பிறகு மீண்டும் செய்யவும்."
       },
       {
         "step": 4,
         "title": "Thiamethoxam + Chlorantraniliprole Combination",
-        "description": "Use **combination formulations (e.g., 25–30 g per 15–20 L water per acre)** as early foliar treatment if pheromone traps indicate high YSB activity. Repeat based on monitoring, up to **2 applications per cycle**."
+        "description": "Use **combination formulations (e.g., 25–30 g per 15–20 L water per acre)** as early foliar treatment if pheromone traps indicate high YSB activity. Repeat based on monitoring, up to **2 applications per cycle**.",
+        "title_si": "Thiamethoxam + Chlorantraniliprole සංයෝජනය",
+        "description_si": "**සංයෝජන ආකාර (උදාහරණයක් ලෙස, 25–30 g per 15–20 L ජලය ප්‍රමාණයට)** පළමුව කොළ මත ප්‍රතිකාරයක් ලෙස යොදා ගන්න, යුක්තියේ කුඹුරු කීටකයන්ගේ ක්‍රියාකාරීත්වය ඉහළ යන විට. නිරීක්ෂණය මත නැවත කරන්න, **සයිකලකට 2 යෙදීමක්** දක්වා.",
+        "title_ta": "Thiamethoxam + Chlorantraniliprole கலவை",
+        "description_ta": "**கலவையான வடிவங்கள் (எடுத்துக்காட்டாக, 25–30 g per 15–20 L நீர் ஒரு ஏக்கருக்கு)** கீட்டக செயல்பாடு அதிகமாக உள்ளால் ஆரம்ப கோல்மூட்டாக பயன்படுத்தவும். கண்காணிப்பின் அடிப்படையில் மீண்டும் செய்யவும், **ஒரு சுற்றத்தில் 2 பயன்பாடுகள்** வரை."
       },
       {
         "step": 5,
         "title": "Chlorpyriphos 20% EC (Alternative)",
-        "description": "Apply as **foliar spray 500–600 ml/ha** in 200–300 L water if stem borer infestations are severe and other products are ineffective. Use as alternative, not first choice, due to effects on beneficial insects."
+        "description": "Apply as **foliar spray 500–600 ml/ha** in 200–300 L water if stem borer infestations are severe and other products are ineffective. Use as alternative, not first choice, due to effects on beneficial insects.",
+        "title_si": "Chlorpyriphos 20% EC (විකල්පය)",
+        "description_si": "කොළඹ කුඹුරු ආසාදන දැඩි නම් සහ අනෙකුත් නිෂ්පාදන ප්‍රයෝජනවත් නොවන විට **foliar spray 500–600 ml/ha** ලෙස 200–300 L ජලයේ යෙදෙන්න. ප්‍රයෝජනවත් කීටකයන්ට බලපෑම් නිසා ප්‍රථම තේරීමක් නොවී විකල්පයක් ලෙස භාවිතා කරන්න.",
+        "title_ta": "Chlorpyriphos 20% EC (விருப்பம்)",
+        "description_ta": "தண்டு கீட்டகங்கள் கடுமையாக இருந்தால் மற்றும் பிற தயாரிப்புகள் பயனற்றதாக இருந்தால் **கோல்மூட்டில் 500–600 ml/ha** என்ற அளவில் 200–300 L நீரில் பயன்படுத்தவும். பயனுள்ள பூச்சிகளுக்கு பாதிப்புகள் காரணமாக முதன்மை தேர்வாக அல்லாமல் மாற்று ஆக பயன்படுத்தவும்."
       }
     ],
     "safety": [
@@ -423,12 +758,36 @@
       "Apply chemicals **only when stem borer counts exceed threshold levels** (5–10% dead heart or high pheromone trap counts)",
       "Follow pesticide label instructions exactly; do not mix incompatible chemicals",
       "Avoid spraying during flowering to protect pollinators and beneficial insects"
+    ],
+    "name_si": "මිය ගැසුණු හෘදය",
+    "name_ta": "இறந்த இதயம்",
+    "description_si": "කොළඹ කුඹුරු කීටකයන් (විශේෂයෙන් කහ කොළඹ කුඹුරු, Scirpophaga incertulas) මගින් ඇතිවන රයිස් වල ලක්ෂණයක් වන අතර මධ්‍යම ශාකය (තීලය) කහවී මිය යයි, කුඹුරු කීටකයන්ගේ ආහාරය නිසා. මෙය ප්‍රතිඵල අහිමිවීම සහ තීල මිය යාමට හේතු වේ.",
+    "description_ta": "மையக் க Shoot (tiller) மஞ்சள் நிறமாக மாறி, தண்டு உள்ளே உள்ள பூச்சிகளால் உணவு எடுத்துக்கொள்ளும் காரணமாக இறக்கிறது. இது விளைச்சல் இழப்ப��க்கும், தில்லர் இறப்புக்கும் வழிவகுக்கிறது.",
+    "prevention_si": [
+      "ලබා ගත හැකි විට ප්‍රතිරෝධී හෝ මධ්‍යම ධාරිතාව ඇති රයිස් වර්ග භාවිතා කරන්න",
+      "ඉතා ආරම්භක වගාවකදී නයිට්‍රජන් සමඟ අධික පොහොර යෙදීමෙන් වළකිනු",
+      "කීටකයන්ගේ සංඛ්‍යාව සීමා කිරීමට සමකාලීන වගාවක් අනුගමනය කරන්න",
+      "කොළඹ කුඹුරු වර්ධනය විය හැකි ශාක ඉතිරි කිරීම් ඉවත් කර පිරිසිදු ක්ෂේත්‍ර සීමා තබා ගන්න",
+      "කොළඹ කුඹුරු ජීවිත චක්‍ර විකෘති කිරීමට රයිස් වලින් වගා මාරු කරන්න",
+      "අධික මෝත්‍ර ක්‍රියාකාරීත්වය වැළැක්වීමට නිවැරදි ජල මට්ටම් (පැහැදිලි ජලය) තබා ගන්න"
+    ],
+    "prevention_ta": [
+      "கிடைக்கும் போது எதிர்ப்பு அல்லது மிதமான பொறுத்து கொண்ட அரிசி வகைகளைப் பயன்படுத்தவும்",
+      "வகை வளர்ச்சியின் ஆரம்பத்தில் நைட்ரஜனுடன் அதிகமாக உரம் போடுவதிலிருந்து தவிர்க்கவும்",
+      "கீட்டகங்களின் கூட்டத்தை கட்டுப்படுத்த சிங்கத்துடன் பயிர் நடவும்",
+      "கீட்டகங்கள் பெருகக்கூடிய தண்டு பகுதிகளை அகற்றவும்",
+      "தண்டு கீட்டகங்களின் வாழ்க்கைச் சுற்றுகளை உடைக்க அரிசியிலிருந்து பயிர்களை மாறுங்கள்",
+      "அதிக மoths செயல்பாட்டை தடுக்கும் வகையில் சரியான நீர்மட்டங்களை (சிறு வெள்ளம்) பராமரிக்கவும்"
     ]
   },
   {
     "name": "Hispa",
     "model_var": "hispa",
-    "aliases": ["hispa", "rice hispa", "spiny beetle"],
+    "aliases": [
+      "hispa",
+      "rice hispa",
+      "spiny beetle"
+    ],
     "description": "Rice hispa (Dicladispa armigera) is a common insect pest in paddy causing leaf scraping, longitudinal white streaks, and reduced photosynthesis. Severe infestations cause leaf drying and yield reduction.",
     "severity": "high",
     "symptoms": [
@@ -466,27 +825,47 @@
       {
         "step": 1,
         "title": "Emamectin Benzoate 5% SG",
-        "description": "Dilute **5 g per 10 L water (0.05%)** and spray evenly over leaves when hispa adults or larvae are first observed. Spray interval: **10–14 days** if needed. Use lower volume (~200–300 L/ha for foliar spray)."
+        "description": "Dilute **5 g per 10 L water (0.05%)** and spray evenly over leaves when hispa adults or larvae are first observed. Spray interval: **10–14 days** if needed. Use lower volume (~200–300 L/ha for foliar spray).",
+        "title_si": "Emamectin Benzoate 5% SG",
+        "description_si": "**5 g per 10 L water (0.05%)** දිය කර, හිස්පා වයස්කාර හෝ කුඩා කෘමි පළමු වතාවට දැකීමේදී පත්‍ර මත සමාන ලෙස වතුර කරන්න. වතුර කිරීමේ අන්තර්වාසිකාව: අවශ්‍ය නම් **10–14 days**.",
+        "title_ta": "Emamectin Benzoate 5% SG",
+        "description_ta": "**5 g per 10 L water (0.05%)** இலைகளின் மேல் சமமாக தெளிக்கவும், ஹிஸ்பா பெரியவர்கள் அல்லது குஞ்சுகள் முதலில் காணப்படும் போது. தெளிக்கும் இடைவெளி: தேவையானால் **10–14 days**."
       },
       {
         "step": 2,
         "title": "Fipronil + Imidacloprid Combination",
-        "description": "Use **recommended granule formulation at 4–5 kg/ha** applied at transplanting or early tillering. Effective soil and early leaf protection against larvae and adults."
+        "description": "Use **recommended granule formulation at 4–5 kg/ha** applied at transplanting or early tillering. Effective soil and early leaf protection against larvae and adults.",
+        "title_si": "Fipronil + Imidacloprid Combination",
+        "description_si": "**4–5 kg/ha** යෝජිත ග්‍රෑනියුල් ආකාරය භාවිතා කරන්න, පත්‍රය හෝ ආරම්භක කුඩු කිරීමේදී යෙදවන්න. කුඩා කෘමි සහ වයස්කාර කෘමිවලට ප්‍රභාෂිත මැදිරි සහ පත්‍ර ආරක්ෂාවක්.",
+        "title_ta": "Fipronil + Imidacloprid Combination",
+        "description_ta": "**4–5 kg/ha** பரிந்துரைக்கப்பட்ட தானிய வடிவத்தை பயிர் நடும் போது அல்லது ஆரம்ப குச்சியில் பயன்படுத்தவும். குஞ்சுகள் மற்றும் பெரியவர்களுக்கு மண் மற்றும் ஆரம்ப இலை பாதுகாப்பு."
       },
       {
         "step": 3,
         "title": "Carbofuran 3G Granules",
-        "description": "Apply **3G granules at 6–8 kg/ha** evenly at transplanting or when infestation is confirmed. Incorporate lightly into the soil surface to target early larvae stages."
+        "description": "Apply **3G granules at 6–8 kg/ha** evenly at transplanting or when infestation is confirmed. Incorporate lightly into the soil surface to target early larvae stages.",
+        "title_si": "Carbofuran 3G Granules",
+        "description_si": "**3G ග්‍රෑනියුල් 6–8 kg/ha** යෙදවන්න, පත්‍රය හෝ ආසාදනය තහවුරු වූ විට සමාන ලෙස යෙදවන්න. කුඩා කෘමි පියවරයන්ට ඉලක්ක කරමින් මැදිරි මතුපිටට සුළු ලෙස ඇතුළත් කරන්න.",
+        "title_ta": "Carbofuran 3G Granules",
+        "description_ta": "**3G தானியங்களை 6–8 kg/ha** சமமாகப் பயன்படுத்தவும், பயிர் நடும் போது அல்லது தொற்றானது உறுதியாகும் போது. ஆரம்ப குஞ்சு நிலைகளை குறிவைக்கும் வகையில் மண் மேற்பரப்பில் மெதுவாகச் சேர்க்கவும்."
       },
       {
         "step": 4,
         "title": "Thiamethoxam 25% WG",
-        "description": "Use **25–30 g per 15–20 L water per acre** as foliar spray when >3 adults/50 tillers are detected. Spray in the early morning or late afternoon to minimize beneficial insect impact."
+        "description": "Use **25–30 g per 15–20 L water per acre** as foliar spray when >3 adults/50 tillers are detected. Spray in the early morning or late afternoon to minimize beneficial insect impact.",
+        "title_si": "Thiamethoxam 25% WG",
+        "description_si": "**25–30 g per 15–20 L water per acre** යෙදවන්න, >3 වයස්කාර/50 කුඩු පත්‍ර හඳුනාගත් විට පත්‍ර වතුර කිරීමේදී. ප්‍රයෝජනවත් කෘමි බලපෑම් අඩු කිරීමට පෙර දවස් හෝ පස්වරුන්හි වතුර කරන්න.",
+        "title_ta": "Thiamethoxam 25% WG",
+        "description_ta": "**25–30 g per 15–20 L water per acre** இலை தெளிக்கவும், >3 பெரியவர்கள்/50 குச்சிகள் கண்டறியப்பட்டால். பயனுள்ள பூச்சிகளின் தாக்கத்தை குறைக்க காலை அல்லது மாலை நேரத்தில் தெளிக்கவும்."
       },
       {
         "step": 5,
         "title": "Rotational Control & IPM",
-        "description": "Rotate active ingredients between sprays (e.g., Emamectin→Thiamethoxam→Fipronil combo) to prevent resistance. Do **not exceed two sprays of the same class** per season."
+        "description": "Rotate active ingredients between sprays (e.g., Emamectin→Thiamethoxam→Fipronil combo) to prevent resistance. Do **not exceed two sprays of the same class** per season.",
+        "title_si": "Rotational Control & IPM",
+        "description_si": "රෝග විරෝධීතාවය වැළැක්වීම සඳහා වතුර කිරීම් අතර ක්‍රියාකාරී ද්‍රව්‍ය හුවමාරු කරන්න (උදා: Emamectin→Thiamethoxam→Fipronil සංග්‍රහය). සීසනයකට එකම පන්තියේ වතුර කිරීම් **දෙකක් ඉක්මවා නොයන්න**.",
+        "title_ta": "Rotational Control & IPM",
+        "description_ta": "எதிர்ப்பு உருவாகாமல் இருக்க, தெளிப்புகளுக்கிடையில் செயல்பாட்டுப் பொருட்களை மாற்றவும் (எ.கா., Emamectin→Thiamethoxam→Fipronil கலவை). ஒரு பருவத்தில் ஒரே வகை **இரு தெளிப்புகளை மீற வேண்டாம்**."
       }
     ],
     "safety": [
@@ -500,12 +879,36 @@
       "Follow product label instructions for doses and PHI (pre‑harvest interval)",
       "Only apply chemical control when monitoring thresholds are exceeded",
       "Avoid draining sprayed water into irrigation channels to protect fish and downstream fields"
+    ],
+    "name_si": "හිස්පා",
+    "name_ta": "ஹிஸ்பா",
+    "description_si": "අලෙවි හිස්පා (Dicladispa armigera) යනු පද්ධතියේ පොහොසත් කෘමිපැතින් අතරින් පොදු කෘමිපැතින් වන අතර, එය පත්‍ර කුඩු කිරීම, දිගු සුදු රේඛා සහ ඡායාරූපණය අඩු කිරීමක් ඇති කරයි. දැඩි ආසාදන පත්‍ර වියළීම සහ ප්‍රතිඵල අඩු කිරීමක් ඇති කරයි.",
+    "description_ta": "அரிசி ஹிஸ்பா (Dicladispa armigera) என்பது பண்ணைத் தாவரங்களில் பொதுவாக காணப்படும் பூச்சி தீவனம் ஆகும், இது இலைகளை கிழிக்க, நீளமான வெள்ளை கோடுகளை உருவாக்க மற்றும் ஒளிப்படம் குறைவாக இருக்கச் செய்கிறது. கடுமையான தொற்றுகள் இலைகளை உலர்த்தி, விளைச்சலை குறைக்கின்றன.",
+    "prevention_si": [
+      "හොඳ වායු සන්නිවේදනය සඳහා නිවැරදි ශාක අන්තර්ගතය පවත්වා ගන්න",
+      "ගොවිපොළේ ආරම්භක වර්ධනයේදී අධික නයිට්‍රජන් යෙදීමෙන් වළකිනු",
+      "ගොවිපොළ ආසන්නයේ කුඩු සහ විකල්ප ආශ්‍රිත ශාක ඉවත් කරන්න",
+      "නො‑ආශ්‍රිත වගා (මැයිස්, කුඩු) සමඟ වගා වර්තමාන කරන්න",
+      "පත්‍රය යෙදීමේදී සෞඛ්‍ය සහ ශක්තිමත් බීජ වගා ක���න්න",
+      "මොනෝකෘෂිකර්මයෙන් වළකිනු සහ කෘෂි වර්ග හුවමාරු කරන්න"
+    ],
+    "prevention_ta": [
+      "சிறந்த காற்றோட்டத்திற்கு சரியான தாவர இடைவெளியை பராமரிக்கவும்",
+      "பயிரின் ஆரம்ப வளர்ச்சியில் அதிக ���ைட்ரஜன் பயன்பாட்டை தவிர்க்கவும்",
+      "பண்ணை அருகிலுள்ள களஞ்சியங்களை மற்றும் மாற்று விருந்தினர் தாவரங்களை அகற்றவும்",
+      "மாற்று பயிர்களை (மக்காச்சோளம், காய்கறிகள்) உட்படுத்தி பயிர் மாறுதல் செய்யவும்",
+      "பயிர் நடும் போது ஆரோக்கியமான, உற்சாகமான விதைகளை உறுதி செய்யவும்",
+      "ஒரே பயிர் நடுவதிலிருந்து தவிர்க்கவும் மற்றும் பூச்சிகளை குறைக்க வகைகளை மாற்றவும்"
     ]
   },
   {
     "name": "Tungro Disease",
     "model_var": "tungro",
-    "aliases": ["tungro", "rice tungro", "tungro virus disease"],
+    "aliases": [
+      "tungro",
+      "rice tungro",
+      "tungro virus disease"
+    ],
     "description": "Tungro is a viral disease of rice transmitted primarily by leafhoppers (Nephotettix spp. such as Nephotettix virescens). Infected plants cannot be cured once infected. Management focuses on vector control, resistant varieties, and cultural practices to reduce vector populations.",
     "severity": "critical",
     "symptoms": [
@@ -546,27 +949,47 @@
       {
         "step": 1,
         "title": "Buprofezin 250 g/l SC (e.g., Jawwa)",
-        "description": "Dilute **60–80 ml per 15–20 L water per acre** and spray when leafhopper numbers exceed 5–10 per 50 tillers. Spray at early morning or late afternoon. Repeat only if monitoring thresholds are exceeded after 7–10 days."
+        "description": "Dilute **60–80 ml per 15–20 L water per acre** and spray when leafhopper numbers exceed 5–10 per 50 tillers. Spray at early morning or late afternoon. Repeat only if monitoring thresholds are exceeded after 7–10 days.",
+        "title_si": "Buprofezin 250 g/l SC (උදා: Jawwa)",
+        "description_si": "**එක් අක්කරයකට 15–20 L ජලයට 60–80 ml දියර කරන්න** සහ කුඹුරු සංඛ්‍යාව 50 කුඹුරු වලින් 5–10 කට වඩා වැඩි වූ විට වතුර දමන්න. උදේ හෝ සවස පසුව වතුර දමන්න. 7–10 දිනකින් පසුව මනාව පරීක්ෂා කළ විට පමණක් නැවත කරන්න.",
+        "title_ta": "Buprofezin 250 g/l SC (எடுத்துக்காட்டு: Jawwa)",
+        "description_ta": "**15–20 L நீருக்கு 60–80 ml நன்கு கலக்கவும்** மற்றும் கம்பளி எண்ணிக்கை 50 துளைகளில் 5–10 ஐ மீறும்போது தெளிக்கவும். காலை அல்லது மாலை நேரத்தில் தெளிக்கவும். 7–10 நாட்களுக்கு பிறகு கண்காணிப்பு அளவுகோல்கள் மீறப்பட்டால் மட்டுமே மீண்டும் செய்யவும்."
       },
       {
         "step": 2,
         "title": "Pymetrozine 50% WG (e.g., Active Ingredient)",
-        "description": "Dilute **25–30 g per 20 L water per acre** as a foliar spray when significant leafhopper activity is observed. Pymetrozine acts as an insect feeding inhibitor and disrupts vector transmission."
+        "description": "Dilute **25–30 g per 20 L water per acre** as a foliar spray when significant leafhopper activity is observed. Pymetrozine acts as an insect feeding inhibitor and disrupts vector transmission.",
+        "title_si": "Pymetrozine 50% WG (උදා: Active Ingredient)",
+        "description_si": "**එක් අක්කරයකට 20 L ජලයට 25–30 g දියර කරන්න** යන විට වැදගත් කුඹුරු ක්‍රියාකාරකම් දැකීමේදී පත්‍ර මත වතුර දමන්න. Pymetrozine යනු කුඹුරු ආහාර ගැනීම අත්හිටුවන සහ වාහක ප්‍රවහනය බිඳ දැමෙන බවට ක්‍රියා කරයි.",
+        "title_ta": "Pymetrozine 50% WG (எடுத்துக்காட்டு: Active Ingredient)",
+        "description_ta": "**20 L நீருக்கு 25–30 g நன்கு கலக்கவும்** முக்கியமான கம்பளி செயல்பாடு காணப்படும் போது இலை மழை தெளிக்கவும். Pymetrozine என்பது பூச்சி உணவுக்கான தடுப்பாளராக செயல்பட்டு, வாகன பரவலை உடைக்கிறது."
       },
       {
         "step": 3,
         "title": "Vector Control Rotation",
-        "description": "Rotate active ingredients between applications (e.g., Buprofezin → Pymetrozine) to delay resistance development in leafhopper populations. Do not apply the same class more than twice per season."
+        "description": "Rotate active ingredients between applications (e.g., Buprofezin → Pymetrozine) to delay resistance development in leafhopper populations. Do not apply the same class more than twice per season.",
+        "title_si": "වාහක පාලන රෝටේෂන්",
+        "description_si": "අයදුම් අතර ක්‍රියාකාරී ද්‍රව්‍ය රෝටේට් කරන්න (උදා: Buprofezin → Pymetrozine) කුඹුරු ජනගහනයේ ප්‍රතිරෝධය සංවර්ධනය කිරීමට ප්‍රමාද කිරීමට. එක් කාණ්ඩයක් වසරකට වඩා වතාවක් අයදුම් නොකරන්න.",
+        "title_ta": "வாகனக் கட்டுப்பாட்டு சுழற்சி",
+        "description_ta": "விண்ணப்பங்களுக்கு இடையே செயல்பாட்டுப் பொருட்களை சுழற்றவும் (எடுத்துக்காட்டு: Buprofezin → Pymetrozine) கம்பளி மக்கள் தொகையில் எதிர்ப்பு வளர்ச்சியை தாமதிக்க. ஒரே வகையை ஒரு பருவத்தில் இரண்டு முறை மீறாமல் பயன்படுத்தவும்."
       },
       {
         "step": 4,
         "title": "Border Sprays",
-        "description": "Spray a protective spray barrier along the first 2–3 rows at field edges when neighboring fields show high leafhopper pressure. Use the same dilution rates as step 1 or step 2."
+        "description": "Spray a protective spray barrier along the first 2–3 rows at field edges when neighboring fields show high leafhopper pressure. Use the same dilution rates as step 1 or step 2.",
+        "title_si": "සීමා වතුර දමන්න",
+        "description_si": "සීමා කුඹුරු පීඩනය ඉහළ දැක්වෙන විට ක්ෂේත්‍රයේ පළමු 2–3 පේළි පුරා ආරක්ෂිත වතුර දමන්න. පියවර 1 හෝ පිය���ර 2 හි සමාන දියර අනුපාත භාවිතා කරන්න.",
+        "title_ta": "எல்லை தெளிப்புகள்",
+        "description_ta": "அண்டைய நிலங்களில் அதிக கம்பளி அழுத்தம் காணப்படும் போது, நிலத்தின் முதல் 2–3 வரிசைகளின் முழுவதும் பாதுகாப்பான தெளிப்பு தடையை தெளிக்கவும். படி 1 அல்லது படி 2 இல் உள்ளே ஒரே மாதிரியான கலவைக் கொள்கைகளைப் பயன்படுத்தவும்."
       },
       {
         "step": 5,
         "title": "Combined Cultural + Chemical Action",
-        "description": "Vector control works best with cultural practices. After spraying, continue monitoring and integrate inter‑plot rotation and weed control to reduce leafhopper refuges."
+        "description": "Vector control works best with cultural practices. After spraying, continue monitoring and integrate inter‑plot rotation and weed control to reduce leafhopper refuges.",
+        "title_si": "සංයුක්ත සංස්කෘතික + රසායනික ක්‍රියාව",
+        "description_si": "වාහක පාලනය සංස්කෘතික ක්‍රියාවලීන් සමඟ හොඳින් ක්‍රියා කරයි. වතුර දමන්නාට පසුව, මනාව පරීක්ෂා කරමින් අන්තර්-පොළ රෝටේෂන් සහ කුඹුරු පාලනය අන්තර්ගත කරන්න.",
+        "title_ta": "கலந்த கலாச்சார + இரசாயன நடவடிக்கை",
+        "description_ta": "வாகனக் கட்டுப்பாடு கலாச்சார நடைமுறைகளுடன் சிறப்பாக செயல்படுகிறது. தெளித்த பிறகு, கண்காணிப்பை தொடரவும் மற்றும் இடை-புலம் சுழற்சி மற்றும் கம்பளி கட்டுப்பாட்டை ஒருங்கிணைக்கவும்."
       }
     ],
     "safety": [
@@ -580,108 +1003,358 @@
       "Follow label instructions for doses, Pre‑Harvest Intervals (PHI), and re‑entry intervals",
       "Apply insecticides only when monitoring thresholds are exceeded to protect natural enemies",
       "Avoid draining sprayed water into irrigation channels or neighboring plots"
+    ],
+    "name_si": "තුංග්‍රෝ රෝගය",
+    "name_ta": "துங்க்ரோ நோய்",
+    "description_si": "තුංග්‍රෝ යනු කුඹුරු (Nephotettix spp. වැනි Nephotettix virescens) මගින් ප්‍රධාන වශයෙන් ප්‍රවහනය වන අණුක රෝගයකි. ආසාදිත ශාක සුවය ලබා ගත නොහැක. කළමනාකරණය වාහක පාලනය, ප්‍රතිරෝධී වර්ග සහ වාහක ජනගහනය අඩු කිරීමට සංස්කෘතික ක්‍රියාවලීන් මත කේන්ද්‍රිත වේ.",
+    "description_ta": "துங்க்ரோ என்பது கம்பளி (Nephotettix spp. போன்ற Nephotettix virescens) மூலம் முதன்மையாக பரவப்படும் ஒரு வைரஸ் நோயாகும். பாதிக்கப்பட்ட தாவரங்களை ஒருமுறை பாதிக்கப்படும்போது குணமாக்க ��ுடியாது. மேலாண்மை, வாகனக் கட்டுப்பாடு, எதிர்ப்பு வகைகள் மற்றும் வாகன மக்கள் தொகையை குறைக்க கலாச்சார நடைமுறைகளை மையமாகக் கொண்டுள்ளது.",
+    "prevention_si": [
+      "අනෝකල රෝග රහිත බීජ භාවිතා කරන්න",
+      "ප්‍රදේශීය විශේෂිත ප්‍රතිරෝධී හෝ සම්මානිත කුඹුරු වර්ග වගා කරන්න",
+      "ප්‍රදේශීය ගම්මාන තුළ සමකාලීන වගා කිරීම අනුගමනය කරන්න",
+      "හොඳ වාතය සඳහා නිවැරදි ශාක අන්තර්ගතය පවත්වා ගන්න",
+      "ක්ෂේත්‍ර ආසන්නයේ ස්වයංක්‍රීය කුඹුරු සහ විකල්ප ආශ්‍රිත ශාක ඉවත් කරන්න",
+      "කුඹුරු සංඛ්‍යාව වැඩි කිරීමට උපකාරී වන අතිශය නයිට්‍රජන් අයදුම් කිරීමෙන් වළකිනු",
+      "කුඹුරු බිහිවීමේ ස්ථාන අඩු කිරීමට පිරිසිදු බුන්ඩ් පවත්වා ගන්න",
+      "වාහක ජීවිත චක්‍ර බිඳ දැමීමට වගා රෝටේෂන් ක්‍රියාත්මක කරන්න"
+    ],
+    "prevention_ta": [
+      "பாதுகாப்பான நோய்-இருப்பான விதைகளைப் பயன்படுத்தவும்",
+      "உள்ளூர் நீட்டிப்பால் பரிந்துரைக்கப்பட்ட எதிர்ப்பு அல்லது பொறுத்த ���ம்பளி வகைகளை வளர்க்கவும்",
+      "உள்ளூர் கிராமங்களில் ஒரே நேரத்தில் விதை நடுவதைக் கடைபிடிக்கவும்",
+      "சிறந்த காற்றோட்டத்திற்கு சரியான தாவர இடைவெளியை பராமரிக்கவும்",
+      "நிலங்களுக்கு அருகிலுள்ள தன்னிச்சையான கம்பளி மற்றும் மாற்று மசாலா தாவரங்களை அகற்றவும்",
+      "கம்பளி கூட்டத்தை ஊக்குவிக்கும் அதிக அளவிலான நைட்ரஜன் பயன்பாட்டை தவிர்க்கவும்",
+      "கம்பளி வளர்க்கும் இடங்களை குறைக்க தூய்மையான பண்டுகளை பராமரிக்கவும்",
+      "வாகன வாழ்க்கைச் சுற்றுகளை உடைக்க பயிர் சுழற்சியை செயல்படுத்தவும்"
     ]
   },
   {
     "name": "Rice Leaf Roller",
     "model_var": "Rice Leaf Roller",
-    "aliases": ["leaf roller", "rice leaf roller", "Cnaphalocrocis medinalis"],
+    "aliases": [
+      "leaf roller",
+      "rice leaf roller",
+      "Cnaphalocrocis medinalis"
+    ],
     "description": "Rice leaf roller (Cnaphalocrocis medinalis) larvae fold rice leaves longitudinally and feed inside, scraping the green tissue. Severe infestations reduce photosynthesis and yield.",
     "severity": "medium",
     "solutions": [
-      {"step": 1, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 150 ml/ha as foliar spray when leaf damage exceeds 15%. Spray interval: 10–14 days."},
-      {"step": 2, "title": "Fipronil 5% SC", "description": "Apply 1000–1500 ml/ha when infestation is moderate to severe. Spray in early morning or late afternoon."},
-      {"step": 3, "title": "Bacillus thuringiensis (Bt)", "description": "Apply Bt-based biopesticide at 1–2 kg/ha for early-stage larvae. Repeat every 7 days if needed."}
+      {
+        "step": 1,
+        "title": "Chlorantraniliprole 18.5% SC",
+        "description": "Apply 150 ml/ha as foliar spray when leaf damage exceeds 15%. Spray interval: 10–14 days.",
+        "title_si": "Chlorantraniliprole 18.5% SC",
+        "description_si": "පත්‍ර හානිය 15% ඉක්මවූ විට පත්‍ර ඉසීමක් ලෙස 150 ml/ha යොදන්න. ඉසීමේ අන්තරය: 10–14 days.",
+        "title_ta": "Chlorantraniliprole 18.5% SC",
+        "description_ta": "இலை சேதம் 15% ஐ தாண்டும்போது இலைத் தெளிப்பாக 150 ml/ha பயன்படுத்தவும். தெளிப்பு இடைவெளி: 10–14 days."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 5% SC",
+        "description": "Apply 1000–1500 ml/ha when infestation is moderate to severe. Spray in early morning or late afternoon.",
+        "title_si": "Fipronil 5% SC",
+        "description_si": "ආක්‍රමණය මධ්‍යම සිට දරුණු මට්ටමේ වූ විට 1000–1500 ml/ha යොදන්න. උදේ පාන්දර හෝ සවස් කාලයේ ඉසින්න.",
+        "title_ta": "Fipronil 5% SC",
+        "description_ta": "தாக்குதல் நடுத்தர முதல் கடுமையாக இருக்கும்போது 1000–1500 ml/ha பயன்படுத்தவும். அதிகாலை அல்லது மாலை நேரத்தில் தெளிக்கவும்."
+      },
+      {
+        "step": 3,
+        "title": "Bacillus thuringiensis (Bt)",
+        "description": "Apply Bt-based biopesticide at 1–2 kg/ha for early-stage larvae. Repeat every 7 days if needed.",
+        "title_si": "Bacillus thuringiensis (Bt)",
+        "description_si": "ආරම්භක අවධියේ දළඹුවන් සඳහා Bt පදනම් කරගත් ජෛව කෘමිනාශක 1–2 kg/ha යොදන්න. අවශ්‍ය නම් සෑම 7 days කට වරක් නැවත යොදන්න.",
+        "title_ta": "Bacillus thuringiensis (Bt)",
+        "description_ta": "ஆரம்ப கட்ட புழுக்களுக்காக Bt அடிப்படையிலான உயிரியல் பூச்சிக்கொல்லியை 1–2 kg/ha அளவில் பயன்படுத்தவும். தேவைப்பட்டால் ஒவ்வொரு 7 days க்கும் மீண்டும் பயன்படுத்தவும்."
+      }
     ],
     "prevention": [
       "Avoid excessive nitrogen fertilization",
       "Maintain clean field borders and remove weeds",
       "Encourage natural enemies (parasitoids, spiders)",
       "Use light traps to monitor adult moth populations"
+    ],
+    "name_si": "වී පත්‍ර එතුම් කෘමියා",
+    "name_ta": "நெல் இலை சுருட்டுப் பூச்சி",
+    "description_si": "වී පත්‍ර එතුම් කෘමි (Cnaphalocrocis medinalis) දළඹුවන් වී පත්‍ර දිගට එතා, ඇතුළත සිට කොළ පටක සූරාගමින් කනවා. දරුණු ආක්‍රමණ ප්‍රභාසංස්ලේෂණය හා අස්වැන්න අඩු කරයි.",
+    "description_ta": "நெல் இலை சுருட்டுப் பூச்சி (Cnaphalocrocis medinalis) புழுக்கள் நெல் இலைகளை நீளவாக்கில் சுருட்டி, உள்ளே இருந்து பச்சை திசுவை சுரண்டி உண்கின்றன. கடுமையான தாக்குதல்கள் ஒளிச்சேர்க்கையையும் விளைச்சலையும் குறைக்கும்.",
+    "prevention_si": [
+      "අධික නයිට්‍රජන් පොහොර යෙදීමෙන් වළකින්න",
+      "කුඹුරු දාර පිරිසිදුව තබාගෙන වල් පැළෑටි ඉවත් කරන්න",
+      "ස්වාභාවික සතුරන් (පරපෝෂිත කෘමීන්, මකුළුවන්) දිරිගන්වන්න",
+      "වැඩිහිටි පළඟැටියන්ගේ ගහනය නිරීක්ෂණයට ආලෝක උගුල් භාවිත කරන්න"
+    ],
+    "prevention_ta": [
+      "அதிக நைட்ரஜன் உரம் இடுவதைத் தவிர்க்கவும்",
+      "வயல் எல்லைகளை சுத்தமாக வைத்து களைகளை அகற்றவும்",
+      "இயற்கை எதிரிகளை (ஒட்டுண்ணிகள், சிலந்திகள்) ஊக்குவிக்கவும்",
+      "வயது வந்த அந்துப்பூச்சிகளின் எண்ணிக்கையை கண்காணிக்க ஒளிப் பொறிகளைப் பயன்படுத்தவும்"
     ]
   },
   {
     "name": "Rice Leaf Caterpillar",
     "model_var": "Rice Leaf Caterpillar",
-    "aliases": ["leaf caterpillar", "rice caterpillar", "Spodoptera"],
+    "aliases": [
+      "leaf caterpillar",
+      "rice caterpillar",
+      "Spodoptera"
+    ],
     "description": "Rice leaf caterpillars (Spodoptera spp.) feed on leaves, causing defoliation. Severe infestations during vegetative stage can significantly reduce yield.",
     "severity": "medium",
     "solutions": [
-      {"step": 1, "title": "Emamectin Benzoate 5% SG", "description": "Dilute 5 g per 10 L water and spray when caterpillar damage is first observed. Spray interval: 10–14 days."},
-      {"step": 2, "title": "Chlorpyriphos 20% EC", "description": "Apply 500 ml/ha as foliar spray for severe infestations."},
-      {"step": 3, "title": "Hand Collection", "description": "For small infestations, manually collect and destroy egg masses and larvae."}
+      {
+        "step": 1,
+        "title": "Emamectin Benzoate 5% SG",
+        "description": "Dilute 5 g per 10 L water and spray when caterpillar damage is first observed. Spray interval: 10–14 days."
+      },
+      {
+        "step": 2,
+        "title": "Chlorpyriphos 20% EC",
+        "description": "Apply 500 ml/ha as foliar spray for severe infestations."
+      },
+      {
+        "step": 3,
+        "title": "Hand Collection",
+        "description": "For small infestations, manually collect and destroy egg masses and larvae."
+      }
     ],
     "prevention": [
       "Practice crop rotation",
       "Maintain proper plant spacing",
       "Encourage natural predators (birds, parasitoid wasps)",
       "Use pheromone traps for monitoring"
-    ]
+    ],
+    "name_si": "බල්ලා පොඩි පොඩිය",
+    "name_ta": "அரிசி இலை பூச்சி",
+    "description_si": "බල්ලා පොඩි පොඩිය (Spodoptera spp.) පාති බ්‍රෝකෝල් කරයි, පාති අයිතිය පැහැදිලියේ සහිතව ප්‍රතිපලාතිය අවශ්‍ය වේ. වක්‍ර අවස්ථාවල විශාල ප්‍රතිපලාතිය ප්‍රතිපලාතිය සීමා කරයි හා උසස් ප්‍රතිපලාතිය හොඳින් අවශ්‍ය වේ.",
+    "description_ta": "அரிசி இலை பூச்சிகள் (Spodoptera spp.) இலைகளை உண்டாக்குகின்றன. காலாவஸ்து நடுவில் கடினமான தொடர்புகள் மிகவும் உறைந்துவிடும் போது உதவியை குறைக்கலாம்.",
+    "prevention_si": [],
+    "prevention_ta": []
   },
   {
     "name": "Rice Shell Pest",
     "model_var": "Rice Shell Pest",
-    "aliases": ["shell pest", "rice shell insect", "case worm"],
+    "aliases": [
+      "shell pest",
+      "rice shell insect",
+      "case worm"
+    ],
     "description": "Rice shell pests (case worms) cut leaf tips and roll them into tubular cases, feeding on leaf tissue while protected inside the case. Found in flooded fields.",
     "severity": "medium",
     "solutions": [
-      {"step": 1, "title": "Cartap Hydrochloride 50% SP", "description": "Apply 750 g/ha as foliar spray when infestation exceeds threshold levels."},
-      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules into standing water for larval control."},
-      {"step": 3, "title": "Drain and Dry Fields", "description": "Temporarily drain flooded fields to expose and kill larvae that depend on water."}
+      {
+        "step": 1,
+        "title": "Cartap Hydrochloride 50% SP",
+        "description": "Apply 750 g/ha as foliar spray when infestation exceeds threshold levels.",
+        "title_si": "කාර්ටප් හයිඩ්‍රොක්ලෝරයිඩ් 50% SP",
+        "description_si": "අවශ්‍යතා මට්ටම් ඉක්මවා ගිය විට පත්‍ර මත ස්ප්‍රේ කිරීම සඳහා 750 g/ha යෙදවන්න.",
+        "title_ta": "கார்டாப் ஹைட்ரோக்ளோரைடு 50% SP",
+        "description_ta": "பாதிப்பு அளவுகள் தாண��டியவுடன் 750 g/ha இலை மிதிப்பில் பயன்படுத்தவும்."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha granules into standing water for larval control.",
+        "title_si": "ෆිප්‍රොනිල් 0.3% G",
+        "description_si": "ලාරවා පාලනය සඳහා 4–5 kg/ha ග්‍රෑනියුල් ජලය තුළ යෙදවන්න.",
+        "title_ta": "ஃபிப்ரோனில் 0.3% G",
+        "description_ta": "லார்வா கட்டுப்பாட்டிற்காக 4–5 kg/ha தானியங்களை நிலத்தில் உள்ள நீரில் பயன்படுத்தவும்."
+      },
+      {
+        "step": 3,
+        "title": "Drain and Dry Fields",
+        "description": "Temporarily drain flooded fields to expose and kill larvae that depend on water.",
+        "title_si": "ජලය ඉවත් කර වියළුවන කුඹුරු",
+        "description_si": "ජලය පිරුණු කුඹුරු තාවකාලිකව ඉවත් කර, ජලය මත රැඳී සිටින ලාරවා මැදීමට සහ මැදීමට ඉඩ දෙන්න.",
+        "title_ta": "நிலங்களை வடிகட்டி உலர்த்தவும்",
+        "description_ta": "நீரால் நிரம்பிய நிலங்களை தற்காலிகமாக வடிகட்டி, நீருக்கு அடிப்படையாக உள்ள லார்வாக்களை வெளிப்படுத்தி அழிக்க��ும்."
+      }
     ],
     "prevention": [
       "Manage water levels to avoid continuous flooding",
       "Remove weeds and algae from field surfaces",
       "Encourage natural enemies (dragonflies, frogs)",
       "Avoid excessive nitrogen application"
+    ],
+    "name_si": "අනියම් කුඹුරු",
+    "name_ta": "அரிசி கம்பி பூச்சி",
+    "description_si": "අනියම් කුඹුරු (කේස් කුඹුරු) පත්‍ර කෙළි කපා, ඒවා කුඹුරු ආකාරයට වටකරමින් පත්‍ර කාබනිකය මත ආහාර ගනී. ජලය පිරුණු කුඹුරු වලදී සොයාගන්නා ලදී.",
+    "description_ta": "அரிசி கம்பி பூச்சிகள் (கேஸ் கம்பிகள்) இலைகளின் உச்சிகளை வெட்டி, அவற்றை குழாய்மயமாக மடக்கி, கம்பி உள்ளே பாதுகாப்பாக இருக்கும் போது இலைப் பொருளில் உணவு எடுக்கின்றன. நீரால் நிரம்பிய நிலங்களில் காணப்படுகிறது.",
+    "prevention_si": [
+      "අඛණ්ඩ ජලය වැළැක්වීම සඳහා ජල මට්ටම් කළමනාකරණය කරන්න",
+      "කුඹුරු මතුපිටින් කුඹුරු සහ ඇල්ජි ඉවත් කරන්න",
+      "ස්වාභාවික ශතකාරකයන් (ඩ්‍රැගන්ෆ්ලයිස්, මීයා) ප්‍රෝත්සාහනය කරන්න",
+      "අධික නයිට්‍රජන් යෙදීමෙන් වළකිනු"
+    ],
+    "prevention_ta": [
+      "தொடர்ச்சியான நீர்ப்பிடிப்பை தவிர்க்க நீர்மட்டங்களை நிர்வகிக்கவும்",
+      "நிலத்தின் மேற்பரப்பில் களஞ்சியங்கள் மற்றும் ஆல்கிகளை அகற்றவும்",
+      "இயற்கை எதிரிகளை (டிராகன் பறவைகள், தவளை) ஊக்குவிக்கவும்",
+      "அதிக நைட்ரஜன் பயன்பாட்டை தவிர்க்கவும்"
     ]
   },
   {
     "name": "Thrips",
     "model_var": "Thrips",
-    "aliases": ["thrips", "rice thrips", "Stenchaetothrips biformis"],
+    "aliases": [
+      "thrips",
+      "rice thrips",
+      "Stenchaetothrips biformis"
+    ],
     "description": "Rice thrips (Stenchaetothrips biformis) are tiny insects that rasp and feed on young leaves, causing leaf curling, silvering, and tip drying. Most damaging in nurseries and early transplanting.",
     "severity": "medium",
     "solutions": [
-      {"step": 1, "title": "Thiamethoxam 25% WG", "description": "Apply 25–30 g per 15–20 L water per acre as foliar spray when thrips damage is observed."},
-      {"step": 2, "title": "Imidacloprid 17.8% SL", "description": "Apply 100–125 ml/ha as foliar spray. Effective for early infestations."},
-      {"step": 3, "title": "Neem Oil 3%", "description": "Spray neem oil at 3% concentration as an organic alternative for mild infestations."}
+      {
+        "step": 1,
+        "title": "Thiamethoxam 25% WG",
+        "description": "Apply 25–30 g per 15–20 L water per acre as foliar spray when thrips damage is observed.",
+        "title_si": "Thiamethoxam 25% WG",
+        "description_si": "තෙරප්පිස් හානි දැකීමේදී, අක්කරයකට පත්‍ර මැදින් වතුර 15–20 L කට 25–30 g යෙදිය යුතුය.",
+        "title_ta": "Thiamethoxam 25% WG",
+        "description_ta": "தெரிப்புகள் சேதம் காணப்படும் போது, 15–20 L நீருக்கு 25–30 g காய்கறி தெளிக்கவும்."
+      },
+      {
+        "step": 2,
+        "title": "Imidacloprid 17.8% SL",
+        "description": "Apply 100–125 ml/ha as foliar spray. Effective for early infestations.",
+        "title_si": "Imidacloprid 17.8% SL",
+        "description_si": "පත්‍ර මැදින් 100–125 ml/ha යෙදිය යුතුය. ආරම්භක ආසාදන සඳහා ප්‍රභාෂී වේ.",
+        "title_ta": "Imidacloprid 17.8% SL",
+        "description_ta": "100–125 ml/ha காய்கறி தெளிக்கவும். ஆரம்ப தொற்���ுக்கு பயனுள்ளதாக உள்ளது."
+      },
+      {
+        "step": 3,
+        "title": "Neem Oil 3%",
+        "description": "Spray neem oil at 3% concentration as an organic alternative for mild infestations.",
+        "title_si": "Neem Oil 3%",
+        "description_si": "මෘදු ආසාදන සඳහා කාබනික විකල්පයක් ලෙස 3% සංඛ්‍යාවක නීම් තෙල් වතුරෙන් වතුරන්න.",
+        "title_ta": "Neem Oil 3%",
+        "description_ta": "மென்மையான தொற்றுக்கு ஒரு காரிகை மாற்றமாக 3% அளவிலான நீம் எண்ணெய் தெளிக்கவும்."
+      }
     ],
     "prevention": [
       "Maintain adequate soil moisture in nurseries",
       "Avoid water stress during early crop growth",
       "Remove weeds that serve as alternate hosts",
       "Use resistant varieties where available"
+    ],
+    "name_si": "තෙරප්පිස්",
+    "name_ta": "தெரிப்புகள்",
+    "description_si": "සීනි තෙරප්පිස් (Stenchaetothrips biformis) යනු කුඩා කීටකයන් වන අතර, එම කීටකයන් යොවුන් පත්‍රවලට කටුකම් කරමින් ආහාර ගනී, එමඟින් පත්‍ර වටවීම්, රිදී වර්ණය සහ ඉහළ කොටස වියළීම සිදු කරයි. වගා මැදුරේ සහ ආරම්භක ප්‍රතිස්ථාපනයේදී වැඩිම හානි සිදු කරයි.",
+    "description_ta": "அரிசி தெரிப்புகள் (Stenchaetothrips biformis) என்பது சிறிய பூச்சிகள் ஆகும், இவை இளம் இலைகளை கறுத்து உண்பதால், இலைகள் மடிக்கிறது, வெள்ளை நிறமாகிறது மற்றும் உச்சி உலர்கிறது. nursery மற்றும் ஆரம்ப மாற்றத்தில் மிகவும் சேதமாகிறது.",
+    "prevention_si": [
+      "වගා මැදුරේ යෝග්‍ය මැදියම් තබා ගන්න",
+      "ආරම්භක වගා වර්ධනයේදී ජල ආපදා වලින් වළක්වන්න",
+      "විකල්ප ආශ්‍රිතයන් ලෙස සේවය කරන කුඹුරු ඉවත් කරන්න",
+      "ලබා ගත හැකි විරෝධී වර්ග භාවිතා කරන්න"
+    ],
+    "prevention_ta": [
+      "நர்சரியில் போதுமான மண் ஈரப்பதத்தை பராமரிக்கவும்",
+      "ஆரம்ப பயிர் வளர்ச்சியின் போது நீர் அழுத்தத்தை தவிர்க்கவும்",
+      "மாற்று மையமாக செயல்படும் குப்பைகளை அகற்றவும்",
+      "கிடைக்கக்கூடிய எதிர்ப்பு வகைகளைப் பயன்படுத்தவும்"
     ]
   },
   {
     "name": "Paddy Stem Maggot",
     "model_var": "Paddy Stem Maggot",
-    "aliases": ["stem maggot", "rice stem maggot", "Chlorops oryzae"],
+    "aliases": [
+      "stem maggot",
+      "rice stem maggot",
+      "Chlorops oryzae"
+    ],
     "description": "Paddy stem maggot (Chlorops oryzae) larvae bore into rice tillers causing central shoot death ('dead heart') in young plants and 'silver shoot' symptoms.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha at transplanting or when first damage is observed. Incorporate into soil."},
-      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha as soil treatment during early vegetative stage."},
-      {"step": 3, "title": "Remove Affected Tillers", "description": "Pull out and destroy damaged tillers showing dead heart or silver shoot symptoms."}
+      {
+        "step": 1,
+        "title": "Carbofuran 3G Granules",
+        "description": "Apply 6–8 kg/ha at transplanting or when first damage is observed. Incorporate into soil.",
+        "title_si": "Carbofuran 3G Granules",
+        "description_si": "ප්‍රතිපත්ති කිරීමේදී හෝ පළමු හානි දැකීමේදී 6–8 kg/ha යෙදිය යුතුය. මැදුරට එකතු කරන්න.",
+        "title_ta": "Carbofuran 3G Granules",
+        "description_ta": "மாற்று செய்யும் போது அல்லது முதலில் சேதம் காணப்படும் போது 6–8 kg/ha பயன்படுத்தவும். மண்ணில் சேர்க்கவும்."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha as soil treatment during early vegetative stage.",
+        "title_si": "Fipronil 0.3% G",
+        "description_si": "ඉතා ආරම්භක ශාක වර්ධන අවස්ථාවේදී මැදුරේ ප්‍රතිකාරයක් ලෙස 4–5 kg/ha යෙදිය යුතුය.",
+        "title_ta": "Fipronil 0.3% G",
+        "description_ta": "முதற்கட்ட வளர்ச்சி நிலைமையில் மண்ணில் சிகிச்சையாக 4–5 kg/ha பயன்படுத்தவும்."
+      },
+      {
+        "step": 3,
+        "title": "Remove Affected Tillers",
+        "description": "Pull out and destroy damaged tillers showing dead heart or silver shoot symptoms.",
+        "title_si": "පීඩිත ටිලර් ඉවත් කරන්න",
+        "description_si": "මිය ගෙදර හෝ සියල් ශාක ලක්ෂණ පෙන්වන හානි වූ ටිලර් ඉවත් කර විනාශ කරන්න.",
+        "title_ta": "பாதிக்கப்பட்ட திலர்களை அகற்றவும்",
+        "description_ta": "மரண இதயம் அல்லது வெள்ளி க Shoot அறிகுறிகளை காட்டும் சேதமடைந்த திலர்களை இழுத்து அழிக்கவும்."
+      }
     ],
     "prevention": [
       "Early transplanting to avoid peak fly activity",
       "Avoid late planting",
       "Maintain clean field borders",
       "Practice synchronous planting in the area"
+    ],
+    "name_si": "පොල් කුඩු මැදුර",
+    "name_ta": "பொன் குச்சு மயிர்",
+    "description_si": "පොල් කුඩු මැදුර (Chlorops oryzae) කුඩු මැදුරන් රයිස් ටිලර් වලට පිවිසෙයි, තරුණ ශාක වල මධ්‍යම ශාක මිය යාම ('මිය ගෙදර') සහ 'සියල් ශාක' ලක්ෂණ ඇති කරයි.",
+    "description_ta": "பொன் குச்சு மயிர் (Chlorops oryzae) இன் இளவயது மயிர்கள் அரிசி திலர்களில் குத்தி, இளம் செடிகளில் மையக் க Shoot மரணம் ('மரண இதயம்') மற்றும் 'வெள்ளி க Shoot' அறிகுறிகளை உருவாக்குகின்றன.",
+    "prevention_si": [
+      "උසස් මැදුරේ කටයුතු වලින් වළක්වා ගැනීම සඳහා කාලීන ප්‍රතිපත්ති කිරීම",
+      "පසුගිය වගාව වළක්වා ගැනීම",
+      "පිරිසිදු ක්ෂේත්‍ර සීමා රැකීම",
+      "ප්‍රදේශයේ සමකාලීන වගාව ප්‍රතිපත්ති කරන්න"
+    ],
+    "prevention_ta": [
+      "உச்ச ஈயல் செயல்பாட்டை தவிர்க்க காலத்தில் மாற்று செய்யவும்",
+      "தாமதமாக நடவு செய்ய தவிர்க்கவும்",
+      "சுத்தமான நில எல்லைகளை பராமரிக்கவும்",
+      "பிரதேசத்தில் ஒரே நேரத்தில் நடவு செய்யவும்"
     ]
   },
   {
     "name": "Asiatic Rice Borer",
     "model_var": "Asiatic Rice Borer",
-    "aliases": ["asiatic rice borer", "rice borer", "Chilo suppressalis"],
+    "aliases": [
+      "asiatic rice borer",
+      "rice borer",
+      "Chilo suppressalis"
+    ],
     "description": "Asiatic rice borer (Chilo suppressalis) larvae bore into rice stems causing 'dead heart' in vegetative stage and 'white head' at reproductive stage.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering when borer activity begins."},
-      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules at transplanting for early protection."},
-      {"step": 3, "title": "Pheromone Traps", "description": "Deploy pheromone traps at 5 per hectare to monitor and mass-trap adult moths."}
+      {
+        "step": 1,
+        "title": "Chlorantraniliprole 18.5% SC",
+        "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering when borer activity begins.",
+        "title_si": "කලෝරන්ට්‍රනිලිප්රෝල් 18.5% SC",
+        "description_si": "බෝරර් ක්‍රියාකාරීත්වය ආරම්භ වන විට, ටිලර් කිරීමේදී 100 L ජලයට 200–300 ml ලෙස පත්‍ර මැදුරක් ලෙස යෙදවන්න.",
+        "title_ta": "கிளோரான்டிரானிலிப்ரோல் 18.5% SC",
+        "description_ta": "கீற்றான் செயல்பாடு தொடங்கும் போது, 100 L நீருக்கு 200–300 ml என்ற அளவிலான இலைத் தூவியாக பயன்படுத்தவும்."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha granules at transplanting for early protection.",
+        "title_si": "ෆිප්‍රොනිල් 0.3% G",
+        "description_si": "ඉක්මන් ආරක්ෂාව සඳහා පරිසරය මාරු කිරීමේදී 4–5 kg/ha ග්‍රෑනියුල් යෙදවන්න.",
+        "title_ta": "ஃபிப்ரோனில் 0.3% G",
+        "description_ta": "முதற்கட்ட பாத���காப்புக்கு 4–5 kg/ha கிரான்யூல்களை மாற்றும் போது பயன்படுத்தவும்."
+      },
+      {
+        "step": 3,
+        "title": "Pheromone Traps",
+        "description": "Deploy pheromone traps at 5 per hectare to monitor and mass-trap adult moths.",
+        "title_si": "ෆෙරමෝන් පසුබැසීම්",
+        "description_si": "වැඩිහිටියන්ගේ මීටුන් මැදුරට 5 ක් පමණක් පසුබැසීම් යෙදවන්න.",
+        "title_ta": "பெரமோன் சிக்கல்கள்",
+        "description_ta": "மூத்த மயில்களை கண்காணிக்க மற்றும் மொத்தமாக பிடிக்க 1 ஹெக்டருக்கு 5 சிக்கல்கள் அமைக்கவும்."
+      }
     ],
     "prevention": [
       "Destroy stubble and crop residues after harvest",
@@ -689,19 +1362,58 @@
       "Maintain proper water management",
       "Use resistant varieties where available",
       "Encourage egg parasitoids (Trichogramma)"
+    ],
+    "name_si": "ආසියානු රයිස් බෝරර්",
+    "name_ta": "ஆசியா நெல் கீற்றான்",
+    "description_si": "ආසියානු රයිස් බෝරර් (Chilo suppressalis) කුඩා මීටු රයිස් කුඩු වලට පිවිසෙයි, එමඟින් වර්ධන අවස්ථාවේදී 'මිය ගැසුණු හෘදය' සහ ප්‍රජනන අවස්ථාවේදී 'සීතල හිස' ඇති කරයි.",
+    "description_ta": "ஆசியா நெல் கீற்றான் (Chilo suppressalis) இன் இளம் நிலை நெல் தண்டு கிழிக்கிறது, இதனால் வளர்ச்சி நிலை 'மரித்த இதயம்' மற்றும் இனப்பெருக்க நிலை 'வெள்ளை தலை' ஏற்படுகிறது.",
+    "prevention_si": [
+      "අස්වැන්නෙන් පසු කුඩු සහ වගා ඉතිරි කොටස් විනාශ කරන්න",
+      "වගා ආපසු මාරු කිරීමේ ක්‍රියාවලිය අනුගමනය කරන්න",
+      "නිවැරදි ජල කළමනාකරණය පවත්වා ගන්න",
+      "ලබා ගත හැකි විරෝධී වර්ග භාවිතා කරන්න",
+      "ඇට පරාසයිඩ් (Trichogramma) ප්‍රවර්ධනය කරන්න"
+    ],
+    "prevention_ta": [
+      "வறண்ட மற்றும் பயிர் மீதிகளை அறுவடை செய்த பிறகு அழிக்கவும்",
+      "பயிர் மாறுதலை நடைமுறைப்படுத்தவும்",
+      "சரியான நீர் மேலாண்மையை பராமரிக்கவும்",
+      "கிடைக்கக்கூடிய எ���ிர்ப்பு வகைகளைப் பயன்படுத்தவும்",
+      "முட்டை பராசிடோயிட்களை (Trichogramma) ஊக்குவிக்கவும்"
     ]
   },
   {
     "name": "Yellow Rice Borer",
     "model_var": "Yellow Rice Borer",
-    "aliases": ["yellow rice borer", "yellow stem borer", "Scirpophaga incertulas", "YSB"],
+    "aliases": [
+      "yellow rice borer",
+      "yellow stem borer",
+      "Scirpophaga incertulas",
+      "YSB"
+    ],
     "description": "Yellow rice borer (Scirpophaga incertulas) is the most destructive stem borer species, causing 'dead heart' in vegetative stage and 'white head' in reproductive stage.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha at transplanting near base of plants. Controls early larval establishment."},
-      {"step": 2, "title": "Chlorantraniliprole 18.5% SC", "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering stage."},
-      {"step": 3, "title": "Carbosulfan 200g/l SC", "description": "Dilute 250–300 ml per 100 L water and spray when larval activity is confirmed."},
-      {"step": 4, "title": "Egg Mass Collection", "description": "Manually collect and destroy egg masses found on leaf blades during field scouting."}
+      {
+        "step": 1,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha at transplanting near base of plants. Controls early larval establishment."
+      },
+      {
+        "step": 2,
+        "title": "Chlorantraniliprole 18.5% SC",
+        "description": "Apply 200–300 ml per 100 L water as foliar spray at tillering stage."
+      },
+      {
+        "step": 3,
+        "title": "Carbosulfan 200g/l SC",
+        "description": "Dilute 250–300 ml per 100 L water and spray when larval activity is confirmed."
+      },
+      {
+        "step": 4,
+        "title": "Egg Mass Collection",
+        "description": "Manually collect and destroy egg masses found on leaf blades during field scouting."
+      }
     ],
     "prevention": [
       "Clip leaf tips at transplanting to remove egg masses",
@@ -709,18 +1421,52 @@
       "Destroy stubble and crop residues after harvest",
       "Use light traps to monitor and mass-trap adults",
       "Maintain proper water levels"
-    ]
+    ],
+    "name_si": "Yellow Rice Borer",
+    "name_ta": "Yellow Rice Borer",
+    "description_si": "කහ වී බෝරය (Scirpophaga incertulas) ප්‍රතිපල අංශයේ 'මියා හස්' ප්‍රතිපල ස්ථානය සහ 'සුදු තිරස' ප්‍රපෝෂණය විසින් විවෘත වේ.",
+    "description_ta": "மஞ்சள் நெல் போராளி (Scirpophaga incertulas) காய்களின் மேல் 'இறை இதர்' அவஸ்தை உருவாக்கி, பருவ அவஸ்தையில் 'வெள்ளை தலை' உருவாக்கும்.",
+    "prevention_si": [],
+    "prevention_ta": []
   },
   {
     "name": "Rice Gall Midge",
     "model_var": "Rice Gall Midge",
-    "aliases": ["gall midge", "rice gall midge", "Orseolia oryzae"],
+    "aliases": [
+      "gall midge",
+      "rice gall midge",
+      "Orseolia oryzae"
+    ],
     "description": "Rice gall midge (Orseolia oryzae) larvae feed inside the growing point of tillers, causing formation of a tubular gall ('silver shoot' or 'onion leaf'). Affected tillers do not produce panicles.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha in the root zone when gall midge damage first appears (before tillering)."},
-      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha at transplanting or when silver shoots are first observed."},
-      {"step": 3, "title": "Remove Silver Shoots", "description": "Pull out and destroy tillers showing silver shoot or onion leaf symptoms to reduce midge population."}
+      {
+        "step": 1,
+        "title": "Carbofuran 3G Granules",
+        "description": "Apply 6–8 kg/ha in the root zone when gall midge damage first appears (before tillering).",
+        "title_si": "Carbofuran 3G Granules",
+        "description_si": "අර්තාපල් මැදුරේ හානිය පළමු වතාවට පෙනී යන විට (තිල්ලර් වර්ධනයට පෙර) 6–8 kg/ha මූලික කලාපයේ යෙදවන්න.",
+        "title_ta": "Carbofuran 3G Granules",
+        "description_ta": "கால் மிட்ஜ் சேதம் முதலில் தோன்றும் போது (தில்லரிங் க்கு முன்) 6–8 kg/ha வேரின் மண்டலத்தில் பயன்படுத்தவும்."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha at transplanting or when silver shoots are first observed.",
+        "title_si": "Fipronil 0.3% G",
+        "description_si": "ප්‍රතිස්ථාපනයේදී හෝ රන් ශූට් පළමු වතාවට පෙනී යන විට 4–5 kg/ha යෙදවන්න.",
+        "title_ta": "Fipronil 0.3% G",
+        "description_ta": "மாற்று செய்யும் போது அல்லது வெள்ளி ஷூட்கள் முதலில் காணப்படும் போது 4–5 kg/ha பயன்படுத்தவும்."
+      },
+      {
+        "step": 3,
+        "title": "Remove Silver Shoots",
+        "description": "Pull out and destroy tillers showing silver shoot or onion leaf symptoms to reduce midge population.",
+        "title_si": "රන් ශූට් ඉවත් කරන්න",
+        "description_si": "රන් ශූට් හෝ ඇලූන් කොළ ලක්ෂණ පෙන්වන තිල්ලර් ඉවත් කර විනාශ කරන්න, මැදුරන්ගේ ජනගහනය අඩු කිරීමට.",
+        "title_ta": "வெள்ளி ஷூட்களை அகற்றவும்",
+        "description_ta": "வெ���்ளி ஷூட் அல்லது வெங்காய இலை அறிகுறிகளை காட்டும் தில்லர்களை இழுத்து அழிக்கவும், மிட்ஜ் மக்கள் தொகையை குறைக்க."
+      }
     ],
     "prevention": [
       "Use resistant varieties (varieties with Gm genes)",
@@ -728,19 +1474,74 @@
       "Avoid staggered planting in the same area",
       "Remove wild rice and grassy weeds (alternate hosts)",
       "Practice crop rotation"
+    ],
+    "name_si": "අර්තාපල් මැදුර",
+    "name_ta": "அரிசி கால் மிட்ஜ்",
+    "description_si": "අර්තාපල් මැදුර (Orseolia oryzae) කුඩා මැදුරන්, තිල්ලර් වල වර්ධන ස්ථානය තුළ ආහාර ගන්නා අතර, නලීය අර්තාපල් ('රන් ශූට්' හෝ 'ඇලූන් කොළ') නිර්මාණය කරයි. බලපෑම් ලැබූ තිල්ලර් පැනික්ල් නිෂ්පාදනය නොකරයි.",
+    "description_ta": "அரிசி கால் மிட்ஜ் (Orseolia oryzae) இன் இளவட்டங்கள், தில்லரின் வளர்ச்சி புள்ளியில் உள்ளே உணவு உண்ணுகின்றன, இது குழாய் வடிவ கால் ('வெள்ளி ஷூட்' அல்லது 'வெங்காய இலை') உருவாக்குகிறது. பாதிக்கப்பட்ட தில்லர்கள் பானிக்கல்களை உற்பத்தி செய்யவில்லை.",
+    "prevention_si": [
+      "ප්‍රතිරෝධී වර්ග භාවිතා කරන්න (Gm ජීවීන් ඇති වර්ග)",
+      "උසස් මැදුරේ ප්‍රකෝපය වැළැක්වීමට කාලයේදී වගා කරන්න",
+      "එම ප්‍රදේශයේ අසමසම වගා කිරීමෙන් වළකිනු",
+      "වීඩ් රයිස් සහ කුඩා ගස් ඉවත් කරන්න (විකල්ප ආශ්‍රිතයන්)",
+      "ගොවි ව්‍යුහය අනුගමනය කරන්න"
+    ],
+    "prevention_ta": [
+      "எதிர்ப்பு வகைகளைப் பயன்படுத்தவும் (Gm ஜீன்கள் உள்ள வகைகள்)",
+      "உச்ச மிட்ஜ் தோற்றத்தை தவிர்க்க காலத்தில் பயிர் நடவும்",
+      "அந்த பகுதியில் மாறுபட்ட பயிர் நடுவதிலிருந்து தவிர்க்கவும்",
+      "காட்டு அரிசி மற்றும் கஞ்சா மூலிகைகளை அகற்றவும் (மாறுபட்ட உள்நோக்கிகள்)",
+      "பயிர் மாறுதல் நடைமுறையைப் பின்பற்றவும்"
     ]
   },
   {
     "name": "Brown Plant Hopper",
     "model_var": "Brown Plant Hopper",
-    "aliases": ["brown planthopper", "BPH", "Nilaparvata lugens", "hopper burn"],
+    "aliases": [
+      "brown planthopper",
+      "BPH",
+      "Nilaparvata lugens",
+      "hopper burn"
+    ],
     "description": "Brown planthopper (Nilaparvata lugens) sucks phloem sap from rice plants causing yellowing, wilting, and 'hopper burn' — complete drying of plants in circular patches.",
     "severity": "critical",
     "solutions": [
-      {"step": 1, "title": "Pymetrozine 50% WG", "description": "Apply 25–30 g per 20 L water per acre. Spray at the base of plants where hoppers congregate."},
-      {"step": 2, "title": "Buprofezin 250 g/l SC", "description": "Apply 60–80 ml per 15–20 L water per acre. Acts as insect growth regulator."},
-      {"step": 3, "title": "Dinotefuran 20% SG", "description": "Apply 50–60 g/ha as foliar spray directed at plant base for severe infestations."},
-      {"step": 4, "title": "Drain Fields", "description": "Temporarily drain standing water to discourage hopper colonies and allow natural enemies access."}
+      {
+        "step": 1,
+        "title": "Pymetrozine 50% WG",
+        "description": "Apply 25–30 g per 20 L water per acre. Spray at the base of plants where hoppers congregate.",
+        "title_si": "Pymetrozine 50% WG",
+        "description_si": "අක්කරයකට 20 L ජලයට 25–30 g යොදන්න. පළඟැටියන් එක්රැස් වන ශාක පාමුල ඉසින්න.",
+        "title_ta": "Pymetrozine 50% WG",
+        "description_ta": "ஒரு ஏக்கருக்கு 20 L நீரில் 25–30 g பயன்படுத்தவும். தத்துப்பூச்சிகள் கூடியிருக்கும் தாவர அடிப்பகுதியில் தெளிக்கவும்."
+      },
+      {
+        "step": 2,
+        "title": "Buprofezin 250 g/l SC",
+        "description": "Apply 60–80 ml per 15–20 L water per acre. Acts as insect growth regulator.",
+        "title_si": "Buprofezin 250 g/l SC",
+        "description_si": "අක්කරයකට 15–20 L ජලයට 60–80 ml යොදන්න. කෘමි වර්ධන නියාමකයක් ලෙස ක්‍රියා කරයි.",
+        "title_ta": "Buprofezin 250 g/l SC",
+        "description_ta": "ஒரு ஏக்கருக்கு 15–20 L நீரில் 60–80 ml பயன்படுத்தவும். பூச்சி வளர்ச்சி ஒழுங்குபடுத்தியாக செயல்படுகிறது."
+      },
+      {
+        "step": 3,
+        "title": "Dinotefuran 20% SG",
+        "description": "Apply 50–60 g/ha as foliar spray directed at plant base for severe infestations.",
+        "title_si": "Dinotefuran 20% SG",
+        "description_si": "දරුණු ආක්‍රමණ සඳහා 50–60 g/ha පත්‍ර ඉසීමක් ලෙස ශාක පාමුල යොදන්න.",
+        "title_ta": "Dinotefuran 20% SG",
+        "description_ta": "கடுமையான தாக்குதல்களுக்கு 50–60 g/ha தாவர அடிப்பகுதியை நோக்கி இலைத் தெளிப்பாக பயன்படுத்தவும்."
+      },
+      {
+        "step": 4,
+        "title": "Drain Fields",
+        "description": "Temporarily drain standing water to discourage hopper colonies and allow natural enemies access.",
+        "title_si": "කුඹුරෙන් ජලය බැස්සවීම",
+        "description_si": "පළඟැටි ජනපද බිඳ දැමීමටත්, ස්වාභාවික සතුරන්ට පිවිසීමට ඉඩ දීමටත් කුඹුරෙන් රඳවාගත් ජලය තාවකාලිකව බැස්සවන්න.",
+        "title_ta": "வயலில் இருந்து நீரை வடியவிடல்",
+        "description_ta": "தத்துப்பூச்சி காலனிகளை சீர்குலைக்கவும், இயற்கை எதிரிகள் அணுகுவதற்கும் தேங்கியுள்ள நீரை தற்காலிகமாக வெளியேற்றவும்."
+      }
     ],
     "prevention": [
       "Avoid excessive nitrogen application",
@@ -749,18 +1550,55 @@
       "Encourage natural enemies (spiders, Cyrtorhinus)",
       "Avoid broad-spectrum insecticides that kill natural enemies",
       "Use light traps for population monitoring"
+    ],
+    "name_si": "දුඹුරු පැළ පළඟැටියා",
+    "name_ta": "பழுப்பு தாவரத் தத்துப்பூச்சி",
+    "description_si": "දුඹුරු පැළ පළඟැටියා (Nilaparvata lugens) වී ශාකවලින් ෆ්ලෝම් යුෂ උරා බොන අතර, පත්‍ර කහ වීම, මැලවීම, සහ වටකුරු පැල්ලම්වල ශාක සම්පූර්ණයෙන් වියළී යාම ('hopper burn') සිදු කරයි.",
+    "description_ta": "பழுப்பு தாவரத் தத்துப்பூச்சி (Nilaparvata lugens) நெல் தாவரங்களின் ஃப்ளோயம் சாற்றை உறிஞ்சி, இலை மஞ்சளாதல், வாடுதல் மற்றும் வட்ட வடிவ பகுதிகளில் தாவரங்கள் முற்றிலும் காய்ந்துவிடும் 'hopper burn' ஐ ஏற்படுத்துகிறது.",
+    "prevention_si": [
+      "අධික නයිට්‍රජන් යෙදීමෙන් වළකින්න",
+      "වාත සංසරණය සඳහා නිසි ශාක පරතරය පවත්වන්න",
+      "ප්‍රතිරෝධී ප්‍රභේද (BPH ප්‍රතිරෝධී ජාන සහිත) භාවිත කරන්න",
+      "ස්වාභාවික සතුරන් (මකුළුවන්, Cyrtorhinus) දිරිගන්වන්න",
+      "ස්වාභාවික සතුරන් මරා දමන පුළුල් පරාසයේ කෘමිනාශක භාවිතයෙන් වළකින්න",
+      "ගහනය නිරීක්ෂණයට ආලෝක උගුල් භාවිත කරන්න"
+    ],
+    "prevention_ta": [
+      "அதிக நைட்ரஜன் பயன்பாட்டைத் தவிர்க்கவும்",
+      "காற்றோட்டத்திற்காக சரியான தாவர இடைவெளியை பராமரிக்கவும்",
+      "எதிர்ப்புத் திறன் கொண்ட (BPH எதிர்ப்பு மரபணுக்களுடன்) ரகங்களைப் பயன்படுத்தவும்",
+      "இயற்கை எதிரிகளை (சிலந்திகள், Cyrtorhinus) ஊக்குவிக்கவும்",
+      "இயற்கை எதிரிகளைக் கொல்லும் பரந்த-வீச்சுப் பூச்சிக்கொல்லிகளைத் தவிர்க்கவும்",
+      "எண்ணிக்கையைக் கண்காணிக்க ஒளிப் பொறிகளைப் பயன்படுத்தவும்"
     ]
   },
   {
     "name": "Rice Stem Fly",
     "model_var": "Rice Stem Fly",
-    "aliases": ["stem fly", "rice stem fly", "Chlorops oryzae", "Atherigona oryzae"],
+    "aliases": [
+      "stem fly",
+      "rice stem fly",
+      "Chlorops oryzae",
+      "Atherigona oryzae"
+    ],
     "description": "Rice stem fly larvae mine into rice stems causing dead hearts and reduced tillering. Most damaging during seedling and early tillering stages.",
     "severity": "medium",
     "solutions": [
-      {"step": 1, "title": "Carbofuran 3G Granules", "description": "Apply 6–8 kg/ha at sowing or transplanting as preventive treatment."},
-      {"step": 2, "title": "Imidacloprid Seed Treatment", "description": "Treat seeds with Imidacloprid 600 FS at 5 ml/kg seed before sowing for systemic protection."},
-      {"step": 3, "title": "Remove Damaged Plants", "description": "Uproot and destroy plants showing dead heart symptoms to prevent fly multiplication."}
+      {
+        "step": 1,
+        "title": "Carbofuran 3G Granules",
+        "description": "Apply 6–8 kg/ha at sowing or transplanting as preventive treatment."
+      },
+      {
+        "step": 2,
+        "title": "Imidacloprid Seed Treatment",
+        "description": "Treat seeds with Imidacloprid 600 FS at 5 ml/kg seed before sowing for systemic protection."
+      },
+      {
+        "step": 3,
+        "title": "Remove Damaged Plants",
+        "description": "Uproot and destroy plants showing dead heart symptoms to prevent fly multiplication."
+      }
     ],
     "prevention": [
       "Use healthy, vigorous seedlings",
@@ -768,18 +1606,52 @@
       "Maintain optimal plant population",
       "Remove volunteer rice and weedy hosts",
       "Practice crop rotation"
-    ]
+    ],
+    "name_si": "බෝරු මුළු සම්පාදනය",
+    "name_ta": "அரிசி கண் இலை",
+    "description_si": "බෝරු මුළු සම්පාදනය පොල් මුළු මැසිම් බෝරු මුළු ස්ටෙම් එකට ඇති පොල් ස්ටෙම් පොල් මැසිම් පොල් මුළු සම්පාදනය කරයි.",
+    "description_ta": "அரிசி கண் இலை போலாதவர்கள் அரிசி கண்களில் உள்ள பூமிக்குகள் உருவாக்கி உள்ளனவும் குறைந்த களைகளைக் காரணிக்கும். விதைப்பதிலும் மற்றும் முதல் களைகளைப் போலவும் குறைத்துவிடும் போலாதவர்களின் மேல் அதிகமாக கேட்கின்றது.",
+    "prevention_si": [],
+    "prevention_ta": []
   },
   {
     "name": "Rice Water Weevil",
     "model_var": "Rice Water Weevil",
-    "aliases": ["water weevil", "rice water weevil", "Lissorhoptrus oryzophilus"],
+    "aliases": [
+      "water weevil",
+      "rice water weevil",
+      "Lissorhoptrus oryzophilus"
+    ],
     "description": "Rice water weevil (Lissorhoptrus oryzophilus) adults feed on leaves creating longitudinal scars. Larvae feed on roots underwater, reducing root mass and plant vigor, leading to stunting and yield loss.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Chlorantraniliprole Seed Treatment", "description": "Apply seed treatment at recommended rate for systemic protection against larvae."},
-      {"step": 2, "title": "Fipronil 0.3% G", "description": "Apply 4–5 kg/ha granules into standing water 7–10 days after flooding for larval control."},
-      {"step": 3, "title": "Drain Fields Temporarily", "description": "Drain paddies for 5–7 days after transplanting to expose and kill eggs and early larvae on roots."}
+      {
+        "step": 1,
+        "title": "Chlorantraniliprole Seed Treatment",
+        "description": "Apply seed treatment at recommended rate for systemic protection against larvae.",
+        "title_si": "Chlorantraniliprole බීජ ප්‍රතිකාරය",
+        "description_si": "දළඹුවන්ට එරෙහිව පද්ධතිගත ආරක්ෂාව සඳහා නිර්දේශිත අනුපාතයෙන් බීජ ප්‍රතිකාරය යොදන්න.",
+        "title_ta": "Chlorantraniliprole விதை சிகிச்சை",
+        "description_ta": "புழுக்களுக்கு எதிராக முழுமையான பாதுகாப்புக்காக பரிந்துரைக்கப்பட்ட விகிதத்தில் விதை சிகிச்சையை வழங்கவும்."
+      },
+      {
+        "step": 2,
+        "title": "Fipronil 0.3% G",
+        "description": "Apply 4–5 kg/ha granules into standing water 7–10 days after flooding for larval control.",
+        "title_si": "Fipronil 0.3% G",
+        "description_si": "දළඹු පාලනය සඳහා කුඹුර යටවී 7–10 days කට පසු රඳවාගත් ජලයට 4–5 kg/ha කැට යොදන්න.",
+        "title_ta": "Fipronil 0.3% G",
+        "description_ta": "புழுக் கட்டுப்பாட்டிற்காக வயலில் நீர் தேக்கிய 7–10 days க்குப் பிறகு தேங்கிய நீரில் 4–5 kg/ha துகள்களை இடவும்."
+      },
+      {
+        "step": 3,
+        "title": "Drain Fields Temporarily",
+        "description": "Drain paddies for 5–7 days after transplanting to expose and kill eggs and early larvae on roots.",
+        "title_si": "කුඹුරෙන් තාවකාලිකව ජලය බැස්සවීම",
+        "description_si": "මුල්වල ඇති බිත්තර සහ ආරම්භක දළඹුවන් එළියට පත් කර මරා දැමීමට, සිටුවීමෙන් පසු 5–7 days ක් කුඹුරෙන් ජලය බැස්සවන්න.",
+        "title_ta": "வயல்களை தற்காலிகமாக வடியவிடுதல்",
+        "description_ta": "வேர்களில் உள்ள முட்டைகள் மற்றும் ஆரம்ப கட்ட புழுக்களை வெளிப்படுத்தி அழிக்க, நாற்று நடவுக்குப் பிறகு 5–7 days க்கு வயலில் இருந்து நீரை வெளியேற்றவும்."
+      }
     ],
     "prevention": [
       "Delay permanent flooding to reduce adult colonization",
@@ -787,18 +1659,65 @@
       "Use seed treatments for early protection",
       "Destroy crop residues and volunteer rice",
       "Avoid early planting when adult populations are high"
+    ],
+    "name_si": "වී ජල මූකලාණාගේ",
+    "name_ta": "நெல் நீர் வண்டு",
+    "description_si": "වී ජල මූකලාණාගේ (Lissorhoptrus oryzophilus) වැඩිහිටියන් පත්‍ර කා දිගටි සලකුණු සාදයි. දළඹුවන් ජලය යට මුල් කන අතර, මුල් ස්කන්ධය සහ ශාක ශක්තිය අඩු කර, ශාක වර්ධනය වැලකී අස්වැන්න අඩු වීමට හේතු වේ.",
+    "description_ta": "நெல் நீர் வண்டின் (Lissorhoptrus oryzophilus) வயது வந்தவை இலைகளை உண்டு நீள்வாக்கான தழும்புகளை ஏற்படுத்துகின்றன. புழுக்கள் நீருக்கடியில் வேர்களை உண்டு, வேர்த் திணிவையும் தாவர வளர்ச்சியையும் குறைத்து, வளர்ச்சி குன்றுதலையும் விளைச்சல் இழப்பையும் ஏற்படுத்துகின்றன.",
+    "prevention_si": [
+      "වැඩිහිටි ජනපද වර්ධනය අඩු කිරීමට ස්ථිර ජල යටකිරීම ප්‍රමාද කරන්න",
+      "සිටුවීමෙන් පසු නොගැඹුරු ජල මට්ටමක් පවත්වන්න",
+      "මුල් අවධියේ ආරක්ෂාව සඳහා බීජ ප්‍රතිකාර භාවිත කරන්න",
+      "භෝග අපද්‍රව්‍ය සහ පැරණි වී පැළ විනාශ කරන්න",
+      "වැඩිහිටි ගහනය ඉහළ කාලවලදී කල්වේලාසන වගා කිරීමෙන් වළකින්න"
+    ],
+    "prevention_ta": [
+      "வயது வந்தவை குடியேறுவதைக் குறைக்க நிரந்தரமான நீர் தேக்கத்தை தாமதப்படுத்தவும்",
+      "நாற்று நடவுக்குப் பிறகு ஆழமற்ற நீர் மட்டத்தைப் பராமரிக்கவும்",
+      "ஆரம்பகால பாதுகாப்புக்காக விதை சிகிச்சைகளைப் பயன்படுத்தவும்",
+      "பயிர் கழிவுகள் மற்றும் தற்செயலான நெல் தாவரங்களை அழிக்கவும்",
+      "வயது வந்தோர் எண்ணிக்கை அதிகமாக இருக்கும்போது முன்கூட்டிய நடவை தவிர்க்கவும்"
     ]
   },
   {
     "name": "Rice Leaf Hopper",
     "model_var": "Rice Leaf Hopper",
-    "aliases": ["leafhopper", "rice leafhopper", "green leafhopper", "Nephotettix virescens"],
+    "aliases": [
+      "leafhopper",
+      "rice leafhopper",
+      "green leafhopper",
+      "Nephotettix virescens"
+    ],
     "description": "Rice leafhoppers (Nephotettix spp.) suck plant sap causing yellowing and stunting. They are also the primary vectors of Tungro virus disease, making them doubly dangerous.",
     "severity": "high",
     "solutions": [
-      {"step": 1, "title": "Buprofezin 250 g/l SC", "description": "Apply 60–80 ml per 15–20 L water per acre when leafhopper numbers exceed 5–10 per 50 tillers."},
-      {"step": 2, "title": "Pymetrozine 50% WG", "description": "Apply 25–30 g per 20 L water per acre. Acts as feeding inhibitor and disrupts virus transmission."},
-      {"step": 3, "title": "Thiamethoxam 25% WG", "description": "Apply 25–30 g per 15–20 L water per acre. Effective for rapid knockdown of hopper populations."}
+      {
+        "step": 1,
+        "title": "Buprofezin 250 g/l SC",
+        "description": "Apply 60–80 ml per 15–20 L water per acre when leafhopper numbers exceed 5–10 per 50 tillers.",
+        "title_si": "Buprofezin 250 g/l SC",
+        "description_si": "කුඹුරු සංඛ්‍යාව 50 කුඹුරු 5–10 කට වඩා වැඩි වූ විට, එක් අක්කරයකට ලීටර් 15–20 කට 60–80 මිලිලීටර් යෙදිය යුතුය.",
+        "title_ta": "Buprofezin 250 g/l SC",
+        "description_ta": "குளம்பு எண்ணிக்கை 50 தண்டு 5–10 க்கும் மேல் சென்றால், ஒரு ஏக்கருக்கு 15–20 லிட்டர் நீரில் 60–80 மில்லி லிட்டர் பயன்படுத்தவும்."
+      },
+      {
+        "step": 2,
+        "title": "Pymetrozine 50% WG",
+        "description": "Apply 25–30 g per 20 L water per acre. Acts as feeding inhibitor and disrupts virus transmission.",
+        "title_si": "Pymetrozine 50% WG",
+        "description_si": "කුඹුරු සංඛ්‍යාව 20 ලීටර් ජලයට එක් අක්කරයකට 25–30 ග්‍රෑම් යෙදිය යුතුය. ආහාරය නවතා දැමීමේ ක්‍රියාවලියක් ලෙස ක්‍රියා කරයි සහ වෛරසය ප්‍රවහය බිඳ දමයි.",
+        "title_ta": "Pymetrozine 50% WG",
+        "description_ta": "ஒரு ஏக்கருக்கு 20 லிட்டர் நீரில் 25–30 கிராம் பயன்படுத்தவும். இது உணவு தடுப்பாளராக செயல்பட்டு வைரஸ் பரவலை தடுக்கும்."
+      },
+      {
+        "step": 3,
+        "title": "Thiamethoxam 25% WG",
+        "description": "Apply 25–30 g per 15–20 L water per acre. Effective for rapid knockdown of hopper populations.",
+        "title_si": "Thiamethoxam 25% WG",
+        "description_si": "කුඹුරු සංඛ්‍යාව 15–20 ලීටර් ජලයට එක් අක්කරයකට 25–30 ග්‍රෑම් යෙදිය යුතුය. කුඹුරු ජනගහනය ඉක්මනින් අත්හිටුවීමට ප්‍රභාෂී වේ.",
+        "title_ta": "Thiamethoxam 25% WG",
+        "description_ta": "ஒரு ஏக்கருக்கு 15–20 லிட்டர் நீரில் 25–30 கிராம் பயன்படுத்தவும். குளம்பு மக்கள் தொகையை விரைவில் அழிக்க பயனுள்ளதாக உள்ளது."
+      }
     ],
     "prevention": [
       "Use Tungro-resistant varieties",
@@ -807,6 +1726,26 @@
       "Use light traps for population monitoring",
       "Avoid excessive nitrogen application",
       "Encourage natural enemies (spiders, dragonflies)"
+    ],
+    "name_si": "අල වතුර කුඹුරු",
+    "name_ta": "அரிசி இலை குளம்பு",
+    "description_si": "අල වතුර කුඹුරු (Nephotettix spp.) ශාකයේ සීනි ආශ්‍රිත කර yellowing සහ stunting සිදු කරයි. එය Tungro වෛරස රෝගයේ ප්‍රධාන මාරුකාරකයන් වන අතර, එය දෙවරක් අවදානම් වේ.",
+    "description_ta": "அரிசி இலை குளம்புகள் (Nephotettix spp.) தாவரத்தின் சாறு உறிஞ்சுவதால் மஞ்சள் நிறம் மற்றும் வளர்ச்சி குறைபாடு ஏற்படுகிறது. இவை Tungro வைரஸ் நோயின் முதன்மை பரப்புநிலையினராகவும் உள்ளன, இதனால் இவை இருமுறை ஆபத்தானவை.",
+    "prevention_si": [
+      "Tungro-प्रतिरोधी වර්ග භාවිතා කරන්න",
+      "සමකාලීන වගාවක් අනුගමනය කරන්න",
+      "පිරිසිදු බුන්ඩ් රැකීම සහ කුඹුරු ඉවත් කිරීම",
+      "ජනගහනය නිරීක්ෂණය සඳහා ආලෝක පසුබැසීම් භාවිතා කරන්න",
+      "අධික නයිට්‍රජන් යෙදීමෙන් වළකින",
+      "ස්වාභාවික ශතකාරකයන් (මීටු, ඩ්‍රැගන්ෆ්ලයිස්) ප්‍රවර්ධනය කරන්න"
+    ],
+    "prevention_ta": [
+      "Tungro-எதிர்ப்பு வகைகளைப் பயன்படுத்தவும்",
+      "ஒத்திகை பயிர் நடுவதைக் கடைபிடிக்கவும்",
+      "சுத்தமான பண்டுகளை பராமரிக்கவும் மற்றும் களஞ்சியங்களை அகற்றவும்",
+      "மக்கள் தொகை கண்காணிப்புக்கு ஒளி சிக்கல்களைப் பயன்படுத்தவும்",
+      "அதிக நைட்ரஜன் பயன்பாட்டை தவிர்க்கவும்",
+      "இயற்கை எதிரிகள் (மீடுகள், டிராகன் பறவைகள்) ஊக்குவிக்கவும்"
     ]
   }
 ]

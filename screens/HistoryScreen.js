@@ -7,9 +7,9 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
-  Alert,
   Animated,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -46,6 +46,16 @@ const translations = {
     completed: 'Completed',
     pending: 'Pending',
     failed: 'Failed',
+    testDetails: 'Test Details',
+    viewDetailsFor: 'View details for',
+    deleted: 'Deleted',
+    deletedDesc: 'Test has been deleted.',
+    shareResult: 'Share',
+    shareResultDesc: 'result',
+    exportTitle: 'Export',
+    exportDesc: 'Export all test results to CSV/PDF',
+    test: 'test',
+    tests: 'tests',
   },
   සිංහල: {
     title: 'පරීක්ෂණ ඉතිහාසය',
@@ -75,6 +85,16 @@ const translations = {
     completed: 'සම්පූර්ණ',
     pending: 'පොරොත්තුවෙන්',
     failed: 'අසාර්ථක',
+    testDetails: 'පරීක්ෂණ විස්තර',
+    viewDetailsFor: 'සඳහා විස්තර බලන්න',
+    deleted: 'මකා දමන ලදී',
+    deletedDesc: 'පරීක්ෂණය මකා දමා ඇත.',
+    shareResult: 'බෙදාගන්න',
+    shareResultDesc: 'ප්‍රතිඵලය',
+    exportTitle: 'නිර්යාත කරන්න',
+    exportDesc: 'සියලුම පරීක්ෂණ ප්‍රතිඵල CSV/PDF වෙත නිර්යාත කරන්න',
+    test: 'පරීක්ෂණය',
+    tests: 'පරීක්ෂණ',
   },
   தமிழ்: {
     title: 'சோதனை வரலாறு',
@@ -104,6 +124,16 @@ const translations = {
     completed: 'முடிந்தது',
     pending: 'நிலுவையில்',
     failed: 'தோல்வி',
+    testDetails: 'சோதனை விவரங்கள்',
+    viewDetailsFor: 'இதற்கான விவரங்களைக் காண்க',
+    deleted: 'நீக்கப்பட்டது',
+    deletedDesc: 'சோதனை நீக்கப்பட்டது.',
+    shareResult: 'பகிர்',
+    shareResultDesc: 'முடிவு',
+    exportTitle: 'ஏற்றுமதி',
+    exportDesc: 'அனைத்து சோதனை முடிவுகளையும் CSV/PDF க்கு ஏற்றுமதி செய்',
+    test: 'சோதனை',
+    tests: 'சோதனைகள்',
   },
 };
 
@@ -330,12 +360,12 @@ export default function HistoryScreen({ navigation }) {
         navigation.navigate('PestDetection');
         break;
       default:
-        Alert.alert('Test Details', `View details for ${test.title}`);
+        showAppAlert(t.testDetails, `${t.viewDetailsFor} ${test.title}`);
     }
   };
 
   const handleDelete = (test) => {
-    Alert.alert(
+    showAppAlert(
       t.confirmDelete,
       t.confirmDeleteMessage,
       [
@@ -345,7 +375,7 @@ export default function HistoryScreen({ navigation }) {
           style: 'destructive',
           onPress: () => {
             // In a real app, delete from backend
-            Alert.alert('Deleted', 'Test has been deleted.');
+            showAppAlert(t.deleted, t.deletedDesc);
           },
         },
       ]
@@ -353,11 +383,11 @@ export default function HistoryScreen({ navigation }) {
   };
 
   const handleShare = (test) => {
-    Alert.alert('Share', `Share ${test.title} result`);
+    showAppAlert(t.shareResult, `${t.shareResult} ${test.title} ${t.shareResultDesc}`);
   };
 
   const handleExport = () => {
-    Alert.alert('Export', 'Export all test results to CSV/PDF');
+    showAppAlert(t.exportTitle, t.exportDesc);
   };
 
   return (
@@ -423,7 +453,7 @@ export default function HistoryScreen({ navigation }) {
                 <Text style={styles.sectionTitle}>
                   {selectedFilter === 'all' ? t.all : filters.find(f => f.id === selectedFilter)?.label}
                 </Text>
-                <Text style={styles.resultsCount}>{filteredTests.length} {filteredTests.length === 1 ? 'test' : 'tests'}</Text>
+                <Text style={styles.resultsCount}>{filteredTests.length} {filteredTests.length === 1 ? t.test : t.tests}</Text>
               </View>
               {filteredTests.length > 0 ? (
                 <View style={styles.testsContainer}>

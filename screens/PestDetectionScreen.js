@@ -7,14 +7,15 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   PermissionsAndroid,
   Dimensions,
   Animated,
   StatusBar,
+  Keyboard,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, Upload, CheckCircle, AlertCircle, X, MessageCircle, Send, Mic } from 'lucide-react-native';
 import Voice from '@react-native-voice/voice';
@@ -26,11 +27,208 @@ import ragService from '../src/services/ragService';
 import pestDetectionService from '../src/services/pestDetectionService';
 import llmService from '../src/services/LLMService';
 import PokedexResultCard from '../src/components/PokedexResultCard';
-import { getProductsByDisease } from '../src/services/marketplaceService';
+import { useLanguage } from '../src/context/LanguageContext';
 
 const { width, height } = Dimensions.get('window');
 
+const translations = {
+  English: {
+    headerTitle: 'Pest & Disease Detection',
+    takePhoto: 'Take Photo',
+    takePhotoDesc: 'Capture plant images using camera',
+    chooseGallery: 'Choose from Gallery',
+    chooseGalleryDesc: 'Select an image from your gallery',
+    selectedImage: 'Selected Image',
+    changeImage: 'Change Image',
+    analyzing: 'Analyzing image...',
+    detectPest: 'Detect Pest',
+    detectDisease: 'Detect Disease',
+    askPlaceholder: 'Ask a question...',
+    readyToScan: 'Ready to Scan',
+    readyToScanDesc: 'Take a photo or select an image of your crop to detect pests and diseases',
+    apiKeyRequired: 'API Key Required',
+    enterApiKey: 'Enter your OpenAI API key',
+    cancel: 'Cancel',
+    save: 'Save',
+    grantPermission: 'Grant Permission',
+    close: 'Close',
+    error: 'Error',
+    failedInit: 'Failed to initialize detection services',
+    permissionDenied: 'Permission Denied',
+    micRequired: 'Microphone permission is required for voice input.',
+    notAvailable: 'Not Available',
+    voiceUnavailable: 'Voice recognition is not available. This feature requires the legacy React Native architecture.',
+    voiceError: 'Voice Error',
+    voiceErrorMsg: 'Voice recognition failed to start. This module may not be compatible with the current React Native architecture.',
+    cameraRequired: 'Camera permission is required to take photos.',
+    cameraNotReady: 'Camera not ready',
+    failedTakePic: 'Failed to take picture. Please try again.',
+    selectImageFirst: 'Please select an image first',
+    servicesNotReady: 'Services not ready yet',
+    failedDetect: 'Failed to detect disease. Please try again.',
+    failedResponse: 'Failed to get response. Please check your internet connection and API key.',
+    success: 'Success',
+    apiKeySaved: 'API key saved! You can now use the chat.',
+    failedSaveKey: 'Failed to save API key',
+    invalidApiKey: 'Please enter a valid API key',
+    cameraPermDenied: 'Camera permission is required.',
+    diseaseMode: 'Disease',
+    pestMode: 'Pest',
+    micPermissionTitle: 'Microphone Permission',
+    micPermissionMsg: 'This app needs access to your microphone for voice input.',
+    askMeLater: 'Ask Me Later',
+    ok: 'OK',
+    selectImage: 'Select Image',
+    chooseOption: 'Choose an option',
+    camera: 'Camera',
+    gallery: 'Gallery',
+    hideChat: 'Hide Chat',
+    askAboutDisease: 'Ask Questions About This Disease',
+    askMeAnythingAbout: 'Ask me anything about',
+    chatExample: 'Example: "How do I prevent this disease?" or "What are the best treatment methods?"',
+    listening: 'Listening...',
+    apiKeyModalDesc: 'To use the chat feature, you need an OpenAI API key. Get one from:',
+    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
+    apiKeyEnvNote: 'Note: Your API key should be in the .env file as OPENAI_API_KEY',
+    cameraPermissionRequired: 'Camera permission is required',
+    voiceLangFallback: 'Language Not Supported',
+    voiceLangFallbackMsg: 'Voice input is not available in your selected language on this device. Using English instead. Tip: install the offline voice pack for this language in your device settings.',
+  },
+  සිංහල: {
+    headerTitle: 'කෘමී සහ රෝග හඳුනාගැනීම',
+    takePhoto: 'ඡායාරූපයක් ගන්න',
+    takePhotoDesc: 'කැමරාව භාවිතයෙන් ශාක රූප ග්‍රහණය කරන්න',
+    chooseGallery: 'ගැලරියෙන් තෝරන්න',
+    chooseGalleryDesc: 'ඔබේ ගැලරියෙන් රූපයක් තෝරන්න',
+    selectedImage: 'තෝරාගත් රූපය',
+    changeImage: 'රූපය වෙනස් කරන්න',
+    analyzing: 'රූපය විශ්ලේෂණය කරමින්...',
+    detectPest: 'කෘමියා හඳුනන්න',
+    detectDisease: 'රෝගය හඳුනන්න',
+    askPlaceholder: 'ප්‍රශ්නයක් අසන්න...',
+    readyToScan: 'පරිලෝකනයට සූදානම්',
+    readyToScanDesc: 'කෘමීන් සහ රෝග හඳුනා ගැනීමට ඔබේ බෝගයේ ඡායාරූපයක් ගන්න හෝ රූපයක් තෝරන්න',
+    apiKeyRequired: 'API යතුර අවශ්‍යයි',
+    enterApiKey: 'ඔබේ OpenAI API යතුර ඇතුළත් කරන්න',
+    cancel: 'අවලංගු කරන්න',
+    save: 'සුරකින්න',
+    grantPermission: 'අවසර දෙන්න',
+    close: 'වසන්න',
+    error: 'දෝෂය',
+    failedInit: 'හඳුනාගැනීමේ සේවා ආරම්භ කිරීමට අසමත් විය',
+    permissionDenied: 'අවසරය ප්‍රතික්ෂේප කරන ලදී',
+    micRequired: 'හඬ ආදානය සඳහා මයික්‍රෆෝන් අවසරය අවශ්‍ය වේ.',
+    notAvailable: 'ලබා ගත නොහැක',
+    voiceUnavailable: 'හඬ හඳුනාගැනීම ලබා ගත නොහැක. මෙම විශේෂාංගය legacy React Native ගෘහනිර්මාණ ශිල්පය අවශ්‍ය වේ.',
+    voiceError: 'හඬ දෝෂය',
+    voiceErrorMsg: 'හඬ හඳුනාගැනීම ආරම්භ කිරීමට අසමත් විය. මෙම මොඩියුලය වර්තමාන React Native ගෘහනිර්මාණ ශිල්පය සමඟ අනුකූල නොවිය හැක.',
+    cameraRequired: 'ඡායාරූප ගැනීමට කැමරා අවසරය අවශ්‍ය වේ.',
+    cameraNotReady: 'කැමරාව සූදානම් නැත',
+    failedTakePic: 'ඡායාරූපයක් ගැනීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    selectImageFirst: 'කරුණාකර පළමුව රූපයක් තෝරන්න',
+    servicesNotReady: 'සේවා තවමත් සූදානම් නැත',
+    failedDetect: 'රෝගය හඳුනාගැනීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    failedResponse: 'ප්‍රතිචාරයක් ලබා ගැනීමට අසමත් විය. ඔබේ අන්තර්ජාල සම්බන්ධතාවය සහ API යතුර පරීක්ෂා කරන්න.',
+    success: 'සාර්ථකයි',
+    apiKeySaved: 'API යතුර සුරකින ලදී! ඔබට දැන් කතාබස් භාවිතා කළ හැක.',
+    failedSaveKey: 'API යතුර සුරැකීමට අසමත් විය',
+    invalidApiKey: 'කරුණාකර වලංගු API යතුරක් ඇතුළත් කරන්න',
+    cameraPermDenied: 'කැමරා අවසරය අවශ්‍ය වේ.',
+    diseaseMode: 'රෝගය',
+    pestMode: 'කෘමියා',
+    micPermissionTitle: 'මයික්‍රෆෝන් අවසරය',
+    micPermissionMsg: 'හඬ ආදානය සඳහා මෙම යෙදුමට ඔබේ මයික්‍රෆෝනයට ප්‍රවේශය අවශ්‍ය වේ.',
+    askMeLater: 'පසුව අසන්න',
+    ok: 'හරි',
+    selectImage: 'රූපයක් තෝරන්න',
+    chooseOption: 'විකල්පයක් තෝරන්න',
+    camera: 'කැමරාව',
+    gallery: 'ගැලරිය',
+    hideChat: 'කතාබස් සඟවන්න',
+    askAboutDisease: 'මෙම රෝගය ගැන ප්‍රශ්න අසන්න',
+    askMeAnythingAbout: 'ඕනෑම දෙයක් අසන්න',
+    chatExample: 'උදා: "මෙම රෝගය වැළැක්විය හැක්කේ කෙසේද?" හෝ "හොඳම ප්‍රතිකාර ක්‍රම මොනවාද?"',
+    listening: 'සවන් දෙමින්...',
+    apiKeyModalDesc: 'කතාබස් විශේෂාංගය භාවිතා කිරීමට, ඔබට OpenAI API යතුරක් අවශ්‍යයි. එය ලබා ගන්න:',
+    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
+    apiKeyEnvNote: 'සටහන: ඔබේ API යතුර .env ගොනුවේ OPENAI_API_KEY ලෙස තිබිය යුතුය',
+    cameraPermissionRequired: 'කැමරා අවසරය අවශ්‍ය වේ',
+    voiceLangFallback: 'භාෂාව සහාය නොදක්වයි',
+    voiceLangFallbackMsg: 'මෙම උපාංගයේ ඔබ තෝරාගත් භාෂාවෙන් හඬ ආදානය ලබා ගත නොහැක. ඉංග්‍රීසි භාවිතා කරයි. ඉඟිය: ඔබේ උපාංග සැකසුම්වල මෙම භාෂාව සඳහා නොබැඳි හඬ පැකේජය ස්ථාපනය කරන්න.',
+  },
+  தமிழ்: {
+    headerTitle: 'பூச்சி மற்றும் நோய் கண்டறிதல்',
+    takePhoto: 'புகைப்படம் எடு',
+    takePhotoDesc: 'கேமராவைப் பயன்படுத்தி தாவர படங்களைப் பிடிக்கவும்',
+    chooseGallery: 'கேலரியில் இருந்து தேர்வு செய்',
+    chooseGalleryDesc: 'உங்கள் கேலரியிலிருந்து ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
+    selectedImage: 'தேர்ந்தெடுக்கப்பட்ட படம்',
+    changeImage: 'படத்தை மாற்று',
+    analyzing: 'படத்தை பகுப்பாய்வு செய்கிறது...',
+    detectPest: 'பூச்சியை கண்டறி',
+    detectDisease: 'நோயை கண்டறி',
+    askPlaceholder: 'கேள்வி கேளுங்கள்...',
+    readyToScan: 'ஸ்கேன் செய்ய தயார்',
+    readyToScanDesc: 'பூச்சிகள் மற்றும் நோய்களைக் கண்டறிய உங்கள் பயிரின் புகைப்படத்தை எடுக்கவும் அல்லது படத்தைத் தேர்ந்தெடுக்கவும்',
+    apiKeyRequired: 'API விசை தேவை',
+    enterApiKey: 'உங்கள் OpenAI API விசையை உள்ளிடவும்',
+    cancel: 'ரத்து',
+    save: 'சேமி',
+    grantPermission: 'அனுமதி வழங்கு',
+    close: 'மூடு',
+    error: 'பிழை',
+    failedInit: 'கண்டறிதல் சேவைகளைத் தொடங்க முடியவில்லை',
+    permissionDenied: 'அனுமதி மறுக்கப்பட்டது',
+    micRequired: 'குரல் உள்ளீட்டிற்கு மைக்ரோபோன் அனுமதி தேவை.',
+    notAvailable: 'கிடைக்கவில்லை',
+    voiceUnavailable: 'குரல் அங்கீகாரம் கிடைக்கவில்லை. இந்த அம்சத்திற்கு legacy React Native கட்டமைப்பு தேவை.',
+    voiceError: 'குரல் பிழை',
+    voiceErrorMsg: 'குரல் அங்கீகாரம் தொடங்கத் தவறிவிட்டது. இந்த தொகுதி தற்போதைய React Native கட்டமைப்புடன் இணக்கமாக இல்லாமல் இருக்கலாம்.',
+    cameraRequired: 'புகைப்படங்கள் எடுக்க கேமரா அனுமதி தேவை.',
+    cameraNotReady: 'கேமரா தயாராக இல்லை',
+    failedTakePic: 'படம் எடுக்கத் தவறிவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+    selectImageFirst: 'முதலில் ஒரு படத்தைத் தேர்ந்தெடுக்கவும்',
+    servicesNotReady: 'சேவைகள் இன்னும் தயாராக இல்லை',
+    failedDetect: 'நோயைக் கண்டறிய முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    failedResponse: 'பதிலைப் பெற முடியவில்லை. உங்கள் இணைய இணைப்பு மற்றும் API விசையைச் சரிபார்க்கவும்.',
+    success: 'வெற்றி',
+    apiKeySaved: 'API விசை சேமிக்கப்பட்டது! நீங்கள் இப்போது அரட்டையைப் பயன்படுத்தலாம்.',
+    failedSaveKey: 'API விசையைச் சேமிக்க முடியவில்லை',
+    invalidApiKey: 'சரியான API விசையை உள்ளிடவும்',
+    cameraPermDenied: 'கேமரா அனுமதி தேவை.',
+    diseaseMode: 'நோய்',
+    pestMode: 'பூச்சி',
+    micPermissionTitle: 'மைக்ரோபோன் அனுமதி',
+    micPermissionMsg: 'குரல் உள்ளீட்டிற்காக இந்த பயன்பாட்டிற்கு உங்கள் மைக்ரோபோனுக்கான அணுகல் தேவை.',
+    askMeLater: 'பிறகு கேள்',
+    ok: 'சரி',
+    selectImage: 'படத்தைத் தேர்ந்தெடு',
+    chooseOption: 'ஒரு விருப்பத்தைத் தேர்ந்தெடு',
+    camera: 'கேமரா',
+    gallery: 'கேலரி',
+    hideChat: 'அரட்டையை மறை',
+    askAboutDisease: 'இந்த நோய் பற்றி கேள்விகள் கேள்',
+    askMeAnythingAbout: 'எதைப் பற்றியும் கேள்',
+    chatExample: 'உதா: "இந்த நோயை எவ்வாறு தடுப்பது?" அல்லது "சிறந்த சிகிச்சை முறைகள் என்ன?"',
+    listening: 'கேட்கிறது...',
+    apiKeyModalDesc: 'அரட்டை அம்சத்தைப் பயன்படுத்த, உங்களுக்கு OpenAI API விசை தேவை. இங்கே பெறவும்:',
+    apiKeyOpenAILink: '• OpenAI: platform.openai.com/api-keys',
+    apiKeyEnvNote: 'குறிப்பு: உங்கள் API விசை .env கோப்பில் OPENAI_API_KEY ஆக இருக்க வேண்டும்',
+    cameraPermissionRequired: 'கேமரா அனுமதி தேவை',
+    voiceLangFallback: 'மொழி ஆதரிக்கப்படவில்லை',
+    voiceLangFallbackMsg: 'இந்த சாதனத்தில் நீங்கள் தேர்ந்தெடுத்த மொழியில் குரல் உள்ளீடு கிடைக்கவில்லை. ஆங்கிலம் பயன்படுத்தப்படுகிறது. குறிப்பு: உங்கள் சாதன அமைப்புகளில் இந்த மொழிக்கான ஆஃப்லைன் குரல் தொகுப்பை நிறுவவும்.',
+  },
+};
+
+const VOICE_LOCALES = {
+  English: 'en-US',
+  සිංහල: 'si-LK',
+  தமிழ்: 'ta-IN',
+};
+
 export default function PestDetectionScreen({ navigation }) {
+  const { selectedLanguage } = useLanguage();
+  const t = translations[selectedLanguage] || translations.English;
   const [detectionMode, setDetectionMode] = useState('disease'); // 'disease' or 'pest'
   const [imageUri, setImageUri] = useState(null);
   const [detecting, setDetecting] = useState(false);
@@ -46,12 +244,45 @@ export default function PestDetectionScreen({ navigation }) {
   const [imageLoading, setImageLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recognizedText, setRecognizedText] = useState('');
-  const [recommendedProducts, setRecommendedProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
   const { hasPermission, requestPermission } = useCameraPermission();
   const device = useCameraDevice('back');
   const cameraRef = useRef(null);
   const mainScrollViewRef = useRef(null);
+  const chatInputRowRef = useRef(null);
+  const chatInputFocusedRef = useRef(false);
+  const [chatInputFocused, setChatInputFocused] = useState(false);
+
+  // The chat input lives at the very bottom of the page. On Android with
+  // adjustResize the ScrollView shrinks but doesn't re-scroll, so the input
+  // ends up under the keyboard. Easiest reliable fix: when the keyboard shows
+  // while chat is focused, scrollToEnd — that lands the input just above the
+  // keyboard. We retry once after a beat in case the resize hasn't settled.
+  const scrollChatInputIntoView = () => {
+    const scroller = mainScrollViewRef.current;
+    if (!scroller) return;
+    scroller.scrollToEnd({ animated: true });
+    setTimeout(() => scroller.scrollToEnd({ animated: false }), 120);
+  };
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      if (chatInputFocusedRef.current) {
+        scrollChatInputIntoView();
+      }
+    });
+    // On Android, keyboardDidShow fires once but if the user dismisses+re-taps,
+    // the frame metric updates without a fresh focus event in some flows.
+    // keyboardDidChangeFrame catches those.
+    const frameSub = Keyboard.addListener('keyboardDidChangeFrame', () => {
+      if (chatInputFocusedRef.current) {
+        scrollChatInputIntoView();
+      }
+    });
+    return () => {
+      showSub.remove();
+      frameSub.remove();
+    };
+  }, []);
   const chatSectionRef = useRef(null);
   const insets = useSafeAreaInsets();
 
@@ -97,17 +328,6 @@ export default function PestDetectionScreen({ navigation }) {
     ]).start();
   }, []);
 
-  // Debug: Log when imageUri changes
-  useEffect(() => {
-    if (imageUri) {
-      console.log('🖼️ imageUri state updated:', imageUri);
-      console.log('🖼️ imageUri length:', imageUri.length);
-      console.log('🖼️ imageUri starts with file://:', imageUri.startsWith('file://'));
-    } else {
-      console.log('🖼️ imageUri cleared');
-    }
-  }, [imageUri]);
-
   // Auto-scroll main view when new messages arrive
   useEffect(() => {
     if (showChat && chatMessages.length > 0 && mainScrollViewRef.current) {
@@ -141,7 +361,7 @@ export default function PestDetectionScreen({ navigation }) {
       setServicesReady(true);
     } catch (error) {
       console.error('Failed to initialize services:', error);
-      Alert.alert('Error', 'Failed to initialize detection services');
+      showAppAlert(t.error, t.failedInit);
     }
   };
 
@@ -194,11 +414,11 @@ export default function PestDetectionScreen({ navigation }) {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
           {
-            title: 'Microphone Permission',
-            message: 'This app needs access to your microphone for voice input.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
+            title: t.micPermissionTitle,
+            message: t.micPermissionMsg,
+            buttonNeutral: t.askMeLater,
+            buttonNegative: t.cancel,
+            buttonPositive: t.ok,
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -214,14 +434,14 @@ export default function PestDetectionScreen({ navigation }) {
     try {
       const hasPermission = await requestMicrophonePermission();
       if (!hasPermission) {
-        Alert.alert('Permission Denied', 'Microphone permission is required for voice input.');
+        showAppAlert(t.permissionDenied, t.micRequired);
         return;
       }
 
       // Check if native Voice module is available (not supported with New Architecture)
       const isAvailable = await Voice.isAvailable().catch(() => false);
       if (!isAvailable) {
-        Alert.alert('Not Available', 'Voice recognition is not available. This feature requires the legacy React Native architecture.');
+        showAppAlert(t.notAvailable, t.voiceUnavailable);
         return;
       }
       // Fully destroy previous session, wait for cleanup, then re-register listeners
@@ -231,11 +451,23 @@ export default function PestDetectionScreen({ navigation }) {
       await new Promise(resolve => setTimeout(resolve, 300));
       setupVoiceRecognition();
 
-      await Voice.start('en-US');
+      const preferredLocale = VOICE_LOCALES[selectedLanguage] || 'en-US';
+      try {
+        await Voice.start(preferredLocale);
+      } catch (localeError) {
+        // Locale not installed/supported on this device — fall back to English
+        if (preferredLocale !== 'en-US') {
+          console.warn(`Voice locale ${preferredLocale} not supported, falling back to en-US`);
+          showAppAlert(t.voiceLangFallback, t.voiceLangFallbackMsg);
+          await Voice.start('en-US');
+        } else {
+          throw localeError;
+        }
+      }
       setIsRecording(true);
     } catch (error) {
       console.error('Error starting voice recognition:', error);
-      Alert.alert('Voice Error', 'Voice recognition failed to start. This module may not be compatible with the current React Native architecture.');
+      showAppAlert(t.voiceError, t.voiceErrorMsg);
       setIsRecording(false);
     }
   };
@@ -259,13 +491,13 @@ export default function PestDetectionScreen({ navigation }) {
 
 
   const handleImagePicker = () => {
-    Alert.alert(
-      'Select Image',
-      'Choose an option',
+    showAppAlert(
+      t.selectImage,
+      t.chooseOption,
       [
-        { text: 'Camera', onPress: openCamera },
-        { text: 'Gallery', onPress: openGallery },
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.camera, onPress: openCamera },
+        { text: t.gallery, onPress: openGallery },
+        { text: t.cancel, style: 'cancel' },
       ]
     );
   };
@@ -274,7 +506,7 @@ export default function PestDetectionScreen({ navigation }) {
     if (!hasPermission) {
       const permissionResult = await requestPermission();
       if (!permissionResult) {
-        Alert.alert('Permission Denied', 'Camera permission is required to take photos.');
+        showAppAlert(t.permissionDenied, t.cameraRequired);
         return;
       }
     }
@@ -284,7 +516,7 @@ export default function PestDetectionScreen({ navigation }) {
   const takePicture = async () => {
     try {
       if (!cameraRef.current) {
-        Alert.alert('Error', 'Camera not ready');
+        showAppAlert(t.error, t.cameraNotReady);
         return;
       }
       
@@ -296,17 +528,13 @@ export default function PestDetectionScreen({ navigation }) {
       
       // Vision Camera returns raw path, React Native Image REQUIRES file:// prefix on Android
       const uri = `file://${photo.path}`;
-      
-      console.log('📸 Photo path:', photo.path);
-      console.log('📸 Photo format:', photo.format || 'unknown');
-      console.log('📸 Final URI:', uri);
-      
+
       setImageUri(uri);
       setResult(null);
       setShowCamera(false);
     } catch (error) {
       console.error('Error taking picture:', error);
-      Alert.alert('Error', 'Failed to take picture. Please try again.');
+      showAppAlert(t.error, t.failedTakePic);
     }
   };
 
@@ -321,7 +549,6 @@ export default function PestDetectionScreen({ navigation }) {
       (response) => {
         if (response.assets && response.assets[0]) {
           const uri = response.assets[0].uri;
-          console.log('🖼️ Gallery image selected, URI:', uri);
           // Ensure proper URI format for Android
           const imagePath = Platform.OS === 'android' && !uri.startsWith('file://') && !uri.startsWith('content://')
             ? `file://${uri}`
@@ -335,12 +562,12 @@ export default function PestDetectionScreen({ navigation }) {
 
   const detectDisease = async () => {
     if (!imageUri) {
-      Alert.alert('Error', 'Please select an image first');
+      showAppAlert(t.error, t.selectImageFirst);
       return;
     }
 
     if (!servicesReady) {
-      Alert.alert('Error', 'Services not ready yet');
+      showAppAlert(t.error, t.servicesNotReady);
       return;
     }
 
@@ -361,17 +588,10 @@ export default function PestDetectionScreen({ navigation }) {
         solution,
       });
 
-      // Fetch marketplace products that treat this disease
-      if (prediction.disease) {
-        setLoadingProducts(true);
-        getProductsByDisease(prediction.disease)
-          .then(setRecommendedProducts)
-          .catch(() => setRecommendedProducts([]))
-          .finally(() => setLoadingProducts(false));
-      }
+      // (Marketplace product fetch lives inside PokedexResultCard now.)
     } catch (error) {
       console.error('Detection error:', error);
-      Alert.alert('Error', 'Failed to detect disease. Please try again.');
+      showAppAlert(t.error, t.failedDetect);
     } finally {
       setDetecting(false);
     }
@@ -382,11 +602,10 @@ export default function PestDetectionScreen({ navigation }) {
     setResult(null);
     setShowChat(false);
     setChatMessages([]);
-    setRecommendedProducts([]);
   };
 
   const sendChatMessage = async () => {
-    if (!chatInput.trim() || !result || !result.solution.found) {
+    if (!chatInput.trim() || !result?.solution?.found) {
       return;
     }
 
@@ -408,13 +627,13 @@ export default function PestDetectionScreen({ navigation }) {
       const ragContext = result.solution;
       
       // Generate response using LLM with RAG context
-      const response = await llmService.generateResponse(userMessage, ragContext);
+      const response = await llmService.generateResponse(userMessage, ragContext, selectedLanguage);
       
       // Add AI response to chat
       setChatMessages([...newMessages, { role: 'assistant', content: response }]);
     } catch (error) {
       console.error('Chat error:', error);
-      Alert.alert('Error', 'Failed to get response. Please check your internet connection and API key.');
+      showAppAlert(t.error, t.failedResponse);
       setChatMessages(newMessages.slice(0, -1)); // Remove user message on error
     } finally {
       setSendingMessage(false);
@@ -433,7 +652,10 @@ export default function PestDetectionScreen({ navigation }) {
           style={styles.scrollView}
           contentContainerStyle={[
             styles.scrollContent,
-            { paddingBottom: 72 + insets.bottom + 20 }
+            // BottomNavigation floats ~72px above the keyboard. When the chat
+            // input is focused, add extra padding so scrollToEnd lifts the
+            // input clear of the bottom nav.
+            { paddingBottom: 72 + insets.bottom + 20 + (chatInputFocused ? 240 : 0) }
           ]}
           showsVerticalScrollIndicator={false}
         >
@@ -450,7 +672,7 @@ export default function PestDetectionScreen({ navigation }) {
                 <Text style={styles.menuIcon}>☰</Text>
               </TouchableOpacity>
               <View style={styles.headerText}>
-                <Text style={styles.headerTitle}>Pest & Disease Detection</Text>
+                <Text style={styles.headerTitle}>{t.headerTitle}</Text>
               </View>
             </View>
           </View>
@@ -465,7 +687,7 @@ export default function PestDetectionScreen({ navigation }) {
               >
                 <Icon name="leaf" size={18} color={detectionMode === 'disease' ? '#FFFFFF' : '#0F5132'} />
                 <Text style={[styles.modeToggleText, detectionMode === 'disease' && styles.modeToggleTextActive]}>
-                  Disease
+                  {t.diseaseMode}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -475,7 +697,7 @@ export default function PestDetectionScreen({ navigation }) {
               >
                 <Icon name="bug" size={18} color={detectionMode === 'pest' ? '#FFFFFF' : '#0F5132'} />
                 <Text style={[styles.modeToggleText, detectionMode === 'pest' && styles.modeToggleTextActive]}>
-                  Pest
+                  {t.pestMode}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -503,8 +725,8 @@ export default function PestDetectionScreen({ navigation }) {
                         <Icon name="camera" size={32} color="#4CAF50" />
                       </View>
                       <View style={styles.actionTextContainer}>
-                        <Text style={styles.actionTitle}>Take Photo</Text>
-                        <Text style={styles.actionDescription}>Capture plant images using camera</Text>
+                        <Text style={styles.actionTitle}>{t.takePhoto}</Text>
+                        <Text style={styles.actionDescription}>{t.takePhotoDesc}</Text>
                       </View>
                       <View style={styles.actionArrow}>
                         <Icon name="chevron-right" size={22} color="#0F5132" />
@@ -523,8 +745,8 @@ export default function PestDetectionScreen({ navigation }) {
                         <Icon name="image-plus" size={32} color="#2196F3" />
                       </View>
                       <View style={styles.actionTextContainer}>
-                        <Text style={styles.actionTitle}>Choose from Gallery</Text>
-                        <Text style={styles.actionDescription}>Select an image from your gallery</Text>
+                        <Text style={styles.actionTitle}>{t.chooseGallery}</Text>
+                        <Text style={styles.actionDescription}>{t.chooseGalleryDesc}</Text>
                       </View>
                       <View style={styles.actionArrow}>
                         <Icon name="chevron-right" size={22} color="#0F5132" />
@@ -547,7 +769,7 @@ export default function PestDetectionScreen({ navigation }) {
                 ]}
               >
                 <View style={styles.imageCardHeader}>
-                  <Text style={styles.imageCardTitle}>Selected Image</Text>
+                  <Text style={styles.imageCardTitle}>{t.selectedImage}</Text>
                   <TouchableOpacity onPress={clearImage}>
                     <Icon name="close-circle" size={24} color="#666" />
                   </TouchableOpacity>
@@ -556,30 +778,31 @@ export default function PestDetectionScreen({ navigation }) {
                   source={{ uri: imageUri }}
                   style={styles.previewImage}
                   resizeMode="cover"
-                  onLoad={() => {
-                    console.log('✅ Image loaded successfully');
-                  }}
                   onError={(e) => {
-                    console.error('❌ Image error:', e.nativeEvent);
+                    console.error('Image load error:', e.nativeEvent);
                   }}
                 />
                 {!detecting && (
                   <View style={styles.imageActionsContainer}>
-                    <TouchableOpacity
-                      style={styles.processButton}
-                      onPress={detectDisease}
-                      disabled={!servicesReady}
-                    >
-                      <Icon name={detectionMode === 'pest' ? 'bug' : 'leaf'} size={18} color="#FFFFFF" />
-                      <Text style={styles.processButtonText}>
-                        {detectionMode === 'pest' ? 'Detect Pest' : 'Detect Disease'}
-                      </Text>
-                    </TouchableOpacity>
+                    {/* Hide Detect once results are in — Change Image lets the user
+                        pick a new photo, which clears `result` and the button returns. */}
+                    {!result && (
+                      <TouchableOpacity
+                        style={styles.processButton}
+                        onPress={detectDisease}
+                        disabled={!servicesReady}
+                      >
+                        <Icon name={detectionMode === 'pest' ? 'bug' : 'leaf'} size={18} color="#FFFFFF" />
+                        <Text style={styles.processButtonText}>
+                          {detectionMode === 'pest' ? t.detectPest : t.detectDisease}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity
                       style={styles.changeImageButton}
                       onPress={handleImagePicker}
                     >
-                      <Text style={styles.changeImageButtonText}>Change Image</Text>
+                      <Text style={styles.changeImageButtonText}>{t.changeImage}</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -587,7 +810,7 @@ export default function PestDetectionScreen({ navigation }) {
                   <View style={styles.processButton}>
                     <View style={styles.processButtonContent}>
                       <ActivityIndicator color="#FFFFFF" size="small" />
-                      <Text style={styles.processButtonText}>Analyzing image...</Text>
+                      <Text style={styles.processButtonText}>{t.analyzing}</Text>
                     </View>
                   </View>
                 )}
@@ -604,65 +827,9 @@ export default function PestDetectionScreen({ navigation }) {
               />
             )}
 
-            {/* Recommended Products from Marketplace */}
-            {result && (loadingProducts || recommendedProducts.length > 0) && (
-              <View style={styles.recommendedSection}>
-                <View style={styles.recommendedHeader}>
-                  <Icon name="storefront" size={20} color="#0F5132" />
-                  <Text style={styles.recommendedTitle}>Recommended Products</Text>
-                </View>
-                <Text style={styles.recommendedSubtitle}>
-                  Products available in the marketplace that treat {result.solution.diseaseName || result.prediction.disease}
-                </Text>
-                {loadingProducts ? (
-                  <ActivityIndicator color="#0F5132" style={{ marginVertical: 16 }} />
-                ) : (
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.recommendedList}
-                  >
-                    {recommendedProducts.map((product) => (
-                      <TouchableOpacity
-                        key={product.id}
-                        style={styles.recommendedCard}
-                        activeOpacity={0.8}
-                        onPress={() => navigation.navigate('Marketplace', { searchQuery: product.productName })}
-                      >
-                        {product.imageUrl ? (
-                          <Image source={{ uri: product.imageUrl }} style={styles.recommendedCardImage} />
-                        ) : (
-                          <View style={styles.recommendedCardImagePlaceholder}>
-                            <Text style={{ fontSize: 32 }}>
-                              {product.category === 'pesticides' ? '🛡️' : '🧪'}
-                            </Text>
-                          </View>
-                        )}
-                        <View style={styles.recommendedCardBody}>
-                          <Text style={styles.recommendedCardName} numberOfLines={2}>
-                            {product.productName}
-                          </Text>
-                          <Text style={styles.recommendedCardPrice}>
-                            Rs. {product.price?.toLocaleString()}
-                          </Text>
-                          <Text style={styles.recommendedCardLocation} numberOfLines={1}>
-                            {product.location}
-                          </Text>
-                        </View>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                )}
-                <TouchableOpacity
-                  style={styles.viewMarketplaceBtn}
-                  onPress={() => navigation.navigate('Marketplace')}
-                  activeOpacity={0.8}
-                >
-                  <Icon name="storefront-outline" size={18} color="#0F5132" />
-                  <Text style={styles.viewMarketplaceBtnText}>View Full Marketplace</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            {/* Recommended products are now rendered inside PokedexResultCard
+                (it has its own fetch + UI for "AVAILABLE TREATMENTS") — duplicate
+                section removed to avoid double Firestore queries and double UI. */}
 
             {/* Chat Section */}
             {result && result.solution.found && (
@@ -682,7 +849,7 @@ export default function PestDetectionScreen({ navigation }) {
             >
               <MessageCircle size={20} color="#0F5132" />
               <Text style={styles.chatToggleText}>
-                {showChat ? 'Hide Chat' : 'Ask Questions About This Disease'}
+                {showChat ? t.hideChat : t.askAboutDisease}
               </Text>
             </TouchableOpacity>
 
@@ -692,10 +859,10 @@ export default function PestDetectionScreen({ navigation }) {
                   {chatMessages.length === 0 && (
                     <View style={styles.chatWelcome}>
                       <Text style={styles.chatWelcomeText}>
-                        Ask me anything about {result.solution.diseaseName}!
+                        {t.askMeAnythingAbout} {result.solution.diseaseName}!
                       </Text>
                       <Text style={styles.chatWelcomeSubtext}>
-                        Example: "How do I prevent this disease?" or "What are the best treatment methods?"
+                        {t.chatExample}
                       </Text>
                     </View>
                   )}
@@ -724,15 +891,26 @@ export default function PestDetectionScreen({ navigation }) {
                   )}
                 </View>
 
-                <View style={styles.chatInputContainer}>
+                <View ref={chatInputRowRef} style={styles.chatInputContainer}>
                   <TextInput
                     style={styles.chatInput}
-                    placeholder="Ask a question..."
+                    placeholder={t.askPlaceholder}
                     value={chatInput}
                     onChangeText={setChatInput}
                     multiline
                     editable={!sendingMessage && !isRecording}
                     onSubmitEditing={sendChatMessage}
+                    onFocus={() => {
+                      chatInputFocusedRef.current = true;
+                      setChatInputFocused(true);
+                      // First-tap path: keyboardDidShow may race onFocus; fire here too.
+                      // The longer delay lets the new paddingBottom apply before we scroll.
+                      setTimeout(scrollChatInputIntoView, 350);
+                    }}
+                    onBlur={() => {
+                      chatInputFocusedRef.current = false;
+                      setChatInputFocused(false);
+                    }}
                   />
                   <TouchableOpacity
                     style={[
@@ -757,7 +935,7 @@ export default function PestDetectionScreen({ navigation }) {
                   <View style={styles.recordingIndicator}>
                     <View style={styles.recordingDot} />
                     <Text style={styles.recordingText}>
-                      {recognizedText || 'Listening...'}
+                      {recognizedText || t.listening}
                     </Text>
                   </View>
                 )}
@@ -780,8 +958,8 @@ export default function PestDetectionScreen({ navigation }) {
                 <View style={styles.emptyIconContainer}>
                   <Icon name="leaf-circle-outline" size={64} color="#0F5132" />
                 </View>
-                <Text style={styles.emptyStateTitle}>Ready to Scan</Text>
-                <Text style={styles.emptyStateText}>Take a photo or select an image of your crop to detect pests and diseases</Text>
+                <Text style={styles.emptyStateTitle}>{t.readyToScan}</Text>
+                <Text style={styles.emptyStateText}>{t.readyToScanDesc}</Text>
               </Animated.View>
             )}
           </View>
@@ -797,18 +975,18 @@ export default function PestDetectionScreen({ navigation }) {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>API Key Required</Text>
+              <Text style={styles.modalTitle}>{t.apiKeyRequired}</Text>
               <Text style={styles.modalText}>
-                To use the chat feature, you need an OpenAI API key. Get one from:
+                {t.apiKeyModalDesc}
               </Text>
-              <Text style={styles.modalLink}>• OpenAI: platform.openai.com/api-keys</Text>
+              <Text style={styles.modalLink}>{t.apiKeyOpenAILink}</Text>
               <Text style={styles.modalSubtext}>
-                Note: Your API key should be in the .env file as OPENAI_API_KEY
+                {t.apiKeyEnvNote}
               </Text>
               
               <TextInput
                 style={styles.apiKeyInput}
-                placeholder="Enter your OpenAI API key"
+                placeholder={t.enterApiKey}
                 value={apiKeyInput}
                 onChangeText={setApiKeyInput}
                 secureTextEntry
@@ -824,7 +1002,7 @@ export default function PestDetectionScreen({ navigation }) {
                     setApiKeyInput('');
                   }}
                 >
-                  <Text style={styles.modalButtonCancelText}>Cancel</Text>
+                  <Text style={styles.modalButtonCancelText}>{t.cancel}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.modalButton, styles.modalButtonSave]}
@@ -834,16 +1012,16 @@ export default function PestDetectionScreen({ navigation }) {
                         await llmService.initialize(apiKeyInput.trim());
                         setShowApiKeyModal(false);
                         setApiKeyInput('');
-                        Alert.alert('Success', 'API key saved! You can now use the chat.');
+                        showAppAlert(t.success, t.apiKeySaved);
                       } catch (error) {
-                        Alert.alert('Error', 'Failed to save API key');
+                        showAppAlert(t.error, t.failedSaveKey);
                       }
                     } else {
-                      Alert.alert('Error', 'Please enter a valid API key');
+                      showAppAlert(t.error, t.invalidApiKey);
                     }
                   }}
                 >
-                  <Text style={styles.modalButtonSaveText}>Save</Text>
+                  <Text style={styles.modalButtonSaveText}>{t.save}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -886,25 +1064,25 @@ export default function PestDetectionScreen({ navigation }) {
             ) : (
               <View style={styles.cameraPermissionContainer}>
                 <Text style={styles.cameraPermissionText}>
-                  Camera permission is required
+                  {t.cameraPermissionRequired}
                 </Text>
                 <TouchableOpacity
                   style={styles.cameraPermissionButton}
                   onPress={async () => {
                     const result = await requestPermission();
                     if (!result) {
-                      Alert.alert('Permission Denied', 'Camera permission is required.');
+                      showAppAlert(t.permissionDenied, t.cameraPermDenied);
                       setShowCamera(false);
                     }
                   }}
                 >
-                  <Text style={styles.cameraPermissionButtonText}>Grant Permission</Text>
+                  <Text style={styles.cameraPermissionButtonText}>{t.grantPermission}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.cameraCloseButton2}
                   onPress={() => setShowCamera(false)}
                 >
-                  <Text style={styles.cameraCloseButtonText}>Close</Text>
+                  <Text style={styles.cameraCloseButtonText}>{t.close}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -1702,7 +1880,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
     padding: 20,
-    marginHorizontal: 16,
     marginBottom: 16,
     elevation: 4,
     shadowColor: '#000',

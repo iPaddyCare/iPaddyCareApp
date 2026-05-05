@@ -10,9 +10,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
@@ -37,6 +37,14 @@ const translations = {
     noMessagesDesc: 'Start the conversation by sending a message',
     attachment: 'Attachment',
     sending: 'Sending...',
+    loginRequired: 'Login Required',
+    loginRequiredMsg: 'Please login to send messages.',
+    cancel: 'Cancel',
+    loginBtn: 'Login',
+    error: 'Error',
+    failedToSend: 'Failed to send message. Please try again.',
+    today: 'Today',
+    yesterday: 'Yesterday',
   },
   සිංහල: {
     typeMessage: 'පණිවිඩයක් ටයිප් කරන්න...',
@@ -52,6 +60,14 @@ const translations = {
     noMessagesDesc: 'පණිවිඩයක් යවමින් සංවාදය ආරම්භ කරන්න',
     attachment: 'ඇමුණුම',
     sending: 'යවමින්...',
+    loginRequired: 'පිවිසීම අවශ්‍යයි',
+    loginRequiredMsg: 'පණිවිඩ යැවීමට කරුණාකර පිවිසෙන්න.',
+    cancel: 'අවලංගු කරන්න',
+    loginBtn: 'පිවිසෙන්න',
+    error: 'දෝෂය',
+    failedToSend: 'පණිවිඩය යැවීමට අසමත් විය. කරුණාකර නැවත උත්සාහ කරන්න.',
+    today: 'අද',
+    yesterday: 'ඊයේ',
   },
   தமிழ்: {
     typeMessage: 'செய்தியைத் தட்டச்சு செய்யவும்...',
@@ -67,6 +83,14 @@ const translations = {
     noMessagesDesc: 'செய்தியை அனுப்புவதன் மூலம் உரையாடலைத் தொடங்குங்கள்',
     attachment: 'இணைப்பு',
     sending: 'அனுப்புகிறது...',
+    loginRequired: 'உள்நுழைவு தேவை',
+    loginRequiredMsg: 'செய்திகளை அனுப்ப உள்நுழையவும்.',
+    cancel: 'ரத்து',
+    loginBtn: 'உள்நுழை',
+    error: 'பிழை',
+    failedToSend: 'செய்தியை அனுப்ப முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
+    today: 'இன்று',
+    yesterday: 'நேற்று',
   },
 };
 
@@ -76,14 +100,14 @@ const formatTime = (date) => {
   return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 };
 
-const formatDate = (date) => {
+const formatDate = (date, t) => {
   if (!date) return '';
   const d = date instanceof Date ? date : new Date(date);
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  if (d.toDateString() === today.toDateString()) return t?.today || 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return t?.yesterday || 'Yesterday';
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
@@ -146,9 +170,9 @@ export default function MessageScreen({ route, navigation }) {
     if (!messageText.trim() || !conversationId) return;
 
     if (!isAuthenticated) {
-      Alert.alert('Login Required', 'Please login to send messages.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Login', onPress: () => navigation.navigate('Login') },
+      showAppAlert(t.loginRequired, t.loginRequiredMsg, [
+        { text: t.cancel, style: 'cancel' },
+        { text: t.loginBtn, onPress: () => navigation.navigate('Login') },
       ]);
       return;
     }
@@ -161,7 +185,7 @@ export default function MessageScreen({ route, navigation }) {
       await sendMessage(conversationId, text, user.uid, senderRole);
     } catch (error) {
       console.error('Error sending message:', error);
-      Alert.alert('Error', 'Failed to send message. Please try again.');
+      showAppAlert(t.error, t.failedToSend);
       setMessageText(text);
     } finally {
       setSending(false);
@@ -227,8 +251,8 @@ export default function MessageScreen({ route, navigation }) {
             ) : messages.length > 0 ? (
               messages.map((message, index) => {
                 const isMe = message.senderId === user?.uid;
-                const msgDate = formatDate(message.createdAt);
-                const prevDate = index > 0 ? formatDate(messages[index - 1].createdAt) : '';
+                const msgDate = formatDate(message.createdAt, t);
+                const prevDate = index > 0 ? formatDate(messages[index - 1].createdAt, t) : '';
                 const showDate = index === 0 || msgDate !== prevDate;
                 return (
                   <View key={message.id}>

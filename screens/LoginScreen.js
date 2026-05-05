@@ -10,10 +10,10 @@ import {
   Platform,
   ScrollView,
   Animated,
-  Alert,
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -41,6 +41,20 @@ const translations = {
     backToLogin: 'Back to Login',
     officerLogin: 'Login as Officer',
     officerLoginDesc: 'Are you an agricultural officer?',
+    emailRequired: 'Email is required',
+    invalidEmail: 'Invalid email format',
+    passwordRequired: 'Password is required',
+    passwordTooShort: 'Password must be at least 6 characters',
+    nameRequired: 'Name is required',
+    passwordsDoNotMatch: 'Passwords do not match',
+    success: 'Success',
+    error: 'Error',
+    registrationFailed: 'Registration Failed',
+    passwordResetSent: 'Password reset email sent!',
+    enterYourEmail: 'Enter your email',
+    enterYourFullName: 'Enter your full name',
+    enterYourPassword: 'Enter your password',
+    confirmYourPassword: 'Confirm your password',
   },
   සිංහල: {
     welcomeBack: 'ආපසු සාදරයෙන් පිළිගනිමු',
@@ -64,6 +78,20 @@ const translations = {
     backToLogin: 'පිවිසීමට ආපසු යන්න',
     officerLogin: 'නිලධාරියෙකු ලෙස පිවිසෙන්න',
     officerLoginDesc: 'ඔබ කෘෂිකර්ම නිලධාරියෙක්ද?',
+    emailRequired: 'විද්‍යුත් තැපෑල අවශ්‍යයි',
+    invalidEmail: 'වලංගු නොවන විද්‍යුත් තැපැල් ආකෘතිය',
+    passwordRequired: 'මුරපදය අවශ්‍යයි',
+    passwordTooShort: 'මුරපදය අවම වශයෙන් අක්ෂර 6 ක් විය යුතුය',
+    nameRequired: 'නම අවශ්‍යයි',
+    passwordsDoNotMatch: 'මුරපද ගැළපෙන්නේ නැත',
+    success: 'සාර්ථකයි',
+    error: 'දෝෂය',
+    registrationFailed: 'ලියාපදිංචිය අසාර්ථකයි',
+    passwordResetSent: 'මුරපදය නැවත සැකසීමේ විද්‍යුත් තැපෑල යවන ලදී!',
+    enterYourEmail: 'ඔබේ විද්‍යුත් තැපෑල ඇතුළත් කරන්න',
+    enterYourFullName: 'ඔබේ සම්පූර්ණ නම ඇතුළත් කරන්න',
+    enterYourPassword: 'ඔබේ මුරපදය ඇතුළත් කරන්න',
+    confirmYourPassword: 'ඔබේ මුරපදය තහවුරු කරන්න',
   },
   தமிழ்: {
     welcomeBack: 'மீண்டும் வரவேற்கிறோம்',
@@ -87,6 +115,20 @@ const translations = {
     backToLogin: 'உள்நுழைக்கு திரும்ப',
     officerLogin: 'அதிகாரியாக உள்நுழைக',
     officerLoginDesc: 'நீங்கள் விவசாய அதிகாரியா?',
+    emailRequired: 'மின்னஞ்சல் தேவை',
+    invalidEmail: 'தவறான மின்னஞ்சல் வடிவம்',
+    passwordRequired: 'கடவுச்சொல் தேவை',
+    passwordTooShort: 'கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்',
+    nameRequired: 'பெயர் தேவை',
+    passwordsDoNotMatch: 'கடவுச்சொற்கள் பொருந்தவில்லை',
+    success: 'வெற்றி',
+    error: 'பிழை',
+    registrationFailed: 'பதிவு தோல்வியடைந்தது',
+    passwordResetSent: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சல் அனுப்பப்பட்டது!',
+    enterYourEmail: 'உங்கள் மின்னஞ்சலை உள்ளிடவும்',
+    enterYourFullName: 'உங்கள் முழுப் பெயரை உள்ளிடவும்',
+    enterYourPassword: 'உங்கள் கடவுச்சொல்லை உள்ளிடவும்',
+    confirmYourPassword: 'உங்கள் கடவுச்சொல்லை உறுதிப்படுத்தவும்',
   },
 };
 
@@ -130,28 +172,28 @@ export default function LoginScreen({ navigation, onSkip }) {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t.emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = t.invalidEmail;
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = t.passwordRequired;
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = t.passwordTooShort;
     }
 
     if (isSignUp) {
       if (!formData.name.trim()) {
-        newErrors.name = 'Name is required';
+        newErrors.name = t.nameRequired;
       }
       if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+        newErrors.confirmPassword = t.passwordsDoNotMatch;
       }
     }
 
     if (isResetPassword && !formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t.emailRequired;
     }
 
     setErrors(newErrors);
@@ -164,11 +206,11 @@ export default function LoginScreen({ navigation, onSkip }) {
     if (isResetPassword) {
       const result = await resetPassword(formData.email);
       if (result.success) {
-        Alert.alert('Success', result.message || 'Password reset email sent!');
+        showAppAlert(t.success, result.message || t.passwordResetSent);
         setIsResetPassword(false);
         setFormData({ ...formData, email: '' });
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(t.error, result.error);
       }
       return;
     }
@@ -180,14 +222,14 @@ export default function LoginScreen({ navigation, onSkip }) {
         console.log('Registration successful');
       } else {
         console.error('Registration failed:', result.error);
-        Alert.alert('Registration Failed', result.error);
+        showAppAlert(t.registrationFailed, result.error);
       }
     } else {
       const result = await signIn(formData.email, formData.password);
       if (result.success) {
         // Navigation will be handled by auth state change
       } else {
-        Alert.alert('Error', result.error);
+        showAppAlert(t.error, result.error);
       }
     }
   };
@@ -278,7 +320,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                   <Text style={styles.label}>{t.email}</Text>
                   <TextInput
                     style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="Enter your email"
+                    placeholder={t.enterYourEmail}
                     placeholderTextColor="#999"
                     value={formData.email}
                     onChangeText={(text) =>
@@ -322,7 +364,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                     <Text style={styles.label}>{t.name}</Text>
                     <TextInput
                       style={[styles.input, errors.name && styles.inputError]}
-                      placeholder="Enter your full name"
+                      placeholder={t.enterYourFullName}
                       placeholderTextColor="#999"
                       value={formData.name}
                       onChangeText={(text) =>
@@ -340,7 +382,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                   <Text style={styles.label}>{t.email}</Text>
                   <TextInput
                     style={[styles.input, errors.email && styles.inputError]}
-                    placeholder="Enter your email"
+                    placeholder={t.enterYourEmail}
                     placeholderTextColor="#999"
                     value={formData.email}
                     onChangeText={(text) => {
@@ -360,7 +402,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                   <Text style={styles.label}>{t.password}</Text>
                   <TextInput
                     style={[styles.input, errors.password && styles.inputError]}
-                    placeholder="Enter your password"
+                    placeholder={t.enterYourPassword}
                     placeholderTextColor="#999"
                     value={formData.password}
                     onChangeText={(text) => {
@@ -384,7 +426,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                         styles.input,
                         errors.confirmPassword && styles.inputError,
                       ]}
-                      placeholder="Confirm your password"
+                      placeholder={t.confirmYourPassword}
                       placeholderTextColor="#999"
                       value={formData.confirmPassword}
                       onChangeText={(text) => {
@@ -463,7 +505,7 @@ export default function LoginScreen({ navigation, onSkip }) {
                     onPress={async () => {
                       const result = await signInWithGoogle();
                       if (!result.success && !result.cancelled) {
-                        Alert.alert('Error', result.error);
+                        showAppAlert(t.error, result.error);
                       }
                     }}
                     disabled={loading}

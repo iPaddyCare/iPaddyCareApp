@@ -7,10 +7,10 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
   TextInput,
   Dimensions,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
 import PHSensorService from '../src/utils/phSensorService';
@@ -63,6 +63,15 @@ const translations = {
     permissionRequired: 'Permission Required',
     permissionMessage: 'Bluetooth permissions are required to scan for devices. Please grant permissions in app settings.',
     moisture: 'Moisture:',
+    bleHelpHint: 'No ESP32-Soil-Sensor devices were found. Make sure:\n\n• ESP32 sensor is powered on\n• Bluetooth is enabled on your phone\n• ESP32 sensor is in range',
+    wifiHelpHint: 'No ESP32 devices were found on your network. Make sure:\n\n• ESP32 is powered on\n• ESP32 is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry',
+    failedScan: 'Failed to scan for devices',
+    couldNotConnect: 'Could not connect to device',
+    failedConnect: 'Failed to connect',
+    foundEsp32At: 'Found ESP32 device at',
+    failedTestDevice: 'Failed to test device',
+    noEsp32At: 'No ESP32 device found at',
+    noEsp32Hint: 'Make sure:\n\n• ESP32 is powered on\n• You\'re connected to ESP32 WiFi network\n• ESP32 is in AP mode',
   },
   සිංහල: {
     title: 'උපාංගය සම්බන්ධ කරන්න',
@@ -105,6 +114,15 @@ const translations = {
     permissionRequired: 'අවසරය අවශ්‍යයි',
     permissionMessage: 'උපාංග සොයා බැලීමට බ්ලූටූත් අවසර අවශ්‍යයි. කරුණාකර යෙදුම් සැකසුම්වල අවසර ලබා දෙන්න.',
     moisture: 'තෙතමනය:',
+    bleHelpHint: 'ESP32-Soil-Sensor උපාංග හමු නොවීය. සහතික කරගන්න:\n\n• ESP32 සංවේදකයට බලය ලබා දී ඇත\n• ඔබේ දුරකථනයේ බ්ලූටූත් සක්‍රියයි\n• ESP32 සංවේදකය පරාසය තුළ ඇත',
+    wifiHelpHint: 'ඔබේ ජාලයේ ESP32 උපාංග හමු නොවීය. සහතික කරගන්න:\n\n• ESP32 ට බලය ලබා දී ඇත\n• ESP32 WiFi වෙත සම්බන්ධ කර ඇත\n• ඔබේ දුරකථනය එම ජාලයේම ඇත\n• අතින් IP ඇතුළත් කිරීම උත්සාහ කරන්න',
+    failedScan: 'උපාංග සඳහා සෙවීමට අසමත් විය',
+    couldNotConnect: 'උපාංගයට සම්බන්ධ විය නොහැකි විය',
+    failedConnect: 'සම්බන්ධ වීමට අසමත් විය',
+    foundEsp32At: 'හමු වූ ESP32 උපාංගය',
+    failedTestDevice: 'උපාංගය පරීක්ෂා කිරීමට අසමත් විය',
+    noEsp32At: 'ESP32 උපාංගයක් හමු නොවීය',
+    noEsp32Hint: 'සහතික කරගන්න:\n\n• ESP32 ට බලය ලබා දී ඇත\n• ඔබ ESP32 WiFi ජාලයට සම්බන්ධ වී ඇත\n• ESP32 AP ක්‍රමයේ ඇත',
   },
   தமிழ்: {
     title: 'சாதனத்தை இணைக்கவும்',
@@ -147,6 +165,15 @@ const translations = {
     permissionRequired: 'அனுமதி தேவை',
     permissionMessage: 'சாதனங்களை ஸ்கேன் செய்ய புளூடூத் அனுமதிகள் தேவை. தயவுசெய்து பயன்பாட்டு அமைப்புகளில் அனுமதிகளை வழங்கவும்.',
     moisture: 'ஈரப்பதம்:',
+    bleHelpHint: 'ESP32-Soil-Sensor சாதனங்கள் கண்டறியப்படவில்லை. உறுதிப்படுத்தவும்:\n\n• ESP32 சென்சார் இயக்கப்பட்டுள்ளது\n• உங்கள் தொலைபேசியில் புளூடூத் இயக்கப்பட்டுள்ளது\n• ESP32 சென்சார் வரம்பிற்குள் உள்ளது',
+    wifiHelpHint: 'உங்கள் நெட்வொர்க்கில் ESP32 சாதனங்கள் கண்டறியப்படவில்லை. உறுதிப்படுத்தவும்:\n\n• ESP32 இயக்கப்பட்டுள்ளது\n• ESP32 WiFi உடன் இணைக்கப்பட்டுள்ளது\n• உங்கள் தொலைபேசி அதே நெட்வொர்க்கில் உள்ளது\n• கைமுறை IP நுழைவை முயற்சிக்கவும்',
+    failedScan: 'சாதனங்களை ஸ்கேன் செய்ய முடியவில்லை',
+    couldNotConnect: 'சாதனத்துடன் இணைக்க முடியவில்லை',
+    failedConnect: 'இணைக்க முடியவில்லை',
+    foundEsp32At: 'கண்டறிந்த ESP32 சாதனம்',
+    failedTestDevice: 'சாதனத்தை சோதிக்க முடியவில்லை',
+    noEsp32At: 'ESP32 சாதனம் கண்டறியப்படவில்லை',
+    noEsp32Hint: 'உறுதிப்படுத்தவும்:\n\n• ESP32 இயக்கப்பட்டுள்ளது\n• நீங்கள் ESP32 WiFi நெட்வொர்க்கில் இணைக்கப்பட்டுள்ளீர்கள்\n• ESP32 AP முறையில் உள்ளது',
   },
 };
 
@@ -195,7 +222,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         if (!hasPermission) {
           const permissionGranted = await BluetoothPermissionService.requestPermissions();
           if (!permissionGranted) {
-            Alert.alert(t.permissionRequired, t.permissionMessage);
+            showAppAlert(t.permissionRequired, t.permissionMessage);
             setIsScanning(false);
             return;
           }
@@ -220,7 +247,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         );
 
         if (devices.length === 0) {
-          Alert.alert(t.noDevicesFound, 'No ESP32-Soil-Sensor devices were found. Make sure:\n\n• ESP32 sensor is powered on\n• Bluetooth is enabled on your phone\n• ESP32 sensor is in range');
+          showAppAlert(t.noDevicesFound, t.bleHelpHint);
         }
       } else {
         // WiFi scan
@@ -242,11 +269,11 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
         );
 
         if (devices.length === 0) {
-          Alert.alert(t.noDevicesFound, 'No ESP32 devices were found on your network. Make sure:\n\n• ESP32 is powered on\n• ESP32 is connected to WiFi\n• Your phone is on the same network\n• Try manual IP entry');
+          showAppAlert(t.noDevicesFound, t.wifiHelpHint);
         }
       }
     } catch (error) {
-      Alert.alert(t.error, error.message || 'Failed to scan for devices');
+      showAppAlert(t.error, error.message || t.failedScan);
     } finally {
       setIsScanning(false);
     }
@@ -305,7 +332,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           const storedData = BleScanServiceEsp32.getLatestData();
   //           console.log('Stored data after receiving:', storedData);
             
-  //           Alert.alert(
+  //           showAppAlert(
   //             'Connected!',
   //             `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
   //             [
@@ -324,7 +351,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           console.log('No data in promise, but checking stored data:', storedData);
             
   //           if (storedData) {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data available!`,
   //               [
@@ -337,7 +364,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //               ]
   //             );
   //           } else {
-  //             Alert.alert(
+  //             showAppAlert(
   //               'Connected!',
   //               `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
   //               [
@@ -352,7 +379,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           }
   //         }
   //       } else {
-  //         Alert.alert('Connection Failed', result.error || 'Could not connect to device');
+  //         showAppAlert('Connection Failed', result.error || 'Could not connect to device');
   //       }
   //     } else {
   //       // WiFi connection
@@ -360,7 +387,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //       const testResult = await service.testConnection();
         
   //       if (testResult) {
-  //         Alert.alert(
+  //         showAppAlert(
   //           'Connected!',
   //           `Successfully connected to ${device.name || device.ip}`,
   //           [
@@ -373,11 +400,11 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
   //           ]
   //         );
   //       } else {
-  //         Alert.alert('Connection Failed', 'Could not connect to device');
+  //         showAppAlert('Connection Failed', 'Could not connect to device');
   //       }
   //     }
   //   } catch (error) {
-  //     Alert.alert('Connection Error', error.message || 'Failed to connect');
+  //     showAppAlert('Connection Error', error.message || 'Failed to connect');
   //   }
   // };
   const handleConnect = async (device) => {
@@ -392,7 +419,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
       });
   
       if (!result.success) {
-        Alert.alert(t.connectionFailed, result.error || 'Could not connect to device');
+        showAppAlert(t.connectionFailed, result.error || t.couldNotConnect);
         return;
       }
   
@@ -405,26 +432,26 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
       const firstData = await result.firstDataPromise;
   
       if (firstData) {
-        Alert.alert(
+        showAppAlert(
           t.connected,
           `Successfully connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nSensor data received!`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       } else {
-        Alert.alert(
+        showAppAlert(
           t.connected,
           `Connected to ${device.name || 'ESP32-Soil-Sensor'}\n\nWaiting for sensor data...`,
           [{ text: 'OK', onPress: () => navigation.goBack() }]
         );
       }
     } catch (error) {
-      Alert.alert(t.error, error.message || 'Failed to connect');
+      showAppAlert(t.error, error.message || t.failedConnect);
     }
   };
   
 
   const handleDisconnect = () => {
-    Alert.alert(
+    showAppAlert(
       t.disconnectDevice,
       t.disconnectConfirm,
       [
@@ -435,7 +462,7 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
           onPress: () => {
             service.disconnect?.();
             setFoundDevices([]);
-            Alert.alert(t.disconnected, t.disconnectedMessage);
+            showAppAlert(t.disconnected, t.disconnectedMessage);
           },
         },
       ]
@@ -444,14 +471,14 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
 
   const handleManualTest = async () => {
     if (!manualIp.trim()) {
-      Alert.alert(t.error, t.enterIp);
+      showAppAlert(t.error, t.enterIp);
       return;
     }
 
     // Validate IP format (basic)
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(manualIp.trim())) {
-      Alert.alert(t.invalidIp, t.validIpHint);
+      showAppAlert(t.invalidIp, t.validIpHint);
       return;
     }
 
@@ -465,15 +492,15 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
           }
           return [...prev, device];
         });
-        Alert.alert('Device Found!', `Found ESP32 device at ${device.ip}`);
+        showAppAlert(t.deviceFound, `${t.foundEsp32At} ${device.ip}`);
       } else {
-        Alert.alert(
+        showAppAlert(
           t.deviceNotFound,
           `No ESP32 device found at ${manualIp.trim()}. Make sure the device is online and the endpoint is correct.`
         );
       }
     } catch (error) {
-      Alert.alert('Error', error.message || 'Failed to test device');
+      showAppAlert(t.error, error.message || t.failedTestDevice);
     } finally {
       setTestingManual(false);
     }
@@ -665,15 +692,15 @@ export default function DeviceConnectionScreenSeedDetection({ navigation, route 
                             }
                             return [...prev, device];
                           });
-                          Alert.alert(t.deviceFound, `Found ESP32 device at ${device.ip}`);
+                          showAppAlert(t.deviceFound, `${t.foundEsp32At} ${device.ip}`);
                         } else {
-                          Alert.alert(
+                          showAppAlert(
                             t.deviceNotFound,
-                            `No ESP32 device found at ${apIp}. Make sure:\n\n• ESP32 is powered on\n• You're connected to ESP32 WiFi network\n• ESP32 is in AP mode`
+                            `${t.noEsp32At} ${apIp}. ${t.noEsp32Hint}`
                           );
                         }
                       } catch (error) {
-                        Alert.alert(t.error, error.message || 'Failed to test device');
+                        showAppAlert(t.error, error.message || t.failedTestDevice);
                       } finally {
                         setTestingManual(false);
                       }

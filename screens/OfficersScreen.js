@@ -8,11 +8,11 @@ import {
   StyleSheet,
   Dimensions,
   TextInput,
-  Alert,
   Animated,
   Linking,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
@@ -60,6 +60,13 @@ const translations = {
     loginRequiredDesc: 'Please login to contact officers',
     login: 'Login',
     cancel: 'Cancel',
+    noPhone: 'No Phone',
+    noPhoneDesc: 'This officer has not added a phone number yet.',
+    error: 'Error',
+    unableToCall: 'Unable to make phone call',
+    pleaseSendEmail: 'Please send email to:',
+    agriculturalInquiry: 'Agricultural Inquiry',
+    couldNotStartConv: 'Could not start conversation. Please try again.',
   },
   සිංහල: {
     title: 'නිලධාරියා සම්බන්ධ වන්න',
@@ -98,6 +105,13 @@ const translations = {
     loginRequiredDesc: 'නිලධාරීන් හා සම්බන්ධ වීමට කරුණාකර පිවිසෙන්න',
     login: 'පිවිසෙන්න',
     cancel: 'අවලංගු කරන්න',
+    noPhone: 'දුරකථන අංකයක් නැත',
+    noPhoneDesc: 'මෙම නිලධාරියා තවමත් දුරකථන අංකයක් එක් කර නැත.',
+    error: 'දෝෂය',
+    unableToCall: 'දුරකථන ඇමතුමක් ලබා දීමට නොහැකි විය',
+    pleaseSendEmail: 'කරුණාකර විද්‍යුත් තැපෑල යවන්න:',
+    agriculturalInquiry: 'කෘෂිකර්ම විමසීම',
+    couldNotStartConv: 'සංවාදය ආරම්භ කළ නොහැකි විය. කරුණාකර නැවත උත්සාහ කරන්න.',
   },
   தமிழ்: {
     title: 'அதிகாரியை இணைக்கவும்',
@@ -136,6 +150,13 @@ const translations = {
     loginRequiredDesc: 'அதிகாரிகளைத் தொடர்பு கொள்ள தயவுசெய்து உள்நுழையவும்',
     login: 'உள்நுழைக',
     cancel: 'ரத்துசெய்',
+    noPhone: 'தொலைபேசி இல்லை',
+    noPhoneDesc: 'இந்த அதிகாரி இன்னும் தொலைபேசி எண்ணைச் சேர்க்கவில்லை.',
+    error: 'பிழை',
+    unableToCall: 'தொலைபேசி அழைப்பு செய்ய முடியவில்லை',
+    pleaseSendEmail: 'தயவுசெய்து மின்னஞ்சல் அனுப்பவும்:',
+    agriculturalInquiry: 'விவசாய விசாரணை',
+    couldNotStartConv: 'உரையாடலைத் தொடங்க முடியவில்லை. மீண்டும் முயற்சிக்கவும்.',
   },
 };
 
@@ -144,17 +165,17 @@ const translations = {
 const OfficerCard = ({ officer, onContact, onMessage, onShareHistory, t }) => {
   const handleCall = () => {
     if (!officer.phone) {
-      Alert.alert('No Phone', 'This officer has not added a phone number yet.');
+      showAppAlert(t.noPhone, t.noPhoneDesc);
       return;
     }
     Linking.openURL(`tel:${officer.phone}`).catch(() => {
-      Alert.alert('Error', 'Unable to make phone call');
+      showAppAlert(t.error, t.unableToCall);
     });
   };
 
   const handleEmail = () => {
-    Linking.openURL(`mailto:${officer.email}?subject=Agricultural Inquiry`).catch(() => {
-      Alert.alert('Email', `Please send email to: ${officer.email}`);
+    Linking.openURL(`mailto:${officer.email}?subject=${encodeURIComponent(t.agriculturalInquiry)}`).catch(() => {
+      showAppAlert(t.email, `${t.pleaseSendEmail} ${officer.email}`);
     });
   };
 
@@ -298,7 +319,7 @@ export default function OfficersScreen({ navigation }) {
 
   const handleContact = (officer) => {
     if (!isAuthenticated) {
-      Alert.alert(
+      showAppAlert(
         t.loginRequired,
         t.loginRequiredDesc,
         [
@@ -309,7 +330,7 @@ export default function OfficersScreen({ navigation }) {
       return;
     }
 
-    Alert.alert(
+    showAppAlert(
       t.contactDetails,
       `${officer.name}\n${officer.title}\n\n${t.phone}: ${officer.phone}\n${t.email}: ${officer.email}\n${t.location}: ${officer.location}`,
       [
@@ -317,15 +338,15 @@ export default function OfficersScreen({ navigation }) {
         {
           text: t.call,
           onPress: () => Linking.openURL(`tel:${officer.phone}`).catch(() => {
-            Alert.alert('Error', 'Unable to make phone call');
+            showAppAlert(t.error, t.unableToCall);
           }),
         },
         {
           text: t.emailOfficer,
           onPress: () => {
-            const emailUrl = `mailto:${officer.email}?subject=Agricultural Inquiry`;
+            const emailUrl = `mailto:${officer.email}?subject=${encodeURIComponent(t.agriculturalInquiry)}`;
             Linking.openURL(emailUrl).catch(() => {
-              Alert.alert('Email', `Please send email to: ${officer.email}`);
+              showAppAlert(t.email, `${t.pleaseSendEmail} ${officer.email}`);
             });
           },
         },
@@ -335,7 +356,7 @@ export default function OfficersScreen({ navigation }) {
 
   const handleMessage = async (officer) => {
     if (!isAuthenticated) {
-      Alert.alert(
+      showAppAlert(
         t.loginRequired,
         t.loginRequiredDesc,
         [
@@ -354,13 +375,13 @@ export default function OfficersScreen({ navigation }) {
       });
     } catch (error) {
       console.error('Error creating conversation:', error);
-      Alert.alert('Error', 'Could not start conversation. Please try again.');
+      showAppAlert(t.error, t.couldNotStartConv);
     }
   };
 
   const handleShareHistory = (officer) => {
     if (!isAuthenticated) {
-      Alert.alert(
+      showAppAlert(
         t.loginRequired,
         t.loginRequiredDesc,
         [
@@ -371,7 +392,7 @@ export default function OfficersScreen({ navigation }) {
       return;
     }
 
-    Alert.alert(
+    showAppAlert(
       t.shareTestHistory,
       `${t.selectTests} with ${officer.name}?`,
       [
@@ -380,7 +401,7 @@ export default function OfficersScreen({ navigation }) {
           text: t.send,
           onPress: () => {
             // In a real app, share test history from backend
-            Alert.alert(t.testHistoryShared, t.testHistorySharedDesc);
+            showAppAlert(t.testHistoryShared, t.testHistorySharedDesc);
           },
         },
       ]

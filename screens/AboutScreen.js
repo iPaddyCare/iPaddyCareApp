@@ -9,10 +9,10 @@ import {
   Dimensions,
   Animated,
   Linking,
-  Alert,
   Image,
   Platform,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../src/context/LanguageContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -55,6 +55,16 @@ const translations = {
     termsOfService: 'Terms of Service',
     acknowledgments: 'Acknowledgments',
     acknowledgmentsText: 'Special thanks to all the farmers and agricultural experts who contributed to making this app possible.',
+    aboutSubject: 'About iPaddyCare',
+    pleaseSendEmail: 'Please send email to:',
+    ok: 'OK',
+    error: 'Error',
+    unableToOpenWebsite: 'Unable to open website.',
+    crossPlatformDesc: 'Cross-platform mobile framework',
+    mlAiDesc: 'Machine learning & AI integration',
+    esp32Desc: 'ESP32 & Bluetooth support',
+    privacyPolicyDesc: 'View our privacy policy',
+    termsDesc: 'Read terms and conditions',
   },
   සිංහල: {
     title: 'මෙහි ගැන',
@@ -87,6 +97,16 @@ const translations = {
     termsOfService: 'සේවා කොන්දේසි',
     acknowledgments: 'ස්තූතිය',
     acknowledgmentsText: 'මෙම යෙදුම හැකි කිරීමට දායක වූ සියලුම ගොවීන්ට සහ කෘෂිකර්ම විශේෂඥයන්ට විශේෂ ස්තූතිය.',
+    aboutSubject: 'අයිපැඩිකෙයා ගැන',
+    pleaseSendEmail: 'කරුණාකර විද්‍යුත් තැපෑල යවන්න:',
+    ok: 'හරි',
+    error: 'දෝෂය',
+    unableToOpenWebsite: 'වෙබ් අඩවිය විවෘත කිරීමට නොහැකි විය.',
+    crossPlatformDesc: 'හරස්-වේදිකා ජංගම රාමුව',
+    mlAiDesc: 'යන්ත්‍ර ඉගෙනීම සහ AI අනුකලනය',
+    esp32Desc: 'ESP32 සහ බ්ලූටූත් සහාය',
+    privacyPolicyDesc: 'අපගේ රහස්‍යතා ප්‍රතිපත්තිය බලන්න',
+    termsDesc: 'නියමයන් සහ කොන්දේසි කියවන්න',
   },
   தமிழ்: {
     title: 'பற்றி',
@@ -119,6 +139,16 @@ const translations = {
     termsOfService: 'சேவை விதிமுறைகள்',
     acknowledgments: 'நன்றி',
     acknowledgmentsText: 'இந்த பயன்பாட்டை சாத்தியமாக்கிய அனைத்து விவசாயிகள் மற்றும் விவசாய நிபுணர்களுக்கும் சிறப்பு நன்றி.',
+    aboutSubject: 'ஐபாட்டிகேர் பற்றி',
+    pleaseSendEmail: 'தயவுசெய்து மின்னஞ்சல் அனுப்பவும்:',
+    ok: 'சரி',
+    error: 'பிழை',
+    unableToOpenWebsite: 'வலைத்தளத்தைத் திறக்க முடியவில்லை.',
+    crossPlatformDesc: 'குறுக்கு-மேடை மொபைல் கட்டமைப்பு',
+    mlAiDesc: 'இயந்திர கற்றல் & AI ஒருங்கிணைப்பு',
+    esp32Desc: 'ESP32 & ப்ளூடூத் ஆதரவு',
+    privacyPolicyDesc: 'எங்கள் தனியுரிமை கொள்கையைப் பார்க்கவும்',
+    termsDesc: 'விதிமுறைகள் மற்றும் நிபந்தனைகளைப் படிக்கவும்',
   },
 };
 
@@ -157,8 +187,8 @@ export default function AboutScreen({ navigation }) {
   }, [fadeAnim]);
 
   const handleSendEmail = async () => {
-    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('About iPaddyCare')}`;
-    
+    const emailUrl = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(t.aboutSubject)}`;
+
     if (Platform.OS === 'ios') {
       // On iOS, check if we can open the URL first
       try {
@@ -172,10 +202,10 @@ export default function AboutScreen({ navigation }) {
               // But we can't really detect this reliably, so we'll just try
             }, 100);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              t.email,
+              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+              [{ text: t.ok }]
             );
           }
         } else {
@@ -183,10 +213,10 @@ export default function AboutScreen({ navigation }) {
           try {
             await Linking.openURL(emailUrl);
           } catch (openErr) {
-            Alert.alert(
-              'Email',
-              `Please send email to: ${SUPPORT_EMAIL}`,
-              [{ text: 'OK' }]
+            showAppAlert(
+              t.email,
+              `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+              [{ text: t.ok }]
             );
           }
         }
@@ -195,10 +225,10 @@ export default function AboutScreen({ navigation }) {
         try {
           await Linking.openURL(emailUrl);
         } catch (openErr) {
-          Alert.alert(
-            'Email',
-            `Please send email to: ${SUPPORT_EMAIL}`,
-            [{ text: 'OK' }]
+          showAppAlert(
+            t.email,
+            `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+            [{ text: t.ok }]
           );
         }
       }
@@ -207,10 +237,10 @@ export default function AboutScreen({ navigation }) {
       try {
         await Linking.openURL(emailUrl);
       } catch (err) {
-        Alert.alert(
-          'Email',
-          `Please send email to: ${SUPPORT_EMAIL}`,
-          [{ text: 'OK' }]
+        showAppAlert(
+          t.email,
+          `${t.pleaseSendEmail} ${SUPPORT_EMAIL}`,
+          [{ text: t.ok }]
         );
       }
     }
@@ -218,7 +248,7 @@ export default function AboutScreen({ navigation }) {
 
   const handleOpenWebsite = () => {
     Linking.openURL(WEBSITE_URL).catch((err) => {
-      Alert.alert('Error', 'Unable to open website.');
+      showAppAlert(t.error, t.unableToOpenWebsite);
     });
   };
 
@@ -318,19 +348,19 @@ export default function AboutScreen({ navigation }) {
               <InfoCard
                 icon="code-tags"
                 title={t.builtWith}
-                subtitle="Cross-platform mobile framework"
+                subtitle={t.crossPlatformDesc}
                 color="#2196F3"
               />
               <InfoCard
                 icon="brain"
                 title={t.aiPowered}
-                subtitle="Machine learning & AI integration"
+                subtitle={t.mlAiDesc}
                 color="#9C27B0"
               />
               <InfoCard
                 icon="chip"
                 title={t.iotIntegration}
-                subtitle="ESP32 & Bluetooth support"
+                subtitle={t.esp32Desc}
                 color="#FF6D00"
               />
             </Animated.View>
@@ -359,13 +389,13 @@ export default function AboutScreen({ navigation }) {
               <InfoCard
                 icon="shield-check"
                 title={t.privacyPolicy}
-                subtitle="View our privacy policy"
+                subtitle={t.privacyPolicyDesc}
                 color="#4CAF50"
               />
               <InfoCard
                 icon="file-document"
                 title={t.termsOfService}
-                subtitle="Read terms and conditions"
+                subtitle={t.termsDesc}
                 color="#FF9800"
               />
             </Animated.View>

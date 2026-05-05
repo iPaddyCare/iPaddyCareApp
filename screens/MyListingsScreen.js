@@ -7,7 +7,6 @@ import {
   StatusBar,
   StyleSheet,
   Dimensions,
-  Alert,
   Animated,
   TextInput,
   Modal,
@@ -17,13 +16,18 @@ import {
   Image,
   ActivityIndicator,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
 import { useAuth } from '../src/context/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { getUserListings, deleteProduct, updateProduct } from '../src/services/marketplaceService';
+import { normalizeTargetDiseasesForStorage } from '../src/services/diseaseMatching';
 import CityPickerModal from '../src/components/CityPickerModal';
+import PhoneInput from '../src/components/PhoneInput';
+import PriceQuantitySheet from '../src/components/PriceQuantitySheet';
+import llmService from '../src/services/LLMService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -80,6 +84,51 @@ const translations = {
     soldListings: 'Sold',
     declineReasonLabel: 'Decline reason:',
     pendingBadge: 'pending review',
+    productName: 'Product Name',
+    activeIngredient: 'Active Ingredient / Chemical Composition',
+    targetDiseases: 'Target Diseases / Pests',
+    selectDiseases: 'Select diseases / pests',
+    suggest: 'Suggest',
+    nSelected: '{0} selected',
+    priceAndQuantity: 'Price & Quantity',
+    priceLabel: 'Price',
+    quantityLabel: 'Quantity',
+    description: 'Description',
+    location: 'Location',
+    selectCity: 'Select city',
+    phone: 'Phone',
+    saveChanges: 'Save Changes',
+    editTitle: 'Edit Listing',
+    error: 'Error',
+    pleaseFillFields: 'Please fill all required fields',
+    minName: 'Product name must be at least 3 characters',
+    minDescription: 'Description must be at least 10 characters',
+    invalidPriceMsg: 'Please enter a valid price',
+    maxPriceMsg: 'Price cannot exceed Rs. 9,999,999',
+    invalidPhoneMsg: 'Please enter a valid phone number (e.g., 0771234567)',
+    selectAtLeastOneDisease: 'Select at least one target disease/pest',
+    activeIngredientRequired: 'Active ingredient is required for pesticides/herbicides',
+    listingUpdated: 'Updated',
+    listingUpdatedMsg: 'Listing has been updated.',
+    failedUpdate: 'Failed to update listing.',
+    deleted: 'Deleted',
+    deletedMsg: 'Listing has been deleted.',
+    failedDelete: 'Failed to delete listing.',
+    soldUpdatedMsg: 'Listing marked as sold.',
+    aiNotEnoughInfo: 'Not enough info',
+    aiSuggestNoSignal: 'Fill in product name, active ingredient, or description first so we can suggest diseases.',
+    aiUnavailable: 'AI unavailable',
+    aiUnavailableMsg: 'OpenAI key not configured. Add OPENAI_API_KEY to your .env file to enable suggestions.',
+    aiNoMatches: 'No confident matches',
+    aiNoMatchesMsg: 'Try adding more detail to the active ingredient or description.',
+    aiAlreadyTagged: 'Already tagged',
+    aiAlreadyTaggedMsg: 'The AI suggested only diseases you have already selected.',
+    aiSuggestionsAdded: 'Suggestions added',
+    aiAddedPrefix: 'Added: ',
+    aiSuggestionFailed: 'Suggestion failed',
+    aiCouldNotReach: 'Could not reach the AI service.',
+    selectDiseasesHeader: 'Select Diseases / Pests',
+    done: 'Done',
   },
   සිංහල: {
     title: 'මගේ ලැයිස්තු',
@@ -106,6 +155,51 @@ const translations = {
     soldListings: 'විකුණන ලදී',
     declineReasonLabel: 'ප්‍රතික්ෂේප කිරීමේ හේතුව:',
     pendingBadge: 'සමාලෝචනය',
+    productName: 'නිෂ්පාදන නම',
+    activeIngredient: 'ක්‍රියාකාරී අමුද්‍රව්‍ය / රසායනික සංයුතිය',
+    targetDiseases: 'ඉලක්ක රෝග / කෘමීන්',
+    selectDiseases: 'රෝග / කෘමීන් තෝරන්න',
+    suggest: 'යෝජනා කරන්න',
+    nSelected: '{0} ක් තෝරා ඇත',
+    priceAndQuantity: 'මිල සහ ප්‍රමාණය',
+    priceLabel: 'මිල',
+    quantityLabel: 'ප්‍රමාණය',
+    description: 'විස්තරය',
+    location: 'ස්ථානය',
+    selectCity: 'නගරය තෝරන්න',
+    phone: 'දුරකථන',
+    saveChanges: 'වෙනස්කම් සුරකින්න',
+    editTitle: 'ලැයිස්තුව සංස්කරණය කරන්න',
+    error: 'දෝෂය',
+    pleaseFillFields: 'කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න',
+    minName: 'නිෂ්පාදන නම අවම වශයෙන් අකුරු 3ක් විය යුතුය',
+    minDescription: 'විස්තරය අවම වශයෙන් අකුරු 10ක් විය යුතුය',
+    invalidPriceMsg: 'කරුණාකර වලංගු මිලක් ඇතුළත් කරන්න',
+    maxPriceMsg: 'මිල රු. 9,999,999 ඉක්මවිය නොහැක',
+    invalidPhoneMsg: 'කරුණාකර වලංගු දුරකථන අංකයක් ඇතුළත් කරන්න (උදා: 0771234567)',
+    selectAtLeastOneDisease: 'අවම වශයෙන් එක් ඉලක්ක රෝගයක්/කෘමියෙක් තෝරන්න',
+    activeIngredientRequired: 'කෘමිනාශක/වල් නාශක සඳහා ක්‍රියාකාරී අමුද්‍රව්‍ය අවශ්‍ය වේ',
+    listingUpdated: 'යාවත්කාලීන කරන ලදී',
+    listingUpdatedMsg: 'ලැයිස්තුව යාවත්කාලීන කර ඇත.',
+    failedUpdate: 'ලැයිස්තුව යාවත්කාලීන කිරීමට අසමත් විය.',
+    deleted: 'මකන ලදී',
+    deletedMsg: 'ලැයිස්තුව මකා ඇත.',
+    failedDelete: 'ලැයිස්තුව මැකීමට අසමත් විය.',
+    soldUpdatedMsg: 'ලැයිස්තුව විකුණන ලදී ලෙස සලකුණු කර ඇත.',
+    aiNotEnoughInfo: 'ප්‍රමාණවත් තොරතුරු නැත',
+    aiSuggestNoSignal: 'යෝජනා කිරීමට පළමුව නිෂ්පාදන නම, ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරය පුරවන්න.',
+    aiUnavailable: 'AI ලබා ගත නොහැක',
+    aiUnavailableMsg: 'OpenAI යතුර වින්‍යාසගත කර නැත. යෝජනා සක්‍රීය කිරීමට .env ගොනුවට OPENAI_API_KEY එක් කරන්න.',
+    aiNoMatches: 'විශ්වාසනීය ගැළපීම් නැත',
+    aiNoMatchesMsg: 'ක්‍රියාකාරී අමුද්‍රව්‍ය හෝ විස්තරයට වැඩිපුර තොරතුරු එක් කරන්න.',
+    aiAlreadyTagged: 'දැනටමත් ටැග් කර ඇත',
+    aiAlreadyTaggedMsg: 'AI විසින් යෝජනා කළේ ඔබ දැනටමත් තෝරාගෙන ඇති රෝග පමණි.',
+    aiSuggestionsAdded: 'යෝජනා එක් කරන ලදී',
+    aiAddedPrefix: 'එක් කරන ලදී: ',
+    aiSuggestionFailed: 'යෝජනා අසාර්ථකයි',
+    aiCouldNotReach: 'AI සේවාවට සම්බන්ධ වීමට නොහැකි විය.',
+    selectDiseasesHeader: 'රෝග / කෘමීන් තෝරන්න',
+    done: 'සිදු',
   },
   தமிழ்: {
     title: 'எனது பட்டியல்கள்',
@@ -132,6 +226,51 @@ const translations = {
     soldListings: 'விற்கப்பட்டது',
     declineReasonLabel: 'நிராகரிப்பு காரணம்:',
     pendingBadge: 'மதிப்பாய்வு',
+    productName: 'தயாரிப்பு பெயர்',
+    activeIngredient: 'செயலில் உள்ள பொருள் / இரசாயன கலவை',
+    targetDiseases: 'இலக்கு நோய்கள் / பூச்சிகள்',
+    selectDiseases: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
+    suggest: 'பரிந்துரை',
+    nSelected: '{0} தேர்ந்தெடுக்கப்பட்டது',
+    priceAndQuantity: 'விலை & அளவு',
+    priceLabel: 'விலை',
+    quantityLabel: 'அளவு',
+    description: 'விளக்கம்',
+    location: 'இடம்',
+    selectCity: 'நகரத்தைத் தேர்ந்தெடுக்கவும்',
+    phone: 'தொலைபேசி',
+    saveChanges: 'மாற்றங்களைச் சேமி',
+    editTitle: 'பட்டியலைத் திருத்து',
+    error: 'பிழை',
+    pleaseFillFields: 'தயவுசெய்து அனைத்து தேவையான புலங்களையும் நிரப்பவும்',
+    minName: 'தயாரிப்பு பெயர் குறைந்தது 3 எழுத்துகளாக இருக்க வேண்டும்',
+    minDescription: 'விளக்கம் குறைந்தது 10 எழுத்துகளாக இருக்க வேண்டும்',
+    invalidPriceMsg: 'தயவுசெய்து சரியான விலையை உள்ளிடவும்',
+    maxPriceMsg: 'விலை ரூ. 9,999,999 ஐ தாண்டக்கூடாது',
+    invalidPhoneMsg: 'தயவுசெய்து சரியான தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா., 0771234567)',
+    selectAtLeastOneDisease: 'குறைந்தது ஒரு இலக்கு நோய்/பூச்சியைத் தேர்ந்தெடுக்கவும்',
+    activeIngredientRequired: 'பூச்சிக்கொல்லிகள்/களைக்கொல்லிகளுக்கு செயலில் உள்ள பொருள் தேவை',
+    listingUpdated: 'புதுப்பிக்கப்பட்டது',
+    listingUpdatedMsg: 'பட்டியல் புதுப்பிக்கப்பட்டது.',
+    failedUpdate: 'பட்டியலைப் புதுப்பிக்க முடியவில்லை.',
+    deleted: 'நீக்கப்பட்டது',
+    deletedMsg: 'பட்டியல் நீக்கப்பட்டது.',
+    failedDelete: 'பட்டியலை நீக்க முடியவில்லை.',
+    soldUpdatedMsg: 'பட்டியல் விற்கப்பட்டதாகக் குறிக்கப்பட்டது.',
+    aiNotEnoughInfo: 'போதிய தகவல் இல்லை',
+    aiSuggestNoSignal: 'நாங்கள் நோய்களை பரிந்துரைக்க முதலில் தயாரிப்பு பெயர், செயலில் உள்ள பொருள் அல்லது விளக்கத்தை நிரப்பவும்.',
+    aiUnavailable: 'AI கிடைக்கவில்லை',
+    aiUnavailableMsg: 'OpenAI விசை உள்ளமைக்கப்படவில்லை. பரிந்துரைகளை இயக்க .env கோப்பில் OPENAI_API_KEY ஐச் சேர்க்கவும்.',
+    aiNoMatches: 'நம்பகமான பொருத்தங்கள் இல்லை',
+    aiNoMatchesMsg: 'செயலில் உள்ள பொருள் அல்லது விளக்கத்தில் கூடுதல் விவரங்களைச் சேர்க்க முயற்சிக்கவும்.',
+    aiAlreadyTagged: 'ஏற்கனவே குறிக்கப்பட்டது',
+    aiAlreadyTaggedMsg: 'AI நீங்கள் ஏற்கனவே தேர்ந்தெடுத்த நோய்களை மட்டுமே பரிந்துரைத்தது.',
+    aiSuggestionsAdded: 'பரிந்துரைகள் சேர்க்கப்பட்டன',
+    aiAddedPrefix: 'சேர்க்கப்பட்டது: ',
+    aiSuggestionFailed: 'பரிந்துரை தோல்வியடைந்தது',
+    aiCouldNotReach: 'AI சேவையை அடைய முடியவில்லை.',
+    selectDiseasesHeader: 'நோய்கள் / பூச்சிகளைத் தேர்ந்தெடுக்கவும்',
+    done: 'முடிந்தது',
   },
 };
 
@@ -307,9 +446,10 @@ export default function MyListingsScreen({ navigation }) {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editData, setEditData] = useState(null);
   const [editSaving, setEditSaving] = useState(false);
-  const [showEditUnitPicker, setShowEditUnitPicker] = useState(false);
   const [showEditDiseasePicker, setShowEditDiseasePicker] = useState(false);
   const [showEditCityPicker, setShowEditCityPicker] = useState(false);
+  const [showEditPriceSheet, setShowEditPriceSheet] = useState(false);
+  const [suggestingEditDiseases, setSuggestingEditDiseases] = useState(false);
 
   const editShowDiseaseField = editData?.category === 'pesticides' || editData?.category === 'herbicides';
 
@@ -328,8 +468,60 @@ export default function MyListingsScreen({ navigation }) {
       category: listing.category || '',
     });
     setEditModalVisible(true);
-    setShowEditUnitPicker(false);
     setShowEditDiseasePicker(false);
+    setShowEditPriceSheet(false);
+  };
+
+  // Ask the LLM which diseases this product likely treats, mirroring the AddProduct flow.
+  const handleSuggestEditDiseases = async () => {
+    if (!editData) return;
+    const hasSignal =
+      editData.productName?.trim() ||
+      editData.activeIngredient?.trim() ||
+      editData.description?.trim();
+    if (!hasSignal) {
+      showAppAlert(t.aiNotEnoughInfo, t.aiSuggestNoSignal);
+      return;
+    }
+    if (!llmService.isInitialized()) {
+      const ok = await llmService.loadFromStorage().catch(() => false);
+      if (!ok) {
+        showAppAlert(t.aiUnavailable, t.aiUnavailableMsg);
+        return;
+      }
+    }
+    setSuggestingEditDiseases(true);
+    try {
+      const suggested = await llmService.inferDiseaseTagsForProduct(
+        {
+          productName: editData.productName,
+          activeIngredient: editData.activeIngredient,
+          description: editData.description,
+          category: editData.category,
+        },
+        DISEASE_OPTIONS,
+      );
+      if (suggested.length === 0) {
+        showAppAlert(t.aiNoMatches, t.aiNoMatchesMsg);
+        return;
+      }
+      const existing = new Set(editData.targetDiseases);
+      const added = suggested.filter(d => !existing.has(d));
+      if (added.length === 0) {
+        showAppAlert(t.aiAlreadyTagged, t.aiAlreadyTaggedMsg);
+        return;
+      }
+      setEditData(prev => ({
+        ...prev,
+        targetDiseases: [...prev.targetDiseases, ...added],
+      }));
+      showAppAlert(t.aiSuggestionsAdded, `${t.aiAddedPrefix}${added.join(', ')}`);
+    } catch (err) {
+      console.error('[MyListings] disease suggestion failed:', err);
+      showAppAlert(t.aiSuggestionFailed, err?.message || t.aiCouldNotReach);
+    } finally {
+      setSuggestingEditDiseases(false);
+    }
   };
 
   const toggleEditDisease = (disease) => {
@@ -343,27 +535,47 @@ export default function MyListingsScreen({ navigation }) {
   };
 
   const handleSaveEdit = async () => {
-    if (
-      !editData.productName.trim() ||
-      !editData.price.trim() ||
-      !editData.description.trim() ||
-      !editData.location.trim() ||
-      !editData.phone.trim()
-    ) {
-      Alert.alert('Error', 'Please fill all required fields');
+    // Defensive: editData can theoretically be cleared mid-modal (refetch, navigation),
+    // and reading .productName off null would crash the screen.
+    if (!editData) return;
+
+    const productName = (editData.productName || '').trim();
+    const priceStr = String(editData.price ?? '').trim();
+    const description = (editData.description || '').trim();
+    const location = (editData.location || '').trim();
+    const phone = (editData.phone || '').trim();
+
+    if (!productName || !priceStr || !description || !location || !phone) {
+      showAppAlert(t.error, t.pleaseFillFields);
       return;
     }
-    const phoneClean = editData.phone.replace(/\s/g, '');
-    if (!/^0\d{9}$/.test(phoneClean)) {
-      Alert.alert('Error', 'Please enter a valid phone number (e.g., 0771234567)');
+    if (productName.length < 3) {
+      showAppAlert(t.error, t.minName);
       return;
     }
-    if (editShowDiseaseField && editData.targetDiseases.length === 0) {
-      Alert.alert('Error', 'Select at least one target disease/pest');
+    if (description.length < 10) {
+      showAppAlert(t.error, t.minDescription);
       return;
     }
-    if (editShowDiseaseField && !editData.activeIngredient.trim()) {
-      Alert.alert('Error', 'Active ingredient is required for pesticides/herbicides');
+    const priceNum = Number(priceStr);
+    if (!Number.isFinite(priceNum) || priceNum <= 0) {
+      showAppAlert(t.error, t.invalidPriceMsg);
+      return;
+    }
+    if (priceNum > 9_999_999) {
+      showAppAlert(t.error, t.maxPriceMsg);
+      return;
+    }
+    if (!/^0\d{9}$/.test(phone.replace(/\s/g, ''))) {
+      showAppAlert(t.error, t.invalidPhoneMsg);
+      return;
+    }
+    if (editShowDiseaseField && (!Array.isArray(editData.targetDiseases) || editData.targetDiseases.length === 0)) {
+      showAppAlert(t.error, t.selectAtLeastOneDisease);
+      return;
+    }
+    if (editShowDiseaseField && !(editData.activeIngredient || '').trim()) {
+      showAppAlert(t.error, t.activeIngredientRequired);
       return;
     }
 
@@ -379,22 +591,22 @@ export default function MyListingsScreen({ navigation }) {
         phone: editData.phone,
         activeIngredient: editData.activeIngredient,
         targetDiseases: editData.targetDiseases,
-        targetDiseasesLower: editData.targetDiseases.map(d => d.toLowerCase().trim()),
+        targetDiseasesLower: normalizeTargetDiseasesForStorage(editData.targetDiseases),
       };
       await updateProduct(editData.id, updatePayload);
       setListings(prev => prev.map(l => l.id === editData.id ? { ...l, ...updatePayload } : l));
       setEditModalVisible(false);
-      Alert.alert('Updated', 'Listing has been updated.');
+      showAppAlert(t.listingUpdated, t.listingUpdatedMsg);
     } catch (error) {
       console.error('Error updating listing:', error);
-      Alert.alert('Error', 'Failed to update listing.');
+      showAppAlert(t.error, t.failedUpdate);
     } finally {
       setEditSaving(false);
     }
   };
 
   const handleDelete = (listing) => {
-    Alert.alert(
+    showAppAlert(
       t.confirmDelete,
       t.confirmDeleteMessage,
       [
@@ -406,10 +618,10 @@ export default function MyListingsScreen({ navigation }) {
             try {
               await deleteProduct(listing.id);
               setListings(prev => prev.filter(l => l.id !== listing.id));
-              Alert.alert('Deleted', 'Listing has been deleted.');
+              showAppAlert(t.deleted, t.deletedMsg);
             } catch (error) {
               console.error('Error deleting listing:', error);
-              Alert.alert('Error', 'Failed to delete listing.');
+              showAppAlert(t.error, t.failedDelete);
             }
           },
         },
@@ -418,7 +630,7 @@ export default function MyListingsScreen({ navigation }) {
   };
 
   const handleMarkSold = (listing) => {
-    Alert.alert(
+    showAppAlert(
       t.markSold,
       t.soldMessage,
       [
@@ -429,10 +641,10 @@ export default function MyListingsScreen({ navigation }) {
             try {
               await updateProduct(listing.id, { status: 'sold' });
               setListings(prev => prev.map(l => l.id === listing.id ? { ...l, status: 'sold' } : l));
-              Alert.alert('Updated', 'Listing marked as sold.');
+              showAppAlert(t.listingUpdated, t.soldUpdatedMsg);
             } catch (error) {
               console.error('Error updating listing:', error);
-              Alert.alert('Error', 'Failed to update listing.');
+              showAppAlert(t.error, t.failedUpdate);
             }
           },
         },
@@ -639,108 +851,62 @@ export default function MyListingsScreen({ navigation }) {
               >
                 {editData && (
                   <>
-                    <Text style={styles.modalLabel}>Product Name *</Text>
+                    <Text style={styles.modalLabel}>{t.productName}</Text>
                     <TextInput
                       style={styles.modalInput}
                       value={editData.productName}
                       onChangeText={(text) => setEditData({ ...editData, productName: text })}
                     />
 
-                    <Text style={styles.modalLabel}>Price (Rs.) *</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={editData.price}
-                      onChangeText={(text) => setEditData({ ...editData, price: text.replace(/[^0-9.]/g, '') })}
-                      keyboardType="numeric"
-                    />
-
-                    {/* Quantity + Unit */}
-                    <Text style={styles.modalLabel}>Quantity *</Text>
-                    <View style={styles.quantityRow}>
-                      <TextInput
-                        style={[styles.modalInput, { flex: 1, marginRight: 8 }]}
-                        value={editData.quantity}
-                        onChangeText={(text) => setEditData({ ...editData, quantity: text.replace(/[^0-9]/g, '') })}
-                        keyboardType="numeric"
-                        placeholder="e.g., 50"
-                        placeholderTextColor="#999"
-                      />
-                      <TouchableOpacity
-                        style={styles.editUnitSelector}
-                        onPress={() => setShowEditUnitPicker(!showEditUnitPicker)}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.editUnitText}>{editData.unit || 'kg'}</Text>
-                        <Icon name="chevron-down" size={14} color="#666" />
-                      </TouchableOpacity>
-                    </View>
-                    {showEditUnitPicker && (
-                      <View style={styles.editPickerDropdown}>
-                        {UNIT_OPTIONS.map(u => (
-                          <TouchableOpacity
-                            key={u}
-                            style={[styles.editPickerOption, editData.unit === u && styles.editPickerOptionActive]}
-                            onPress={() => {
-                              setEditData({ ...editData, unit: u });
-                              setShowEditUnitPicker(false);
-                            }}
-                            activeOpacity={0.7}
-                          >
-                            <Text style={[styles.editPickerOptionText, editData.unit === u && styles.editPickerOptionTextActive]}>
-                              {u}
-                            </Text>
-                            {editData.unit === u && <Icon name="check" size={14} color="#0F5132" />}
-                          </TouchableOpacity>
-                        ))}
-                      </View>
+                    {/* Active Ingredient — only for pesticides/herbicides.
+                        Sits above Target Diseases so it can power the AI Suggest button. */}
+                    {editShowDiseaseField && (
+                      <>
+                        <Text style={styles.modalLabel}>{t.activeIngredient}</Text>
+                        <TextInput
+                          style={styles.modalInput}
+                          value={editData.activeIngredient}
+                          onChangeText={(text) => setEditData({ ...editData, activeIngredient: text })}
+                          placeholder="e.g., Mancozeb 64% + Metalaxyl 8% WP"
+                          placeholderTextColor="#999"
+                        />
+                      </>
                     )}
-
-                    <Text style={styles.modalLabel}>Description *</Text>
-                    <TextInput
-                      style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
-                      value={editData.description}
-                      onChangeText={(text) => setEditData({ ...editData, description: text })}
-                      multiline
-                    />
-
-                    {/* Location — city picker */}
-                    <Text style={styles.modalLabel}>Location *</Text>
-                    <TouchableOpacity
-                      style={styles.editLocationSelector}
-                      onPress={() => setShowEditCityPicker(true)}
-                      activeOpacity={0.7}
-                    >
-                      <Icon name="map-marker" size={16} color={editData.location ? '#0F5132' : '#999'} />
-                      <Text style={[styles.editLocationText, !editData.location && { color: '#999' }]}>
-                        {editData.location || 'Select city'}
-                      </Text>
-                      <Icon name="chevron-down" size={18} color="#666" />
-                    </TouchableOpacity>
-
-                    <Text style={styles.modalLabel}>Phone *</Text>
-                    <TextInput
-                      style={styles.modalInput}
-                      value={editData.phone}
-                      onChangeText={(text) => setEditData({ ...editData, phone: text.replace(/[^0-9]/g, '') })}
-                      keyboardType="phone-pad"
-                      maxLength={10}
-                    />
 
                     {/* Target Diseases — only for pesticides/herbicides */}
                     {editShowDiseaseField && (
                       <>
-                        <Text style={styles.modalLabel}>Target Diseases / Pests *</Text>
+                        <View style={styles.editSuggestRow}>
+                          <Text style={[styles.modalLabel, { flex: 1, marginBottom: 0 }]}>
+                            {t.targetDiseases}
+                          </Text>
+                          <TouchableOpacity
+                            style={[styles.editSuggestBtn, suggestingEditDiseases && { opacity: 0.6 }]}
+                            onPress={handleSuggestEditDiseases}
+                            disabled={suggestingEditDiseases}
+                            activeOpacity={0.7}
+                          >
+                            {suggestingEditDiseases ? (
+                              <ActivityIndicator size="small" color="#0F5132" />
+                            ) : (
+                              <>
+                                <Icon name="auto-fix" size={14} color="#0F5132" />
+                                <Text style={styles.editSuggestBtnText}>{t.suggest}</Text>
+                              </>
+                            )}
+                          </TouchableOpacity>
+                        </View>
                         <TouchableOpacity
                           style={styles.editLocationSelector}
-                          onPress={() => setShowEditDiseasePicker(!showEditDiseasePicker)}
+                          onPress={() => setShowEditDiseasePicker(true)}
                           activeOpacity={0.7}
                         >
                           <Text style={[styles.editLocationText, editData.targetDiseases.length === 0 && { color: '#999' }]}>
                             {editData.targetDiseases.length > 0
-                              ? `${editData.targetDiseases.length} selected`
-                              : 'Select diseases / pests'}
+                              ? t.nSelected.replace('{0}', editData.targetDiseases.length)
+                              : t.selectDiseases}
                           </Text>
-                          <Icon name={showEditDiseasePicker ? 'chevron-up' : 'chevron-down'} size={18} color="#666" />
+                          <Icon name="chevron-down" size={18} color="#666" />
                         </TouchableOpacity>
                         {editData.targetDiseases.length > 0 && (
                           <View style={styles.editTagsContainer}>
@@ -757,51 +923,61 @@ export default function MyListingsScreen({ navigation }) {
                             ))}
                           </View>
                         )}
-                        {showEditDiseasePicker && (
-                          <View style={styles.editPickerDropdown}>
-                            <ScrollView nestedScrollEnabled style={{ maxHeight: 200 }}>
-                              {DISEASE_OPTIONS.map(disease => {
-                                const isSel = editData.targetDiseases.includes(disease);
-                                return (
-                                  <TouchableOpacity
-                                    key={disease}
-                                    style={[styles.editPickerOption, isSel && styles.editPickerOptionActive]}
-                                    onPress={() => toggleEditDisease(disease)}
-                                    activeOpacity={0.7}
-                                  >
-                                    <Icon
-                                      name={isSel ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                                      size={18}
-                                      color={isSel ? '#0F5132' : '#999'}
-                                      style={{ marginRight: 10 }}
-                                    />
-                                    <Text style={[styles.editPickerOptionText, isSel && styles.editPickerOptionTextActive]}>
-                                      {disease}
-                                    </Text>
-                                  </TouchableOpacity>
-                                );
-                              })}
-                            </ScrollView>
-                            <TouchableOpacity
-                              style={styles.pickerDoneBtn}
-                              onPress={() => setShowEditDiseasePicker(false)}
-                              activeOpacity={0.7}
-                            >
-                              <Text style={styles.pickerDoneText}>Done</Text>
-                            </TouchableOpacity>
-                          </View>
-                        )}
-
-                        <Text style={styles.modalLabel}>Active Ingredient / Chemical Composition *</Text>
-                        <TextInput
-                          style={styles.modalInput}
-                          value={editData.activeIngredient}
-                          onChangeText={(text) => setEditData({ ...editData, activeIngredient: text })}
-                          placeholder="e.g., Mancozeb 64% + Metalaxyl 8% WP"
-                          placeholderTextColor="#999"
-                        />
                       </>
                     )}
+
+                    {/* Price + Quantity + Unit — alarm-style wheel sheet */}
+                    <Text style={styles.modalLabel}>{t.priceAndQuantity}</Text>
+                    <TouchableOpacity
+                      style={styles.editPriceQtySummary}
+                      onPress={() => setShowEditPriceSheet(true)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.editPriceQtyHint}>{t.priceLabel}</Text>
+                        <Text style={styles.editPriceQtyValue}>
+                          Rs. {editData.price ? Number(editData.price).toLocaleString() : '—'}
+                        </Text>
+                      </View>
+                      <View style={styles.editPriceQtyDivider} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.editPriceQtyHint}>{t.quantityLabel}</Text>
+                        <Text style={styles.editPriceQtyValue}>
+                          {editData.quantity !== undefined && editData.quantity !== null && editData.quantity !== ''
+                            ? `${editData.quantity} ${editData.unit || 'kg'}`
+                            : '—'}
+                        </Text>
+                      </View>
+                      <Icon name="chevron-down" size={20} color="#666" />
+                    </TouchableOpacity>
+
+                    <Text style={styles.modalLabel}>{t.description}</Text>
+                    <TextInput
+                      style={[styles.modalInput, { minHeight: 80, textAlignVertical: 'top' }]}
+                      value={editData.description}
+                      onChangeText={(text) => setEditData({ ...editData, description: text })}
+                      multiline
+                    />
+
+                    {/* Location — city picker */}
+                    <Text style={styles.modalLabel}>{t.location}</Text>
+                    <TouchableOpacity
+                      style={styles.editLocationSelector}
+                      onPress={() => setShowEditCityPicker(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Icon name="map-marker" size={16} color={editData.location ? '#0F5132' : '#999'} />
+                      <Text style={[styles.editLocationText, !editData.location && { color: '#999' }]}>
+                        {editData.location || t.selectCity}
+                      </Text>
+                      <Icon name="chevron-down" size={18} color="#666" />
+                    </TouchableOpacity>
+
+                    <Text style={styles.modalLabel}>{t.phone}</Text>
+                    <PhoneInput
+                      value={editData.phone}
+                      onChangeText={(next) => setEditData({ ...editData, phone: next })}
+                    />
                   </>
                 )}
               </ScrollView>
@@ -818,7 +994,7 @@ export default function MyListingsScreen({ navigation }) {
                   disabled={editSaving}
                 >
                   <Icon name={editSaving ? 'loading' : 'check'} size={18} color="#FFFFFF" />
-                  <Text style={styles.modalSaveText}>{editSaving ? 'Saving...' : 'Save Changes'}</Text>
+                  <Text style={styles.modalSaveText}>{editSaving ? '...' : t.saveChanges}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -834,6 +1010,80 @@ export default function MyListingsScreen({ navigation }) {
             setShowEditCityPicker(false);
           }}
           onClose={() => setShowEditCityPicker(false)}
+        />
+
+        {/* Disease picker for edit modal — bottom sheet, multi-select */}
+        <Modal
+          visible={showEditDiseasePicker}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setShowEditDiseasePicker(false)}
+        >
+          <View style={styles.editSheetOverlay}>
+            <TouchableOpacity
+              style={styles.editSheetDismiss}
+              activeOpacity={1}
+              onPress={() => setShowEditDiseasePicker(false)}
+            />
+            <View style={[styles.editSheet, styles.editSheetTall, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+              <View style={styles.editSheetHandle} />
+              <View style={styles.editSheetHeader}>
+                <Text style={styles.editSheetTitle}>{t.selectDiseasesHeader}</Text>
+                <TouchableOpacity
+                  style={styles.editSheetClose}
+                  onPress={() => setShowEditDiseasePicker(false)}
+                  activeOpacity={0.7}
+                >
+                  <Icon name="close" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+              <ScrollView showsVerticalScrollIndicator>
+                {DISEASE_OPTIONS.map(disease => {
+                  const isSel = editData?.targetDiseases?.includes(disease);
+                  return (
+                    <TouchableOpacity
+                      key={disease}
+                      style={[styles.editSheetRow, isSel && styles.editSheetRowSelected]}
+                      onPress={() => toggleEditDisease(disease)}
+                      activeOpacity={0.7}
+                    >
+                      <Icon
+                        name={isSel ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                        size={20}
+                        color={isSel ? '#0F5132' : '#999'}
+                        style={{ marginRight: 12 }}
+                      />
+                      <Text style={[styles.editSheetRowText, isSel && styles.editSheetRowTextSelected]}>
+                        {disease}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+              <TouchableOpacity
+                style={styles.editSheetDoneBtn}
+                onPress={() => setShowEditDiseasePicker(false)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.editSheetDoneText}>
+                  {t.done} {editData?.targetDiseases?.length ? `(${editData.targetDiseases.length})` : ''}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Price + Quantity + Unit wheel sheet */}
+        <PriceQuantitySheet
+          visible={showEditPriceSheet}
+          price={editData?.price ?? ''}
+          quantity={editData?.quantity ?? ''}
+          unit={editData?.unit ?? 'kg'}
+          unitOptions={UNIT_OPTIONS}
+          onClose={() => setShowEditPriceSheet(false)}
+          onConfirm={({ price, quantity, unit }) => {
+            setEditData(prev => prev ? { ...prev, price, quantity, unit } : prev);
+          }}
         />
       </SafeAreaView>
     </View>
@@ -1410,6 +1660,141 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#0F5132',
     fontWeight: '600',
+  },
+  editSuggestRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  editSuggestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F0F7F3',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(15,81,50,0.25)',
+    minWidth: 88,
+    justifyContent: 'center',
+  },
+  editSuggestBtnText: {
+    fontSize: 12,
+    color: '#0F5132',
+    fontWeight: '700',
+  },
+  editPriceQtySummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    minHeight: 60,
+  },
+  editPriceQtyHint: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#999',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  editPriceQtyValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  editPriceQtyDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(0,0,0,0.08)',
+    marginHorizontal: 12,
+  },
+  editSheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  editSheetDismiss: {
+    flex: 1,
+  },
+  editSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    maxHeight: '60%',
+  },
+  editSheetTall: {
+    maxHeight: '80%',
+  },
+  editSheetHandle: {
+    alignSelf: 'center',
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(0,0,0,0.15)',
+    marginBottom: 8,
+  },
+  editSheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    marginBottom: 4,
+  },
+  editSheetTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  editSheetClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.04)',
+  },
+  editSheetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginBottom: 4,
+  },
+  editSheetRowSelected: {
+    backgroundColor: '#F0F7F3',
+  },
+  editSheetRowText: {
+    flex: 1,
+    fontSize: 15,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  editSheetRowTextSelected: {
+    color: '#0F5132',
+    fontWeight: '700',
+  },
+  editSheetDoneBtn: {
+    marginTop: 8,
+    alignItems: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: '#0F5132',
+  },
+  editSheetDoneText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   pickerDoneBtn: {
     alignItems: 'center',

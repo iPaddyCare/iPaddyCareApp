@@ -14,6 +14,25 @@ import {
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useLanguage } from '../context/LanguageContext';
+
+const TR = {
+  English: {
+    selectCity: 'Select City',
+    searchCity: 'Search city...',
+    noCities: 'No cities found',
+  },
+  සිංහල: {
+    selectCity: 'නගරය තෝරන්න',
+    searchCity: 'නගරය සොයන්න...',
+    noCities: 'නගර හමු නොවීය',
+  },
+  தமிழ்: {
+    selectCity: 'நகரத்தைத் தேர்ந்தெடுக்கவும்',
+    searchCity: 'நகரத்தைத் தேடவும்...',
+    noCities: 'நகரங்கள் இல்லை',
+  },
+};
 
 /**
  * Comprehensive list of Sri Lankan cities and towns.
@@ -119,8 +138,10 @@ const CITY_GROUPS = [
  *   onClose    {() => void}
  *   placeholder {string}
  */
-export default function CityPickerModal({ visible, selected, onSelect, onClose, placeholder = 'Select City' }) {
+export default function CityPickerModal({ visible, selected, onSelect, onClose, placeholder }) {
   const insets = useSafeAreaInsets();
+  const { selectedLanguage } = useLanguage();
+  const t = TR[selectedLanguage] || TR.English;
   const [search, setSearch] = useState('');
 
   const filtered = useMemo(() => {
@@ -159,7 +180,7 @@ export default function CityPickerModal({ visible, selected, onSelect, onClose, 
 
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>Select City</Text>
+            <Text style={styles.title}>{placeholder || t.selectCity}</Text>
             <TouchableOpacity style={styles.closeBtn} onPress={handleClose} activeOpacity={0.7}>
               <Icon name="close" size={20} color="#666" />
             </TouchableOpacity>
@@ -170,7 +191,7 @@ export default function CityPickerModal({ visible, selected, onSelect, onClose, 
             <Icon name="magnify" size={18} color="#999" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
-              placeholder="Search city..."
+              placeholder={t.searchCity}
               placeholderTextColor="#999"
               value={search}
               onChangeText={setSearch}
@@ -214,7 +235,7 @@ export default function CityPickerModal({ visible, selected, onSelect, onClose, 
             ))}
             {filtered.length === 0 && (
               <View style={styles.noResults}>
-                <Text style={styles.noResultsText}>No cities found</Text>
+                <Text style={styles.noResultsText}>{t.noCities}</Text>
               </View>
             )}
           </ScrollView>

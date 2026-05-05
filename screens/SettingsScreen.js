@@ -8,11 +8,11 @@ import {
   StyleSheet,
   Dimensions,
   Switch,
-  Alert,
   Platform,
   Animated,
   Image,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -62,6 +62,19 @@ const translations = {
     disabled: 'Disabled',
     clearCacheConfirm: 'Clear all cached data?',
     cacheCleared: 'Cache cleared successfully',
+    success: 'Success',
+    exportDataTitle: 'Export Data',
+    exportDataMsg: 'Data export feature coming soon',
+    profileTitle: 'Profile',
+    profileMsg: 'Profile editing coming soon',
+    emailMsg: 'Email settings coming soon',
+    passwordMsg: 'Password change coming soon',
+    timeoutTitle: 'Timeout',
+    timeoutMsg: 'Connection timeout settings coming soon',
+    termsTitle: 'Terms',
+    termsMsg: 'Terms & Conditions coming soon',
+    privacyTitle: 'Privacy',
+    privacyMsg: 'Privacy Policy coming soon',
   },
   සිංහල: {
     title: 'සැකසුම්',
@@ -103,6 +116,19 @@ const translations = {
     disabled: 'අක්‍රිය',
     clearCacheConfirm: 'සියලුම කෑෂ් දත්ත මකන්නද?',
     cacheCleared: 'කෑෂ් සාර්ථකව මකා ඇත',
+    success: 'සාර්ථකයි',
+    exportDataTitle: 'දත්ත නිර්යාත කරන්න',
+    exportDataMsg: 'දත්ත නිර්යාත විශේෂාංගය ඉක්මනින්',
+    profileTitle: 'පැතිකඩ',
+    profileMsg: 'පැතිකඩ සංස්කරණය ඉක්මනින්',
+    emailMsg: 'විද්‍යුත් තැපැල් සැකසුම් ඉක්මනින්',
+    passwordMsg: 'මුරපද වෙනස් කිරීම ඉක්මනින්',
+    timeoutTitle: 'කල් ඉකුත් වීම',
+    timeoutMsg: 'සම්බන්ධතා කල් ඉකුත් වීමේ සැකසුම් ඉක්මනින්',
+    termsTitle: 'කොන්දේසි',
+    termsMsg: 'කොන්දේසි සහ නියම ඉක්මනින්',
+    privacyTitle: 'රහස්‍යතා',
+    privacyMsg: 'රහස්‍යතා ප්‍රතිපත්තිය ඉක්මනින්',
   },
   தமிழ்: {
     title: 'அமைப்புகள்',
@@ -144,6 +170,19 @@ const translations = {
     disabled: 'முடக்கப்பட்டது',
     clearCacheConfirm: 'அனைத்து கேச் தரவையும் அழிக்கவா?',
     cacheCleared: 'கேச் வெற்றிகரமாக அழிக்கப்பட்டது',
+    success: 'வெற்றி',
+    exportDataTitle: 'தரவு ஏற்றுமதி',
+    exportDataMsg: 'தரவு ஏற்றுமதி அம்சம் விரைவில்',
+    profileTitle: 'சுயவிவரம்',
+    profileMsg: 'சுயவிவர திருத்தம் விரைவில்',
+    emailMsg: 'மின்னஞ்சல் அமைப்புகள் விரைவில்',
+    passwordMsg: 'கடவுச்சொல் மாற்றம் விரைவில்',
+    timeoutTitle: 'நேரமுடிவு',
+    timeoutMsg: 'இணைப்பு நேரமுடிவு அமைப்புகள் விரைவில்',
+    termsTitle: 'விதிமுறைகள்',
+    termsMsg: 'விதிமுறைகள் மற்றும் நிபந்தனைகள் விரைவில்',
+    privacyTitle: 'தனியுரிமை',
+    privacyMsg: 'தனியுரிமை கொள்கை விரைவில்',
   },
 };
 
@@ -205,7 +244,7 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleLogout = () => {
-    Alert.alert(t.logout, t.logoutConfirm, [
+    showAppAlert(t.logout, t.logoutConfirm, [
       {
         text: t.no,
         style: 'cancel',
@@ -222,7 +261,7 @@ export default function SettingsScreen({ navigation }) {
   };
 
   const handleClearCache = () => {
-    Alert.alert(t.clearCache, t.clearCacheConfirm, [
+    showAppAlert(t.clearCache, t.clearCacheConfirm, [
       {
         text: t.no,
         style: 'cancel',
@@ -231,7 +270,7 @@ export default function SettingsScreen({ navigation }) {
         text: t.yes,
         onPress: () => {
           // TODO: Implement cache clearing
-          Alert.alert('Success', t.cacheCleared);
+          showAppAlert(t.success, t.cacheCleared);
         },
       },
     ]);
@@ -239,7 +278,7 @@ export default function SettingsScreen({ navigation }) {
 
   const handleExportData = () => {
     // TODO: Implement data export
-    Alert.alert('Export Data', 'Data export feature coming soon');
+    showAppAlert(t.exportDataTitle, t.exportDataMsg);
   };
 
   return (
@@ -309,7 +348,7 @@ export default function SettingsScreen({ navigation }) {
                   icon="account"
                   label={t.profile}
                   value={user?.displayName || user?.email}
-                  onPress={() => Alert.alert('Profile', 'Profile editing coming soon')}
+                  onPress={() => showAppAlert(t.profileTitle, t.profileMsg)}
                 />
                 <SettingItem
                   icon="package-variant"
@@ -320,12 +359,12 @@ export default function SettingsScreen({ navigation }) {
                   icon="email"
                   label={t.email}
                   value={user?.email}
-                  onPress={() => Alert.alert('Email', 'Email settings coming soon')}
+                  onPress={() => showAppAlert(t.email, t.emailMsg)}
                 />
                 <SettingItem
                   icon="lock"
                   label={t.password}
-                  onPress={() => Alert.alert('Password', 'Password change coming soon')}
+                  onPress={() => showAppAlert(t.password, t.passwordMsg)}
                 />
               </SettingSection>
             )}
@@ -383,7 +422,7 @@ export default function SettingsScreen({ navigation }) {
                 icon="timer"
                 label={t.connectionTimeout}
                 value="30 seconds"
-                onPress={() => Alert.alert('Timeout', 'Connection timeout settings coming soon')}
+                onPress={() => showAppAlert(t.timeoutTitle, t.timeoutMsg)}
               />
             </SettingSection>
 
@@ -432,12 +471,12 @@ export default function SettingsScreen({ navigation }) {
               <SettingItem
                 icon="file-document"
                 label={t.terms}
-                onPress={() => Alert.alert('Terms', 'Terms & Conditions coming soon')}
+                onPress={() => showAppAlert(t.termsTitle, t.termsMsg)}
               />
               <SettingItem
                 icon="shield-lock"
                 label={t.privacy}
-                onPress={() => Alert.alert('Privacy', 'Privacy Policy coming soon')}
+                onPress={() => showAppAlert(t.privacyTitle, t.privacyMsg)}
               />
               <SettingItem
                 icon="help-circle"

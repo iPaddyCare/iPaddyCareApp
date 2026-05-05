@@ -108,14 +108,23 @@ class RAGService {
       };
     }
 
+    // Return both English and Sinhala/Tamil variants so the UI can pick by language
+    // without an extra round-trip. solutions[] items keep their per-item _si/_ta
+    // fields too — the consumer reads sol.title_si etc.
     return {
       found: true,
       diseaseName: disease.name,
+      diseaseName_si: disease.name_si || disease.name,
+      diseaseName_ta: disease.name_ta || disease.name,
       aliases: disease.aliases || [],
       description: disease.description || '',
+      description_si: disease.description_si || disease.description || '',
+      description_ta: disease.description_ta || disease.description || '',
       severity: disease.severity || 'medium',
       solutions: disease.solutions || [],
       prevention: disease.prevention || [],
+      prevention_si: disease.prevention_si || disease.prevention || [],
+      prevention_ta: disease.prevention_ta || disease.prevention || [],
       images: disease.images || []
     };
   }

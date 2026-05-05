@@ -6,12 +6,12 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
-  Alert,
   RefreshControl,
   TextInput,
   Dimensions,
   Modal,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -617,7 +617,7 @@ export default function SoilPHScreen({ navigation }) {
     if (!hasPermission) {
       const permissionGranted = await BluetoothPermissionService.requestPermissions();
       if (!permissionGranted) {
-        Alert.alert(
+        showAppAlert(
           t.permissionRequired,
           t.permissionMessage,
           [
@@ -650,12 +650,12 @@ export default function SoilPHScreen({ navigation }) {
 
   const handlePredict = async () => {
     if (!sensorData) {
-      Alert.alert(t.error, t.readSensorFirst);
+      showAppAlert(t.error, t.readSensorFirst);
       return;
     }
 
     if (!location) {
-      Alert.alert(t.error, t.locationNotAvailable);
+      showAppAlert(t.error, t.locationNotAvailable);
       return;
     }
 
@@ -672,7 +672,7 @@ export default function SoilPHScreen({ navigation }) {
     // Validate data
     const validation = RiceVarietyApiService.validateInput(apiData);
     if (!validation.isValid) {
-      Alert.alert(t.validationError, validation.errors.join('\n'));
+      showAppAlert(t.validationError, validation.errors.join('\n'));
       return;
     }
 
@@ -685,7 +685,7 @@ export default function SoilPHScreen({ navigation }) {
       setError(null);
     } else {
       setError(result.error || t.predictFailed);
-      Alert.alert(t.predictionError, result.error || t.predictFailed);
+      showAppAlert(t.predictionError, result.error || t.predictFailed);
     }
     setPredicting(false);
   };

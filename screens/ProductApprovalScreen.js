@@ -8,11 +8,14 @@ import {
   StyleSheet,
   Dimensions,
   Image,
-  Alert,
   RefreshControl,
   Modal,
   Platform,
+  TextInput,
+  ActivityIndicator,
+  Pressable,
 } from 'react-native';
+import { showAppAlert } from '../src/components/AppAlert';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLanguage } from '../src/context/LanguageContext';
@@ -56,6 +59,12 @@ const translations = {
     status: 'Status',
     submitted: 'Submitted',
     lastUpdated: 'Last Updated',
+    error: 'Error',
+    failedApprove: 'Failed to approve product.',
+    failedDecline: 'Failed to decline product.',
+    accessRestricted: 'Access Restricted',
+    onlyOfficers: 'Only officers can access this screen.',
+    email: 'Email',
   },
   සිංහල: {
     title: 'නිෂ්පාදන අනුමත කිරීම්',
@@ -89,6 +98,12 @@ const translations = {
     status: 'තත්වය',
     submitted: 'ඉදිරිපත් කරන ලදී',
     lastUpdated: 'අවසානයේ යාවත්කාලීන කරන ලදී',
+    error: 'දෝෂය',
+    failedApprove: 'නිෂ්පාදනය අනුමත කිරීමට අසමත් විය.',
+    failedDecline: 'නිෂ්පාදනය ප්‍රතික්ෂේප කිරීමට අසමත් විය.',
+    accessRestricted: 'ප්‍රවේශය සීමා කර ඇත',
+    onlyOfficers: 'මෙම තිරයට ප්‍රවේශ විය හැක්කේ නිලධාරීන්ට පමණි.',
+    email: 'විද්‍යුත් තැපෑල',
   },
   தமிழ்: {
     title: 'தயாரிப்பு அனுமதிகள்',
@@ -122,6 +137,12 @@ const translations = {
     status: 'நிலை',
     submitted: 'சமர்ப்பிக்கப்பட்டது',
     lastUpdated: 'கடைசியாக புதுப்பிக்கப்பட்டது',
+    error: 'பிழை',
+    failedApprove: 'தயாரிப்பை அனுமதிக்க முடியவில்லை.',
+    failedDecline: 'தயாரிப்பை நிராகரிக்க முடியவில்லை.',
+    accessRestricted: 'அணுகல் கட்டுப்படுத்தப்பட்டது',
+    onlyOfficers: 'இந்த திரையை அதிகாரிகள் மட்டுமே அணுக முடியும்.',
+    email: 'மின்னஞ்சல்',
   },
 };
 
@@ -142,6 +163,9 @@ export default function ProductApprovalScreen({ navigation }) {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [declineModalProduct, setDeclineModalProduct] = useState(null);
+  const [declineReason, setDeclineReason] = useState('');
+  const [decliningSubmitting, setDecliningSubmitting] = useState(false);
 
   const fetchPending = async () => {
     try {
@@ -171,7 +195,7 @@ export default function ProductApprovalScreen({ navigation }) {
   }, []);
 
   const handleApprove = (product) => {
-    Alert.alert(
+    showAppAlert(
       t.approveConfirm,
       t.approveMessage,
       [
@@ -182,12 +206,12 @@ export default function ProductApprovalScreen({ navigation }) {
             try {
               await updateProductStatus(product.id, 'approved');
               setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-              Alert.alert(t.approvedSuccess, t.approvedMessage);
+              showAppAlert(t.approvedSuccess, t.approvedMessage);
               setShowDetails(false);
               setSelectedProduct(null);
             } catch (error) {
               console.error('Error approving product:', error);
-              Alert.alert('Error', 'Failed to approve product.');
+              showAppAlert(t.error, t.failedApprove);
             }
           },
         },
@@ -196,29 +220,28 @@ export default function ProductApprovalScreen({ navigation }) {
   };
 
   const handleDecline = (product) => {
-    Alert.alert(
-      t.declineConfirm,
-      t.declineMessage,
-      [
-        { text: t.cancel, style: 'cancel' },
-        {
-          text: t.decline,
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await updateProductStatus(product.id, 'declined');
-              setPendingProducts(prev => prev.filter(p => p.id !== product.id));
-              Alert.alert(t.declinedSuccess, t.declinedMessage);
-              setShowDetails(false);
-              setSelectedProduct(null);
-            } catch (error) {
-              console.error('Error declining product:', error);
-              Alert.alert('Error', 'Failed to decline product.');
-            }
-          },
-        },
-      ]
-    );
+    setDeclineModalProduct(product);
+    setDeclineReason('');
+  };
+
+  const submitDecline = async () => {
+    const product = declineModalProduct;
+    if (!product) return;
+    setDecliningSubmitting(true);
+    try {
+      await updateProductStatus(product.id, 'declined', declineReason);
+      setPendingProducts(prev => prev.filter(p => p.id !== product.id));
+      setDeclineModalProduct(null);
+      setDeclineReason('');
+      showAppAlert(t.declinedSuccess, t.declinedMessage);
+      setShowDetails(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error('Error declining product:', error);
+      showAppAlert(t.error, t.failedDecline);
+    } finally {
+      setDecliningSubmitting(false);
+    }
   };
 
   const handleViewDetails = (product) => {
@@ -249,8 +272,8 @@ export default function ProductApprovalScreen({ navigation }) {
           </View>
           <View style={styles.emptyState}>
             <Icon name="shield-off" size={64} color="#CCC" />
-            <Text style={styles.emptyStateTitle}>Access Restricted</Text>
-            <Text style={styles.emptyStateText}>Only officers can access this screen.</Text>
+            <Text style={styles.emptyStateTitle}>{t.accessRestricted}</Text>
+            <Text style={styles.emptyStateText}>{t.onlyOfficers}</Text>
           </View>
         </SafeAreaView>
       </View>
@@ -446,7 +469,7 @@ export default function ProductApprovalScreen({ navigation }) {
                     <View style={styles.detailRow}>
                       <Icon name="email-outline" size={18} color="#0F5132" />
                       <View style={styles.detailTextGroup}>
-                        <Text style={styles.detailLabel}>Email</Text>
+                        <Text style={styles.detailLabel}>{t.email}</Text>
                         <Text style={styles.detailValue}>{selectedProduct.sellerEmail}</Text>
                       </View>
                     </View>
@@ -484,6 +507,58 @@ export default function ProductApprovalScreen({ navigation }) {
               </View>
             </View>
           </View>
+        </Modal>
+
+        {/* Decline-reason modal — captures an optional explanation that the seller
+            sees on their listing. Stored on the product as `declineReason`. */}
+        <Modal
+          visible={!!declineModalProduct}
+          transparent
+          animationType="fade"
+          onRequestClose={() => !decliningSubmitting && setDeclineModalProduct(null)}
+        >
+          <Pressable
+            style={styles.declineOverlay}
+            onPress={() => !decliningSubmitting && setDeclineModalProduct(null)}
+          >
+            <Pressable style={styles.declineCard} onPress={() => {}}>
+              <Text style={styles.declineTitle}>{t.declineConfirm}</Text>
+              <Text style={styles.declineMessage}>{t.declineMessage}</Text>
+              <Text style={styles.declineLabel}>{t.reason}</Text>
+              <TextInput
+                style={styles.declineInput}
+                value={declineReason}
+                onChangeText={setDeclineReason}
+                placeholder={t.reasonPlaceholder}
+                placeholderTextColor="#999"
+                multiline
+                maxLength={300}
+                autoFocus
+              />
+              <View style={styles.declineActions}>
+                <TouchableOpacity
+                  style={[styles.declineCancelBtn, decliningSubmitting && { opacity: 0.5 }]}
+                  onPress={() => !decliningSubmitting && setDeclineModalProduct(null)}
+                  disabled={decliningSubmitting}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.declineCancelText}>{t.cancel}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.declineConfirmBtn, decliningSubmitting && { opacity: 0.7 }]}
+                  onPress={submitDecline}
+                  disabled={decliningSubmitting}
+                  activeOpacity={0.8}
+                >
+                  {decliningSubmitting ? (
+                    <ActivityIndicator size="small" color="#FFFFFF" />
+                  ) : (
+                    <Text style={styles.declineConfirmText}>{t.decline}</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </Pressable>
+          </Pressable>
         </Modal>
       </SafeAreaView>
     </View>
@@ -931,6 +1006,87 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
     marginLeft: 6,
+  },
+  declineOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  declineCard: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 22,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  declineTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 6,
+  },
+  declineMessage: {
+    fontSize: 14,
+    color: '#4A4A4A',
+    lineHeight: 20,
+    marginBottom: 14,
+  },
+  declineLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#666',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+  declineInput: {
+    minHeight: 80,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.12)',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: '#1A1A1A',
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  declineActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  declineCancelBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+  },
+  declineCancelText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  declineConfirmBtn: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#C62828',
+  },
+  declineConfirmText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 
