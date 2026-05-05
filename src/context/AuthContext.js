@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext, useEffect } from 'react';
 import { Platform } from 'react-native';
 import auth from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GOOGLE_IOS_CLIENT_ID, GOOGLE_WEB_CLIENT_ID } from '@env';
 
 const AuthContext = createContext({});
 
@@ -22,17 +23,15 @@ export const AuthProvider = ({ children }) => {
       // Get iOS clientID from: GoogleService-Info.plist → CLIENT_ID
       // Get webClientId from: Firebase Console → Authentication → Sign-in method → Google → Web client ID
       if (Platform.OS === 'ios') {
-        // iOS requires both clientId and webClientId
         const iosConfig = {
-          clientId: '1005945714864-snl98chrm7ub9jsorbm528bjagqufalm.apps.googleusercontent.com', // iOS Client ID
-          webClientId: '1005945714864-lpdgrdnu67jb2o07qu4jv5crdm2l1prk.apps.googleusercontent.com', // Web Client ID for Firebase
+          clientId: GOOGLE_IOS_CLIENT_ID,
+          webClientId: GOOGLE_WEB_CLIENT_ID,
         };
         console.log('Configuring Google Sign-In for iOS:', iosConfig);
         GoogleSignin.configure(iosConfig);
       } else {
-        // Android only needs webClientId
         const androidConfig = {
-          webClientId: '1005945714864-lpdgrdnu67jb2o07qu4jv5crdm2l1prk.apps.googleusercontent.com',
+          webClientId: GOOGLE_WEB_CLIENT_ID,
         };
         console.log('Configuring Google Sign-In for Android:', androidConfig);
         GoogleSignin.configure(androidConfig);
