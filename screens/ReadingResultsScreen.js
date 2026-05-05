@@ -15,6 +15,10 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useLanguage } from '../src/context/LanguageContext';
 import PredictionService from '../src/utils/predictionService';
 import NotificationService from '../src/utils/notificationService';
+import MeteosourceService from '../src/utils/meteosourceService';
+import LocationService from '../src/utils/locationService';
+import DryingScheduleService from '../src/utils/dryingScheduleService';
+import DryingScheduleApiService from '../src/utils/dryingScheduleApiService';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +34,7 @@ const translations = {
     temperature: 'Temperature',
     humidity: 'Humidity',
     weather: 'Weather',
+    currentWeather: 'Current weather',
     location: 'Location',
     predictions: 'Predictions',
     today: 'Today',
@@ -70,6 +75,15 @@ const translations = {
     noSchedule: 'No drying schedule needed',
     scheduleTime: 'Time',
     scheduleDate: 'Date',
+    dryingTableDay: 'Day',
+    dryingTableDate: 'Date',
+    dryingTableTemp: 'Temp',
+    dryingTableWindow: 'Best time to dry',
+    dryingTableEstMoisture: 'Est. moisture',
+    daysToGoodMoisture: 'Est. {{count}} day(s) to good moisture (~12–14%)',
+    loadingForecast: 'Loading forecast...',
+    forecastError: 'Could not load forecast',
+    mm: 'mm',
   },
   සිංහල: {
     title: 'කියවීමේ ප්‍රතිඵල',
@@ -81,6 +95,7 @@ const translations = {
     temperature: 'උෂ්ණත්වය',
     humidity: 'ආර්ද්‍රතාව',
     weather: 'කාලගුණය',
+    currentWeather: 'වත්මන් කාලගුණය',
     location: 'ස්ථානය',
     predictions: 'අනාවැකි',
     today: 'අද',
@@ -121,6 +136,15 @@ const translations = {
     noSchedule: 'වියළීමේ කාලසටහනක් අවශ්‍ය නොවේ',
     scheduleTime: 'වේලාව',
     scheduleDate: 'දිනය',
+    dryingTableDay: 'දිනය',
+    dryingTableDate: 'දිනය',
+    dryingTableTemp: 'උෂ්ණය',
+    dryingTableWindow: 'වියළීමට හොඳම කාලය',
+    dryingTableEstMoisture: 'ඇස්ත. තෙතමනය',
+    daysToGoodMoisture: 'හොඳ තෙතමනයට (~12–14%) ඇස්ත. {{count}} දින',
+    loadingForecast: 'කාලගුණය පූරණය වෙමින්...',
+    forecastError: 'කාලගුණය පූරණය කිරීමට අසමත් විය',
+    mm: 'මි.මි.',
   },
   தமிழ்: {
     title: 'வாசிப்பு முடிவுகள்',
@@ -132,6 +156,7 @@ const translations = {
     temperature: 'வெப்பநிலை',
     humidity: 'ஈரப்பதம்',
     weather: 'வானிலை',
+    currentWeather: 'தற்போதைய வானிலை',
     location: 'இடம்',
     predictions: 'கணிப்புகள்',
     today: 'இன்று',
@@ -172,6 +197,15 @@ const translations = {
     noSchedule: 'உலர்த்தல் அட்டவணை தேவையில்லை',
     scheduleTime: 'நேரம்',
     scheduleDate: 'தேதி',
+    dryingTableDay: 'நாள்',
+    dryingTableDate: 'தேதி',
+    dryingTableTemp: 'வெப்பம்',
+    dryingTableWindow: 'உலர்த்த சிறந்த நேரம்',
+    dryingTableEstMoisture: 'மதி. ஈரப்பதம்',
+    daysToGoodMoisture: 'நல்ல ஈரப்பதத்திற்கு (~12–14%) மதி. {{count}} நாள்(கள்)',
+    loadingForecast: 'வானிலை ஏற்றுகிறது...',
+    forecastError: 'வானிலையை ஏற்ற முடியவில்லை',
+    mm: 'மி.மீ.',
   },
 };
 
@@ -186,12 +220,208 @@ export default function ReadingResultsScreen({ route, navigation }) {
   const [predictionError, setPredictionError] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [predictedMoisture, setPredictedMoisture] = useState(null);
+  const [dryingSchedule, setDryingSchedule] = useState(null);
+  const [forecastData, setForecastData] = useState(null);
+  const [loadingForecast, setLoadingForecast] = useState(false);
+  const [forecastError, setForecastError] = useState(null);
+  const [scheduleError, setScheduleError] = useState(null);
+  const buildFallbackForecastData = () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const date = `${y}-${m}-${d}`;
+    const temp = readingData?.weather?.temperature ?? readingData?.temperature ?? readingData?.averageAmbientTemp;
+    const humidity =
+      readingData?.weather?.humidity ?? readingData?.humidity ?? readingData?.averageAmbientHumidity;
+    const wind = readingData?.weather?.wind;
+    const precipitation = readingData?.weather?.precipitation;
+    const summary = readingData?.weather?.description || '';
+    const city = readingData?.weather?.location?.city || '';
+    const country = readingData?.weather?.location?.country || '';
+
+    const hasCore =
+      Number.isFinite(Number(temp)) &&
+      Number.isFinite(Number(humidity)) &&
+      Number.isFinite(Number(wind)) &&
+      Number.isFinite(Number(precipitation));
+    if (!hasCore) return null;
+
+    return {
+      current: {
+        temperature: temp,
+        humidity,
+        summary,
+        wind,
+        precipitation,
+      },
+      daily: [
+        {
+          date,
+          tempMax: temp,
+          tempMin: temp,
+          temperature: temp,
+          humidity,
+          precipitation,
+          precipitationType: 'none',
+          windSpeed: wind,
+          summary,
+        },
+      ],
+      placeName: city || 'Current location',
+      country,
+    };
+  };
+  const toFiniteNumber = (value, fallback) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  };
+
 
   useEffect(() => {
     if (readingData) {
       loadPredictions();
     }
   }, [readingData]);
+
+  // Fetch real weather and forecast once (for weather card + drying schedule)
+  useEffect(() => {
+    if (!readingData) return;
+    let cancelled = false;
+    setLoadingForecast(true);
+    setForecastError(null);
+    (async () => {
+      try {
+        let lat, lon;
+        // Prefer device location so weather and place name match user's actual location
+        const loc = await LocationService.getCurrentLocation();
+        if (loc.success && loc.data && typeof loc.data.lat === 'number' && typeof loc.data.lon === 'number') {
+          lat = loc.data.lat;
+          lon = loc.data.lon;
+        } else {
+          const coords = readingData.weather?.location?.coordinates;
+          if (coords && typeof coords.latitude === 'number' && typeof coords.longitude === 'number') {
+            lat = coords.latitude;
+            lon = coords.longitude;
+          } else {
+            throw new Error(loc?.error || 'Location unavailable');
+          }
+        }
+        const [forecastResult, placeResult] = await Promise.all([
+          MeteosourceService.getForecast(lat, lon),
+          MeteosourceService.getNearestPlace(lat, lon),
+        ]);
+        if (cancelled) return;
+        if (!forecastResult.success || !forecastResult.data) {
+          setForecastError(forecastResult.error || 'Failed to load weather');
+          setForecastData(buildFallbackForecastData());
+          return;
+        }
+        const placeName = placeResult.success && placeResult.data ? placeResult.data.name : null;
+        const country = placeResult.success && placeResult.data ? placeResult.data.country : '';
+        setForecastData({
+          current: forecastResult.data.current,
+          daily: forecastResult.data.daily || [],
+          placeName: placeName || 'Current location',
+          country: country || '',
+        });
+      } catch (e) {
+        if (!cancelled) {
+          setForecastError(e.message || 'Failed to load weather');
+          setForecastData(buildFallbackForecastData());
+        }
+      } finally {
+        if (!cancelled) setLoadingForecast(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [readingData]);
+
+  // Build drying schedule using backend model when moisture prediction is available.
+  useEffect(() => {
+    if (predictedMoisture == null) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        setScheduleError(null);
+        const fallbackForecast = buildFallbackForecastData();
+        const daily = forecastData?.daily?.length
+          ? forecastData.daily
+          : fallbackForecast?.daily || [];
+        if (!daily.length) {
+          setScheduleError('Weather data unavailable for drying schedule');
+          setDryingSchedule(null);
+          return;
+        }
+        const d0 = daily[0] || {};
+        const currentTemp = toFiniteNumber(forecastData?.current?.temperature ?? fallbackForecast?.current?.temperature, NaN);
+        const currentWind = toFiniteNumber(
+          forecastData?.current?.wind ?? fallbackForecast?.current?.wind,
+          NaN
+        );
+        const currentPrecip = toFiniteNumber(
+          forecastData?.current?.precipitation ?? fallbackForecast?.current?.precipitation,
+          NaN
+        );
+        const moistureForDrying = Math.max(0, Math.min(100, toFiniteNumber(predictedMoisture, 13)));
+        const payload = {
+          current_moisture_pct: moistureForDrying,
+          moisture_excess_pct: toFiniteNumber((moistureForDrying - 13).toFixed(2), 0),
+          attempt_no: 1,
+          weather_temp_max_c: toFiniteNumber(d0.tempMax ?? d0.temperature, currentTemp),
+          weather_temp_min_c: toFiniteNumber(d0.tempMin ?? d0.temperature, currentTemp),
+          weather_precip_mm: Math.max(0, toFiniteNumber(d0.precipitation, currentPrecip)),
+          weather_wind_max_kmh: Math.max(0, toFiniteNumber(d0.windSpeed, currentWind)),
+        };
+        const hasAllPayloadValues = Object.values(payload).every((v) => Number.isFinite(Number(v)));
+        if (!hasAllPayloadValues) {
+          setScheduleError('Insufficient live weather values for model prediction');
+          setDryingSchedule(null);
+          return;
+        }
+
+        const result = await DryingScheduleApiService.predictDryingSchedule(payload);
+        if (cancelled) return;
+
+        if (!result.success || !result.data) {
+          setScheduleError(String(result.error || 'Failed to predict drying schedule'));
+          const fallback = DryingScheduleService.buildDryingSchedule(predictedMoisture, daily, 13);
+          setDryingSchedule(fallback);
+          return;
+        }
+
+        if (!result.data.needs_drying) {
+          setDryingSchedule({ rows: [], daysToTarget: 0, targetMoisture: result.data.target_moisture ?? 13 });
+          return;
+        }
+
+        const schedule = DryingScheduleService.buildScheduleFromPredictedDays(
+          predictedMoisture,
+          daily,
+          result.data.days_to_target,
+          result.data.target_moisture ?? 13
+        );
+        setDryingSchedule(schedule);
+      } catch (e) {
+        if (!cancelled) {
+          setScheduleError(String(e?.message || 'Failed to predict drying schedule'));
+          const fallbackForecast = buildFallbackForecastData();
+          const daily = forecastData?.daily?.length ? forecastData.daily : fallbackForecast?.daily || [];
+          if (daily.length) {
+            const fallback = DryingScheduleService.buildDryingSchedule(predictedMoisture, daily, 13);
+            setDryingSchedule(fallback);
+          } else {
+            setDryingSchedule(null);
+          }
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [predictedMoisture, forecastData]);
 
   const loadPredictions = async () => {
     setLoadingPredictions(true);
@@ -222,14 +452,14 @@ export default function ReadingResultsScreen({ route, navigation }) {
     }
   };
 
-  // Calculate bulk density (g/cm³) from weight and estimated volume
-  // Uses real average sample weight from readings when available
+  // Bulk density container volume (cm³) – actual device container
+  const SAMPLE_CONTAINER_VOLUME_CM3 = 39.58;
+
+  // Calculate bulk density (g/cm³) from real sample weight and container volume
   const calculateBulkDensity = () => {
     const sampleWeight = readingData?.averageSampleWeight ?? null; // grams from HX711
     if (sampleWeight == null || sampleWeight <= 0) return null;
-    // Standard sample container volume (adjust based on actual container)
-    const sampleVolume = 50; // cm³ (calibrate based on actual device)
-    return sampleWeight / sampleVolume;
+    return sampleWeight / SAMPLE_CONTAINER_VOLUME_CM3;
   };
 
   const handleNotificationToggle = async (value) => {
@@ -253,25 +483,28 @@ export default function ReadingResultsScreen({ route, navigation }) {
   };
 
   const scheduleNotifications = async () => {
-    // Schedule for Day 1 (Today: 11:00 - 14:00)
-    const day1Schedule = {
-      startTime: '11:00',
-      endTime: '14:00',
-      date: new Date(),
-    };
+    // Use real drying schedule when available (best window 10:00–14:00)
+    const startTime = '10:00';
+    const endTime = '14:00';
+    let day1Schedule = { startTime, endTime, date: new Date() };
+    let day2Schedule = null;
+    if (dryingSchedule?.rows?.length >= 1) {
+      const d1 = dryingSchedule.rows[0];
+      day1Schedule = { startTime, endTime, date: new Date(d1.date + 'T12:00:00') };
+      if (dryingSchedule.rows.length >= 2) {
+        const d2 = dryingSchedule.rows[1];
+        day2Schedule = { startTime, endTime, date: new Date(d2.date + 'T12:00:00') };
+      }
+    } else {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      day2Schedule = { startTime, endTime, date: tomorrow };
+    }
 
-    // Schedule for Day 2 (Tomorrow: 10:00 - 14:00)
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const day2Schedule = {
-      startTime: '10:00',
-      endTime: '14:00',
-      date: tomorrow,
-    };
-
-    // Schedule notifications for both days
     const day1Success = await NotificationService.scheduleDryingNotifications(day1Schedule);
-    const day2Success = await NotificationService.scheduleDryingNotifications(day2Schedule);
+    const day2Success = day2Schedule
+      ? await NotificationService.scheduleDryingNotifications(day2Schedule)
+      : true;
     
     if (day1Success && day2Success) {
       Alert.alert(
@@ -441,100 +674,136 @@ export default function ReadingResultsScreen({ route, navigation }) {
               </View>
             </View>
 
-            {/* Weather Card */}
-            {readingData.weather && (
+            {/* Current weather – real data from Meteosource */}
+            {(forecastData?.current || readingData.weather || loadingForecast) && (
               <View style={styles.weatherCard}>
-                <Text style={styles.weatherTitle}>{t.weather}</Text>
-                <View style={styles.weatherRow}>
-                  <View style={styles.weatherItem}>
-                    <Text style={styles.weatherLabel}>{t.location}</Text>
-                    <Text style={styles.weatherValue}>
-                      {readingData.weather.location.city}, {readingData.weather.location.country}
-                    </Text>
+                <Text style={styles.weatherTitle}>{t.currentWeather}</Text>
+                {loadingForecast ? (
+                  <View style={styles.weatherLoadingRow}>
+                    <ActivityIndicator size="small" color="#0F5132" />
+                    <Text style={styles.weatherLoadingText}>{t.loadingForecast}</Text>
                   </View>
-                  <View style={styles.weatherItem}>
-                    <Text style={styles.weatherLabel}>{t.temperature}</Text>
-                    <Text style={styles.weatherValue}>
-                      {readingData.weather.temperature.toFixed(1)}{t.celsius}
+                ) : forecastData?.current ? (
+                  <>
+                    <View style={styles.weatherRow}>
+                      <View style={styles.weatherItem}>
+                        <Text style={styles.weatherLabel}>{t.location}</Text>
+                        <Text style={styles.weatherValue}>
+                          {forecastData.placeName}{forecastData.country ? `, ${forecastData.country}` : ''}
+                        </Text>
+                      </View>
+                      <View style={styles.weatherItem}>
+                        <Text style={styles.weatherLabel}>{t.temperature}</Text>
+                        <Text style={styles.weatherValue}>
+                          {(() => {
+                            const temp = forecastData.current.temperature;
+                            const num = typeof temp === 'number' ? temp : parseFloat(temp);
+                            return Number.isFinite(num) ? num.toFixed(1) : '—';
+                          })()}{t.celsius}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.weatherDescription}>
+                      {forecastData.current.summary || ''}
                     </Text>
-                  </View>
-                </View>
-                <Text style={styles.weatherDescription}>
-                  {readingData.weather.description}
-                </Text>
+                    {forecastData.current.humidity != null && (
+                      <Text style={styles.weatherSubtext}>
+                        {t.humidity}: {forecastData.current.humidity}{t.percent}
+                      </Text>
+                    )}
+                  </>
+                ) : readingData.weather ? (
+                  <>
+                    <View style={styles.weatherRow}>
+                      <View style={styles.weatherItem}>
+                        <Text style={styles.weatherLabel}>{t.location}</Text>
+                        <Text style={styles.weatherValue}>
+                          {readingData.weather.location?.city}, {readingData.weather.location?.country}
+                        </Text>
+                      </View>
+                      <View style={styles.weatherItem}>
+                        <Text style={styles.weatherLabel}>{t.temperature}</Text>
+                        <Text style={styles.weatherValue}>
+                          {readingData.weather.temperature?.toFixed(1)}{t.celsius}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.weatherDescription}>
+                      {readingData.weather.description || ''}
+                    </Text>
+                  </>
+                ) : null}
               </View>
             )}
 
-            {/* Weather-Aware Drying Schedule */}
+            {/* Weather-Aware Drying Schedule (Meteosource forecast + table) */}
             <View style={styles.scheduleCard}>
               <Text style={styles.scheduleTitle}>{t.weatherAwareSchedule}</Text>
-              
+
               {loadingPredictions ? (
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color="#0F5132" />
                   <Text style={styles.loadingText}>{t.loadingPredictions}</Text>
                 </View>
-              ) : (
+              ) : predictedMoisture != null && predictedMoisture < DryingScheduleService.GOOD_MOISTURE_MIN ? (
+                <Text style={[styles.noScheduleText, { color: '#C62828' }]}>{t.overDried}</Text>
+              ) : predictedMoisture != null && predictedMoisture >= DryingScheduleService.GOOD_MOISTURE_MIN && predictedMoisture <= DryingScheduleService.GOOD_MOISTURE_MAX ? (
+                <Text style={styles.noScheduleText}>{t.goodMoisture}</Text>
+              ) : loadingForecast ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color="#0F5132" />
+                  <Text style={styles.loadingText}>{t.loadingForecast}</Text>
+                </View>
+              ) : forecastError ? (
+                <View style={styles.loadingContainer}>
+                  <Icon name="weather-cloudy-alert" size={32} color="#999" />
+                  <Text style={[styles.loadingText, { color: '#666' }]}>{t.forecastError}</Text>
+                  <Text style={styles.scheduleSubtext}>{forecastError}</Text>
+                </View>
+              ) : dryingSchedule?.rows?.length > 0 ? (
                 <>
-                  {/* Day 1 Schedule */}
-                  <View style={styles.scheduleDayContainer}>
-                    <Text style={styles.scheduleDayTitle}>{t.today}</Text>
-                    <View style={styles.scheduleItem}>
-                      <View style={styles.scheduleItemHeader}>
-                        <Icon name="clock-start" size={20} color="#4CAF50" />
-                        <Text style={styles.scheduleItemLabel}>{t.scheduleStart}</Text>
+                  {scheduleError ? (
+                    <Text style={styles.scheduleSubtext}>{scheduleError}</Text>
+                  ) : null}
+                  {dryingSchedule.daysToTarget != null && dryingSchedule.daysToTarget > 0 && (
+                    <Text style={styles.daysToTargetText}>
+                      {t.daysToGoodMoisture.replace('{{count}}', String(dryingSchedule.daysToTarget))}
+                    </Text>
+                  )}
+                  <View style={styles.dryingTableScroll}>
+                    <View style={styles.dryingTable}>
+                      <View style={styles.dryingTableHeader}>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDay]}>{t.dryingTableDay}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColDate]}>{t.dryingTableDate}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColTemp]}>{t.dryingTableTemp}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColWindow]}>{t.dryingTableWindow}</Text>
+                        <Text style={[styles.dryingTableHeaderCell, styles.dryingTableColMoist]}>{t.dryingTableEstMoisture}</Text>
                       </View>
-                      <View style={styles.scheduleTimeContainer}>
-                        <Text style={styles.scheduleDateText}>
-                          {new Date().toLocaleDateString()}
-                        </Text>
-                        <Text style={styles.scheduleTimeText}>11:00</Text>
-                      </View>
-                    </View>
-                    <View style={styles.scheduleItem}>
-                      <View style={styles.scheduleItemHeader}>
-                        <Icon name="clock-end" size={20} color="#F44336" />
-                        <Text style={styles.scheduleItemLabel}>{t.scheduleEnd}</Text>
-                      </View>
-                      <View style={styles.scheduleTimeContainer}>
-                        <Text style={styles.scheduleDateText}>
-                          {new Date().toLocaleDateString()}
-                        </Text>
-                        <Text style={styles.scheduleTimeText}>14:00</Text>
-                      </View>
-                    </View>
-                  </View>
-
-                  {/* Day 2 Schedule */}
-                  <View style={styles.scheduleDayContainer}>
-                    <Text style={styles.scheduleDayTitle}>{t.tomorrow}</Text>
-                    <View style={styles.scheduleItem}>
-                      <View style={styles.scheduleItemHeader}>
-                        <Icon name="clock-start" size={20} color="#4CAF50" />
-                        <Text style={styles.scheduleItemLabel}>{t.scheduleStart}</Text>
-                      </View>
-                      <View style={styles.scheduleTimeContainer}>
-                        <Text style={styles.scheduleDateText}>
-                          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
-                        </Text>
-                        <Text style={styles.scheduleTimeText}>10:00</Text>
-                      </View>
-                    </View>
-                    <View style={styles.scheduleItem}>
-                      <View style={styles.scheduleItemHeader}>
-                        <Icon name="clock-end" size={20} color="#F44336" />
-                        <Text style={styles.scheduleItemLabel}>{t.scheduleEnd}</Text>
-                      </View>
-                      <View style={styles.scheduleTimeContainer}>
-                        <Text style={styles.scheduleDateText}>
-                          {new Date(Date.now() + 24 * 60 * 60 * 1000).toLocaleDateString()}
-                        </Text>
-                        <Text style={styles.scheduleTimeText}>14:00</Text>
-                      </View>
+                      {dryingSchedule.rows.map((row) => (
+                        <View
+                          key={`${row.date}-${row.dayIndex}`}
+                          style={[
+                            styles.dryingTableRow,
+                            row.reachedTarget && styles.dryingTableRowTarget,
+                          ]}
+                        >
+                          <Text style={[styles.dryingTableCell, styles.dryingTableColDay]}>{row.dayIndex}</Text>
+                          <Text style={[styles.dryingTableCell, styles.dryingTableColDate]} numberOfLines={1}>
+                            {row.date}
+                          </Text>
+                          <Text style={[styles.dryingTableCell, styles.dryingTableColTemp]}>
+                            {row.tempMax != null ? `${Math.round(row.tempMax)}${t.celsius}` : '—'}
+                          </Text>
+                          <Text style={[styles.dryingTableCell, styles.dryingTableColWindow]} numberOfLines={1}>
+                            {row.bestWindow || '10:00–14:00'}
+                          </Text>
+                          <Text style={[styles.dryingTableCell, styles.dryingTableColMoist, row.reachedTarget && styles.dryingTableCellTarget]}>
+                            {row.estimatedMoistureEnd}{t.percent}
+                          </Text>
+                        </View>
+                      ))}
                     </View>
                   </View>
-
-                  {/* Notification Toggle */}
                   <View style={styles.notificationToggleContainer}>
                     <View style={styles.notificationToggleInfo}>
                       <Icon name="bell" size={20} color="#0F5132" />
@@ -553,6 +822,8 @@ export default function ReadingResultsScreen({ route, navigation }) {
                     />
                   </View>
                 </>
+              ) : (
+                <Text style={styles.noScheduleText}>{t.noSchedule}</Text>
               )}
             </View>
           </View>
@@ -714,6 +985,21 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
     marginTop: 8,
+  },
+  weatherSubtext: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+  },
+  weatherLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 12,
+  },
+  weatherLoadingText: {
+    fontSize: 14,
+    color: '#666',
   },
   predictionsCard: {
     backgroundColor: '#FFFFFF',
@@ -1042,6 +1328,65 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     padding: 20,
   },
+  scheduleSubtext: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  daysToTargetText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F5132',
+    marginBottom: 12,
+  },
+  dryingTableScroll: {
+    marginBottom: 16,
+  },
+  dryingTable: {
+    width: '100%',
+  },
+  dryingTableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    backgroundColor: '#0F5132',
+    borderRadius: 8,
+    marginBottom: 6,
+  },
+  dryingTableHeaderCell: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  dryingTableRow: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    backgroundColor: '#F8FBF9',
+    borderRadius: 8,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  dryingTableRowTarget: {
+    backgroundColor: '#E8F5E9',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  dryingTableCell: {
+    fontSize: 12,
+    color: '#333',
+    fontWeight: '500',
+  },
+  dryingTableCellTarget: {
+    fontWeight: '800',
+    color: '#2E7D32',
+  },
+  dryingTableColDay: { width: 24 },
+  dryingTableColDate: { width: 66 },
+  dryingTableColTemp: { width: 40 },
+  dryingTableColWindow: { width: 98 },
+  dryingTableColMoist: { width: 52, textAlign: 'right' },
   scheduleText: {
     fontSize: 16,
     fontWeight: '700',

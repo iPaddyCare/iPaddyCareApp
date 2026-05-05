@@ -14,7 +14,8 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../src/context/AuthContext';
 import { useLanguage } from '../src/context/LanguageContext';
-import WeatherService from '../src/utils/weatherService';
+import MeteosourceService from '../src/utils/meteosourceService';
+import LocationService from '../src/utils/locationService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -54,7 +55,8 @@ const translations = {
     hoursAgo: 'hours ago',
     dayAgo: 'day ago',
     phLevelDesc: 'pH level: 6.2 - Slightly acidic. Lime application recommended.',
-    purityDesc: 'Purity: 95.2% - Excellent quality seeds detected.'
+    purityDesc: 'Purity: 95.2% - Excellent quality seeds detected.',
+    currentWeather: 'Current weather',
   },
   සිංහල: {
     welcomeTo: 'සාදරයෙන් පිළිගනිමු',
@@ -90,7 +92,8 @@ const translations = {
     hoursAgo: 'පැය කට පෙර',
     dayAgo: 'දින කට පෙර',
     phLevelDesc: 'pH මට්ටම: 6.2 - සුලභ අම්ල. හුණු යෙදීම නිර්දේශ කරනු ලැබේ.',
-    purityDesc: 'සංශුද්ධතාව: 95.2% - විශිෂ්ට ගුණත්ව බීජ හඳුනාගෙන ඇත.'
+    purityDesc: 'සංශුද්ධතාව: 95.2% - විශිෂ්ට ගුණත්ව බීජ හඳුනාගෙන ඇත.',
+    currentWeather: 'වත්මන් කාලගුණය',
   },
   தமிழ்: {
     welcomeTo: 'உங்களை வரவேற்கிறோம்',
@@ -126,7 +129,8 @@ const translations = {
     hoursAgo: 'மணி நேரம் முன்பு',
     dayAgo: 'நாள் முன்பு',
     phLevelDesc: 'pH அளவு: 6.2 - சற்று அமிலம். சுண்ணாம்பு பயன்பாடு பரிந்துரைக்கப்படுகிறது.',
-    purityDesc: 'தூய்மை: 95.2% - சிறந்த தர விதைகள் கண்டறியப்பட்டன.'
+    purityDesc: 'தூய்மை: 95.2% - சிறந்த தர விதைகள் கண்டறியப்பட்டன.',
+    currentWeather: 'தற்போதைய வானிலை',
   }
 };
 
@@ -327,14 +331,25 @@ export default function HomeScreen({ navigation }) {
   }, [fadeAnim, scaleAnim, slideAnim]);
 
   useEffect(() => {
-    // Fetch weather and location data
     const fetchWeatherData = async () => {
       try {
-        const result = await WeatherService.getCurrentWeather(true);
-        if (result.success && result.data) {
-          setWeatherData(result.data);
-          setLocation(result.data.location);
-        }
+        const loc = await LocationService.getCurrentLocation();
+        const lat = loc.success && loc.data ? loc.data.lat : null;
+        const lon = loc.success && loc.data ? loc.data.lon : null;
+        if (lat == null || lon == null) return;
+        const [forecastResult, placeResult] = await Promise.all([
+          MeteosourceService.getForecast(lat, lon),
+          MeteosourceService.getNearestPlace(lat, lon),
+        ]);
+        if (!forecastResult.success || !forecastResult.data?.current) return;
+        const current = forecastResult.data.current;
+        const placeName = placeResult.success && placeResult.data ? placeResult.data.name : 'Current location';
+        const country = placeResult.success && placeResult.data ? placeResult.data.country : '';
+        setLocation({ city: placeName, country });
+        setWeatherData({
+          temperature: typeof current.temperature === 'number' ? current.temperature : parseFloat(current.temperature),
+          description: current.summary || '',
+        });
       } catch (error) {
         console.error('Error fetching weather:', error);
       }
@@ -463,9 +478,10 @@ export default function HomeScreen({ navigation }) {
             <View style={styles.languageBorder} />
           </TouchableOpacity>
 
-          {/* Location and Weather - Positioned absolutely in top right */}
+          {/* Current weather – real data from Meteosource */}
           {(location || weatherData) && (
             <View style={styles.weatherLocationContainer}>
+              <View style={styles.weatherLocationRow}>
               {location && (
                 <View style={styles.locationContainer}>
                   <Text style={styles.locationIcon}>📍</Text>
@@ -477,16 +493,22 @@ export default function HomeScreen({ navigation }) {
               {weatherData && (
                 <View style={styles.weatherContainer}>
                   <Text style={styles.weatherIcon}>
-                    {weatherData.description === 'Partly cloudy' ? '⛅' : 
-                     weatherData.description === 'Clear' ? '☀️' : 
-                     weatherData.description === 'Cloudy' ? '☁️' : 
-                     weatherData.description === 'Rainy' ? '🌧️' : '🌤️'}
+                    {(() => {
+                      const d = (weatherData.description || '').toLowerCase();
+                      if (d.includes('rain') || d.includes('drizzle') || d.includes('shower')) return '🌧️';
+                      if (d.includes('cloudy') || d.includes('overcast')) return '☁️';
+                      if (d.includes('partly') || d.includes('mostly')) return '⛅';
+                      if (d.includes('clear')) return '☀️';
+                      if (d.includes('storm') || d.includes('thunder')) return '⛈️';
+                      return '🌤️';
+                    })()}
                   </Text>
                   <Text style={styles.weatherText}>
-                    {Math.round(weatherData.temperature)}°
+                    {Number.isFinite(weatherData.temperature) ? Math.round(weatherData.temperature) : '—'}°
                   </Text>
                 </View>
               )}
+              </View>
             </View>
           )}
         </Animated.View>
@@ -765,9 +787,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 24,
     right: 24,
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    zIndex: 5,
+  },
+  currentWeatherLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.85)',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  weatherLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    zIndex: 5,
   },
   locationContainer: {
     flexDirection: 'row',

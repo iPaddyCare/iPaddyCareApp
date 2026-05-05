@@ -45,15 +45,14 @@ class PredictionService {
         };
       }
 
-      // Calculate bulk density (g/cm³) from sample weight and volume
-      const sampleVolume = 50; // cm³ (calibrate based on actual device)
-      const bulkDensity = sampleWeight / sampleVolume;
+      // Bulk density: real sample weight / container volume (device container = 39.58 cm³)
+      const SAMPLE_CONTAINER_VOLUME_CM3 = 39.58;
+      const bulkDensity = sampleWeight / SAMPLE_CONTAINER_VOLUME_CM3;
 
       const requestBody = {
         ambient_humidity: parseFloat(Number(ambientHumidity).toFixed(2)),
         ambient_temperature: parseFloat(Number(ambientTemperature).toFixed(2)),
-        // bulk_density: parseFloat(bulkDensity.toFixed(2)),
-        bulk_density: 0.75,
+        bulk_density: parseFloat(bulkDensity.toFixed(2)),
 
         cap_sensor_value: parseFloat(Number(capSensorValue).toFixed(2)),
         sample_temperature: parseFloat(Number(sampleTemperature).toFixed(2)),
@@ -192,4 +191,3 @@ class PredictionService {
 }
 
 export default new PredictionService();
-

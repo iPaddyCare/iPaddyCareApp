@@ -50,12 +50,32 @@ target 'iPaddyCare' do
         end
         
         # Enable modular headers for Firebase and related pods
-      if target.name.include?('Firebase') || 
-         target.name.include?('GoogleUtilities') || 
-         target.name.include?('RecaptchaInterop') ||
-         target.name.include?('GTMSessionFetcher')
+        if target.name.include?('Firebase') ||
+           target.name.include?('GoogleUtilities') ||
+           target.name.include?('RecaptchaInterop') ||
+           target.name.include?('GTMSessionFetcher')
           config.build_settings['DEFINES_MODULE'] = 'YES'
           config.build_settings['CLANG_ENABLE_MODULES'] = 'YES'
+        end
+
+        # Xcode 16+/iOS 26 SDK can fail in fmt/Folly under C++20.
+        # Force C++17 across Pods targets for RN 0.80 compatibility.
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
+
+        # Explicit fmt compatibility switches for newer Clang consteval behavior.
+        if ['fmt', 'RCT-Folly'].include?(target.name)
+          definitions = config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || ['$(inherited)']
+          definitions = [definitions] if definitions.is_a?(String)
+          unless definitions.include?('FMT_USE_NONTYPE_TEMPLATE_ARGS=0')
+            definitions << 'FMT_USE_NONTYPE_TEMPLATE_ARGS=0'
+          end
+          unless definitions.include?('FMT_USE_CONSTEVAL=0')
+            definitions << 'FMT_USE_CONSTEVAL=0'
+          end
+          unless definitions.include?('FMT_USE_CONSTEXPR=0')
+            definitions << 'FMT_USE_CONSTEXPR=0'
+          end
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = definitions
         end
       end
     end

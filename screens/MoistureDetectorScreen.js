@@ -16,7 +16,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ESP32Service from '../src/utils/esp32Service';
 import BLEService from '../src/utils/bleService';
-import WeatherService from '../src/utils/weatherService';
+import MeteosourceService from '../src/utils/meteosourceService';
+import LocationService from '../src/utils/locationService';
 import PredictionService from '../src/utils/predictionService';
 import { useLanguage } from '../src/context/LanguageContext';
 
@@ -320,13 +321,33 @@ export default function MoistureDetectorScreen({ navigation }) {
     };
   }, [connected]);
 
-  // Fetch weather data on mount
+  // Fetch real current weather (Meteosource) on mount
   useEffect(() => {
     const loadWeather = async () => {
       setLoadingWeather(true);
-      const result = await WeatherService.getCurrentWeather(true); // Use Malabe for demo
-      if (result.success) {
-        setWeatherData(result.data);
+      try {
+        const loc = await LocationService.getCurrentLocation();
+        const lat = loc.success && loc.data ? loc.data.lat : null;
+        const lon = loc.success && loc.data ? loc.data.lon : null;
+        if (lat == null || lon == null) {
+          setLoadingWeather(false);
+          return;
+        }
+        const [forecastResult, placeResult] = await Promise.all([
+          MeteosourceService.getForecast(lat, lon),
+          MeteosourceService.getNearestPlace(lat, lon),
+        ]);
+        if (forecastResult.success && forecastResult.data?.current) {
+          const current = forecastResult.data.current;
+          const placeName = placeResult.success && placeResult.data ? placeResult.data.name : 'Current location';
+          setWeatherData({
+            temperature: typeof current.temperature === 'number' ? current.temperature : parseFloat(current.temperature),
+            description: current.summary || '',
+            locationName: placeName,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching weather:', error);
       }
       setLoadingWeather(false);
     };
@@ -419,9 +440,10 @@ export default function MoistureDetectorScreen({ navigation }) {
       }
 
       if (result.success && result.data) {
+        const weight = result.data.sampleWeight ?? 1;
         const reading = {
-          // Capacitive sensor
-          capSensorValue: result.data.moisture,
+          // Capacitive sensor (scale by 200 and by sample weight)
+          capSensorValue: (result.data.moisture ?? 0) * 15 * weight,
           // Sample temperature (DS18B20)
           sampleTemperature: result.data.sampleTemperature,
           // Ambient temperature (DHT22)
@@ -473,25 +495,33 @@ export default function MoistureDetectorScreen({ navigation }) {
       const averageAmbientHumidity = readings.reduce((sum, r) => sum + (r.ambientHumidity || 0), 0) / readings.length;
       const averageSampleWeight = readings.reduce((sum, r) => sum + (r.sampleWeight || 0), 0) / readings.length;
 
-      // Fetch weather data
-      WeatherService.getCurrentWeather(true).then(weatherResult => {
-        const readingData = {
-          averageMoisture,
-          averageCapSensor,
-          averageSampleTemp,
-          averageAmbientTemp,
-          averageAmbientHumidity,
-          averageSampleWeight,
-          temperature: averageAmbientTemp || null,
-          humidity: averageAmbientHumidity || null,
-          weather: weatherResult.success ? weatherResult.data : null,
-          readings: readings,
-          duration: readingDuration,
-        };
+      // Use current weather from state if already loaded (real Meteosource data), else minimal fallback
+      const weatherForResults = weatherData
+        ? {
+            temperature: weatherData.temperature,
+            description: weatherData.description,
+            location: {
+              city: weatherData.locationName || 'Current location',
+              country: '',
+              coordinates: null,
+            },
+          }
+        : null;
+      const readingData = {
+        averageMoisture,
+        averageCapSensor,
+        averageSampleTemp,
+        averageAmbientTemp,
+        averageAmbientHumidity,
+        averageSampleWeight,
+        temperature: averageAmbientTemp || null,
+        humidity: averageAmbientHumidity || null,
+        weather: weatherForResults,
+        readings: readings,
+        duration: readingDuration,
+      };
 
-        // Navigate to results screen
-        navigation?.navigate('ReadingResults', { readingData });
-      });
+      navigation?.navigate('ReadingResults', { readingData });
     }
   };
 
@@ -591,18 +621,24 @@ export default function MoistureDetectorScreen({ navigation }) {
 
           <View style={styles.innerContent}>
 
-        {/* Weather Card */}
-        {weatherData && (
+        {/* Current weather – real data from Meteosource */}
+        {(weatherData || loadingWeather) && (
           <View style={styles.weatherCard}>
             <View style={styles.weatherRow}>
               <View style={styles.weatherIconContainer}>
                 <Icon name="weather-partly-cloudy" size={24} color="#0F5132" />
               </View>
               <View style={styles.weatherInfo}>
-                <Text style={styles.weatherLocation}>{t.location}: Malabe</Text>
-                <Text style={styles.weatherDescription}>
-                  {weatherData.temperature.toFixed(1)}{t.celsius} • {weatherData.description}
-                </Text>
+                {loadingWeather ? (
+                  <Text style={styles.weatherDescription}>Loading {t.weather.toLowerCase()}…</Text>
+                ) : weatherData ? (
+                  <>
+                    <Text style={styles.weatherLocation}>{t.location}: {weatherData.locationName || '—'}</Text>
+                    <Text style={styles.weatherDescription}>
+                      {Number.isFinite(weatherData.temperature) ? weatherData.temperature.toFixed(1) : '—'}{t.celsius} • {weatherData.description || ''}
+                    </Text>
+                  </>
+                ) : null}
               </View>
             </View>
           </View>
